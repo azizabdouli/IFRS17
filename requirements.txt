@@ -1,0 +1,11 @@
+streamlit
+pandas
+openpyxl
+fastapi
+uvicorn
+pandas
+numpy
+xlsxwriter
+plotly
+reportlab
+python-multipart
