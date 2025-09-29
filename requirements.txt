@@ -9,3 +9,11 @@ xlsxwriter
 plotly
 reportlab
 python-multipart
+scikit-learn
+seaborn
+matplotlib
+joblib
+xgboost
+lightgbm
+tensorflow
+keras
