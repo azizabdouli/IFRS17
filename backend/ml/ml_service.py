@@ -52,7 +52,10 @@ class MLService:
         if target_column is None or target_column not in df.columns:
             # Créer une variable cible basée sur le ratio PPNA/Prime (proxy pour les sinistres)
             if 'MNTPPNA' in df.columns and 'MNTPRNET' in df.columns:
-                df['claims_ratio'] = df['MNTPPNA'] / (df['MNTPRNET'] + 1e-8)
+                # Conversion sécurisée des types mixtes
+                mntppna_numeric = pd.to_numeric(df['MNTPPNA'], errors='coerce').fillna(0)
+                mntprnet_numeric = pd.to_numeric(df['MNTPRNET'], errors='coerce').fillna(1)  # éviter division par 0
+                df['claims_ratio'] = mntppna_numeric / (mntprnet_numeric + 1e-8)
                 target_column = 'claims_ratio'
             else:
                 raise ValueError("Impossible de créer une variable cible pour les sinistres")
@@ -82,8 +85,11 @@ class MLService:
         if target_column is None or target_column not in df.columns:
             if 'MNTPRNET' in df.columns and 'MNTPPNA' in df.columns:
                 # Profit estimé = Prime - PPNA - Coûts estimés
-                estimated_costs = df['MNTPRNET'] * 0.15  # 15% de coûts estimés
-                df['profitability'] = df['MNTPRNET'] - df['MNTPPNA'] - estimated_costs
+                # Conversion sécurisée des types mixtes
+                mntprnet_numeric = pd.to_numeric(df['MNTPRNET'], errors='coerce').fillna(0)
+                mntppna_numeric = pd.to_numeric(df['MNTPPNA'], errors='coerce').fillna(0)
+                estimated_costs = mntprnet_numeric * 0.15  # 15% de coûts estimés
+                df['profitability'] = mntprnet_numeric - mntppna_numeric - estimated_costs
                 target_column = 'profitability'
             else:
                 raise ValueError("Impossible de créer une variable cible pour la rentabilité")
@@ -108,7 +114,7 @@ class MLService:
         logger.info("✅ Modèle de rentabilité entraîné avec succès")
         return results
     
-    def train_risk_classification_model(self, df: pd.DataFrame, model_type: str = 'xgboost') -> Dict[str, Any]:
+    def train_risk_classification_model(self, df: pd.DataFrame, model_type: str = 'random_forest') -> Dict[str, Any]:
         """
         Entraînement du modèle de classification des risques
         """
@@ -180,15 +186,20 @@ class MLService:
         # Analyse des clusters
         cluster_characteristics = model.get_cluster_characteristics(df)
         
+        # Conversion des clés en string pour la sérialisation JSON
+        cluster_characteristics_clean = {
+            str(k): v for k, v in cluster_characteristics.items()
+        }
+        
         # Sauvegarde
         model_key = f'clustering_{clustering_type}'
         self.models[model_key] = model
         
         results = {
-            'cluster_labels': cluster_labels,
-            'cluster_characteristics': cluster_characteristics,
-            'n_clusters': len(np.unique(cluster_labels)),
-            'cluster_distribution': pd.Series(cluster_labels).value_counts().to_dict()
+            'cluster_labels': cluster_labels.tolist(),
+            'cluster_characteristics': cluster_characteristics_clean,
+            'n_clusters': int(len(np.unique(cluster_labels))),
+            'cluster_distribution': {str(k): int(v) for k, v in pd.Series(cluster_labels).value_counts().to_dict().items()}
         }
         
         self.model_results[model_key] = results

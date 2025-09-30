@@ -21,22 +21,31 @@ ml_service = MLService()
 def clean_for_json(obj):
     """
     Nettoie les données pour la sérialisation JSON
-    Remplace NaN, inf par None
+    Remplace NaN, inf par None et convertit les types numpy
     """
     if isinstance(obj, dict):
-        return {k: clean_for_json(v) for k, v in obj.items()}
+        # S'assurer que les clés sont des strings
+        return {str(k): clean_for_json(v) for k, v in obj.items()}
     elif isinstance(obj, list):
+        return [clean_for_json(v) for v in obj]
+    elif isinstance(obj, tuple):
         return [clean_for_json(v) for v in obj]
     elif isinstance(obj, (np.ndarray, pd.Series)):
         return clean_for_json(obj.tolist())
     elif pd.isna(obj) or obj in [np.inf, -np.inf]:
         return None
-    elif isinstance(obj, np.integer):
+    elif isinstance(obj, (np.integer, np.int32, np.int64)):
         return int(obj)
-    elif isinstance(obj, np.floating):
+    elif isinstance(obj, (np.floating, np.float32, np.float64)):
         if np.isnan(obj) or np.isinf(obj):
             return None
         return float(obj)
+    elif isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
+    elif isinstance(obj, str):
+        return str(obj)
+    elif obj is None:
+        return None
     else:
         return obj
 

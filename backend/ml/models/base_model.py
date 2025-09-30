@@ -49,6 +49,23 @@ class BaseMLModel(ABC):
         
         logger.info(f"✅ Validation des données: X={X.shape}, y={len(y)}")
         
+        # S'assurer que les index sont alignés et continus
+        X = X.reset_index(drop=True)
+        y = y.reset_index(drop=True)
+        
+        # Nettoyage du target pour XGBoost
+        mask_valid = self._clean_target(y)
+        n_removed = (~mask_valid).sum()
+        
+        if n_removed > 0:
+            logger.warning(f"⚠️ Suppression de {n_removed} valeurs problématiques du target")
+            # Appliquer le masque pour synchroniser X et y
+            X = X[mask_valid].reset_index(drop=True)
+            y = y[mask_valid].reset_index(drop=True)
+            logger.info(f"✅ Données synchronisées après nettoyage: X={X.shape}, y={len(y)}")
+        else:
+            logger.info("✅ Aucune valeur problématique détectée dans le target")
+        
         # Sauvegarde des noms de features
         self.feature_names = X.columns.tolist()
         
@@ -108,6 +125,93 @@ class BaseMLModel(ABC):
         logger.info(f"📊 Score validation: {val_score}")
         
         return results
+    
+    def _clean_target(self, y: pd.Series) -> pd.Series:
+        """
+        Nettoie les valeurs cibles pour les rendre compatibles avec XGBoost
+        Supprime les NaN, infinity, et valeurs aberrantes
+        Gère à la fois les targets numériques (régression) et catégoriels (classification)
+        """
+        import numpy as np
+        import pandas as pd
+        
+        logger.info(f"🧹 Nettoyage du target - Taille initiale: {len(y)}")
+        
+        # Créer une copie pour éviter de modifier l'original
+        y_clean = y.copy()
+        
+        # Détecter si le target est catégoriel ou numérique
+        is_categorical = (y_clean.dtype == 'object' or 
+                         isinstance(y_clean.dtype, pd.CategoricalDtype) or
+                         all(isinstance(val, str) for val in y_clean.dropna().head(10)))
+        
+        if is_categorical:
+            logger.info("🏷️ Target catégoriel détecté - nettoyage simplifié")
+            # Pour les targets catégoriels, on ne supprime que les NaN
+            nan_count = y_clean.isna().sum()
+            logger.info(f"📊 NaN trouvés: {nan_count}")
+            
+            mask_valid = ~y_clean.isna()
+            total_removed = (~mask_valid).sum()
+            total_remaining = mask_valid.sum()
+            
+        else:
+            logger.info("🔢 Target numérique détecté - nettoyage complet")
+            # Pour les targets numériques, nettoyage complet
+            nan_count = y_clean.isna().sum()
+            inf_count = np.isinf(y_clean.astype(float)).sum() if y_clean.dtype != 'object' else 0
+            
+            logger.info(f"📊 NaN trouvés: {nan_count}, Infinity trouvés: {inf_count}")
+            
+            # 1. Convertir en numérique si ce n'est pas déjà fait
+            if y_clean.dtype == 'object':
+                y_clean = pd.to_numeric(y_clean, errors='coerce')
+                logger.info("🔄 Conversion object -> numeric effectuée")
+            
+            # 2. Identifier les valeurs problématiques
+            mask_valid = True
+            
+            # NaN values
+            mask_nan = y_clean.isna()
+            mask_valid = mask_valid & ~mask_nan
+            
+            # Infinity values
+            mask_inf = np.isinf(y_clean)
+            mask_valid = mask_valid & ~mask_inf
+            
+            # Valeurs extrêmes (probablement des erreurs)
+            if len(y_clean[~mask_nan & ~mask_inf]) > 0:
+                q1 = y_clean[~mask_nan & ~mask_inf].quantile(0.01)
+                q99 = y_clean[~mask_nan & ~mask_inf].quantile(0.99)
+                iqr = y_clean[~mask_nan & ~mask_inf].quantile(0.75) - y_clean[~mask_nan & ~mask_inf].quantile(0.25)
+                
+                # Limites pour les outliers extrêmes
+                lower_bound = q1 - 3 * iqr
+                upper_bound = q99 + 3 * iqr
+                
+                mask_outliers = (y_clean < lower_bound) | (y_clean > upper_bound)
+                mask_valid = mask_valid & ~mask_outliers
+                
+                outliers_count = mask_outliers.sum()
+                logger.info(f"🎯 Outliers détectés: {outliers_count} (< {lower_bound:.2f} ou > {upper_bound:.2f})")
+            
+            # 3. Compter les valeurs supprimées
+            total_removed = (~mask_valid).sum()
+            total_remaining = mask_valid.sum()
+        
+        logger.info(f"❌ Valeurs supprimées: {total_removed}")
+        logger.info(f"✅ Valeurs conservées: {total_remaining}")
+        
+        # 4. Vérifier qu'il reste assez de données
+        min_required = max(2, min(10, len(y) // 2))  # Au moins 2, maximum 10, ou la moitié des données
+        if total_remaining < min_required:
+            logger.warning(f"⚠️ Très peu de données valides restantes: {total_remaining}")
+            if total_remaining < 2:
+                raise ValueError(f"Pas assez de données valides après nettoyage: {total_remaining} < 2")
+        
+        # 5. Retourner les indices valides pour synchronisation avec X
+        return mask_valid
+        return mask_valid
     
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         """

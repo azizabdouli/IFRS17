@@ -28,7 +28,7 @@ class DataPreprocessor:
         
         # Conversion des colonnes numériques importantes
         numeric_columns = ['DUREE', 'MNTPRNET', 'MNTPPNA', 'MNTACCESS', 'MNTPRASSI', 
-                          'NBPPNATOT', 'NBPPNAJ', 'NUMQUITT', 'CODFAM', 'CODPROD']
+                          'NBPPNATOT', 'NBPPNAJ', 'NUMQUITT', 'CODFAM', 'CODPROD', 'FRACT']
         for col in numeric_columns:
             if col in df_clean.columns:
                 df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
@@ -110,11 +110,27 @@ class DataPreprocessor:
         numeric_columns = df.select_dtypes(include=[np.number]).columns
         
         for col in numeric_columns:
+            # Vérifier si la colonne a des valeurs non-NaN
+            if df_imputed[col].notna().sum() == 0:
+                logger.warning(f"⚠️ Colonne '{col}' entièrement NaN, remplacement par 0")
+                df_imputed[col] = 0
+                continue
+                
             if col not in self.imputers:
                 self.imputers[col] = SimpleImputer(strategy=strategy)
-                df_imputed[[col]] = self.imputers[col].fit_transform(df[[col]])
+                try:
+                    imputed_values = self.imputers[col].fit_transform(df_imputed[[col]])
+                    df_imputed[col] = imputed_values.flatten()
+                except Exception as e:
+                    logger.warning(f"⚠️ Imputation échouée pour '{col}': {e}, utilisation de 0")
+                    df_imputed[col] = df_imputed[col].fillna(0)
             else:
-                df_imputed[[col]] = self.imputers[col].transform(df[[col]])
+                try:
+                    imputed_values = self.imputers[col].transform(df_imputed[[col]])
+                    df_imputed[col] = imputed_values.flatten()
+                except Exception as e:
+                    logger.warning(f"⚠️ Imputation échouée pour '{col}': {e}, utilisation de 0")
+                    df_imputed[col] = df_imputed[col].fillna(0)
                 
         return df_imputed
     
@@ -196,22 +212,42 @@ class DataPreprocessor:
         df_imputed = self.handle_missing_values(df_encoded)
         logger.info("✅ Gestion des valeurs manquantes terminée")
         
-        # 5. Sélection des features pour ML
+        # 5. Extraction du target AVANT la sélection des features
+        y = None
+        if target_column and target_column in df_imputed.columns:
+            y = df_imputed[target_column].copy()
+            df_imputed = df_imputed.drop(columns=[target_column])
+            
+            # Encodage du target catégoriel pour XGBoost
+            if y.dtype == 'object' or isinstance(y.dtype, pd.CategoricalDtype):
+                from sklearn.preprocessing import LabelEncoder
+                label_encoder = LabelEncoder()
+                y_encoded = label_encoder.fit_transform(y)
+                y = pd.Series(y_encoded, index=y.index, name=y.name)
+                logger.info(f"🏷️ Target catégoriel encodé: {label_encoder.classes_} -> {sorted(y.unique())}")
+            
+            logger.info(f"✅ Target '{target_column}' extrait: {len(y)} valeurs, {y.nunique()} uniques")
+        elif target_column:
+            logger.warning(f"⚠️ Colonne target '{target_column}' introuvable dans les données")
+        
+        # 6. Sélection des features pour ML (sans le target)
         ml_features = self._select_ml_features(df_imputed)
         
-        # 6. Normalisation
+        # 7. Normalisation
         df_final = self.scale_features(ml_features)
         logger.info("✅ Normalisation terminée")
         
-        # 7. Préparation du target si spécifié
-        y = None
-        if target_column and target_column in df_final.columns:
-            y = df_final[target_column]
-            df_final = df_final.drop(columns=[target_column])
-        elif target_column:
-            logger.warning(f"⚠️ Colonne target '{target_column}' introuvable dans les données")
-            
-        # 8. Vérifications finales
+        # 8. Conversion finale des types pour compatibilité XGBoost
+        for col in df_final.columns:
+            if df_final[col].dtype == 'object':
+                logger.warning(f"⚠️ Conversion forcée de {col} (object) vers numérique")
+                df_final[col] = pd.to_numeric(df_final[col], errors='coerce')
+                
+        # Remplir les NaN restants après conversion
+        df_final = df_final.fillna(0)
+        logger.info("✅ Conversion des types terminée")
+        
+        # 9. Vérifications finales
         if df_final.empty:
             raise ValueError("❌ Le DataFrame final est vide après preprocessing")
         if y is not None and len(y) == 0:
@@ -220,8 +256,9 @@ class DataPreprocessor:
             raise ValueError(f"❌ Tailles incompatibles: features={len(df_final)}, target={len(y)}")
             
         logger.info(f"✅ Preprocessing terminé. Shape finale: {df_final.shape}")
+        logger.info(f"✅ Types finaux: {df_final.dtypes.value_counts().to_dict()}")
         if y is not None:
-            logger.info(f"✅ Target shape: {len(y)}, valeurs uniques: {y.nunique()}")
+            logger.info(f"✅ Target final: {len(y)} valeurs, {y.nunique()} classes uniques")
             
         return df_final, y
     
@@ -250,5 +287,18 @@ class DataPreprocessor:
         available_features = []
         for feature_list in [numeric_features, encoded_features, agg_features]:
             available_features.extend([f for f in feature_list if f in df.columns])
+        
+        # Si aucune feature spécifique n'est trouvée, utiliser toutes les colonnes numériques
+        if not available_features:
+            logger.warning("⚠️ Aucune feature spécifique trouvée, utilisation de toutes les colonnes numériques")
+            available_features = df.select_dtypes(include=[np.number]).columns.tolist()
+            
+        # Fallback final : utiliser au moins les premières colonnes si tout échoue
+        if not available_features:
+            logger.warning("⚠️ Fallback : utilisation des premières colonnes disponibles")
+            available_features = df.columns[:min(5, len(df.columns))].tolist()
+            
+        logger.info(f"✅ Features sélectionnées: {len(available_features)} colonnes")
+        logger.info(f"Features: {available_features[:10]}...")  # Afficher les 10 premières
         
         return df[available_features]

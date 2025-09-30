@@ -113,10 +113,13 @@ class RiskClassificationModel(BaseMLModel):
     def build_model(self, **kwargs):
         """Construction du modèle de classification des risques"""
         if self.model_variant == 'xgboost':
+            # Configuration adaptée pour XGBoost avec classes multiples
             self.model = xgb.XGBClassifier(
                 n_estimators=kwargs.get('n_estimators', 100),
                 max_depth=kwargs.get('max_depth', 6),
                 learning_rate=kwargs.get('learning_rate', 0.1),
+                objective='multi:softprob',  # Classification multiclasse
+                num_class=3,  # 3 classes de risque
                 random_state=42
             )
         elif self.model_variant == 'random_forest':
@@ -132,6 +135,7 @@ class RiskClassificationModel(BaseMLModel):
                 random_state=42
             )
         else:
+            # Par défaut, utiliser RandomForest (plus robuste)
             self.model = RandomForestClassifier(
                 n_estimators=100,
                 random_state=42
@@ -146,20 +150,29 @@ class RiskClassificationModel(BaseMLModel):
         
         if 'MNTPPNA' in df.columns and 'MNTPRNET' in df.columns:
             # Ratio PPNA/Prime (plus élevé = plus risqué)
-            ppna_ratio = df['MNTPPNA'] / (df['MNTPRNET'] + 1e-8)
+            # Conversion sécurisée en numérique
+            mntppna_numeric = pd.to_numeric(df['MNTPPNA'], errors='coerce').fillna(0)
+            mntprnet_numeric = pd.to_numeric(df['MNTPRNET'], errors='coerce').fillna(0)
+            ppna_ratio = mntppna_numeric / (mntprnet_numeric + 1e-8)
             if ppna_ratio.max() > 0:
                 risk_score += ppna_ratio / ppna_ratio.max()
         
         if 'DUREE' in df.columns:
             # Contrats plus longs sont potentiellement plus risqués
-            duration_score = df['DUREE'] / df['DUREE'].max()
-            risk_score += duration_score
+            # Conversion sécurisée en numérique
+            duree_numeric = pd.to_numeric(df['DUREE'], errors='coerce').fillna(0)
+            if duree_numeric.max() > 0:
+                duration_score = duree_numeric / duree_numeric.max()
+                risk_score += duration_score
         
         if 'MNTPRNET' in df.columns:
             # Primes très faibles ou très élevées peuvent être risquées
-            prime_score = np.abs(df['MNTPRNET'] - df['MNTPRNET'].median()) / (df['MNTPRNET'].std() + 1e-8)
-            if prime_score.max() > 0:
-                risk_score += prime_score / prime_score.max()
+            # Conversion sécurisée en numérique
+            mntprnet_numeric = pd.to_numeric(df['MNTPRNET'], errors='coerce').fillna(0)
+            if mntprnet_numeric.std() > 0:  # Éviter division par zéro
+                prime_score = np.abs(mntprnet_numeric - mntprnet_numeric.median()) / (mntprnet_numeric.std() + 1e-8)
+                if prime_score.max() > 0:
+                    risk_score += prime_score / prime_score.max()
         
         # Classification en 3 catégories de risque
         try:
@@ -167,8 +180,9 @@ class RiskClassificationModel(BaseMLModel):
         except ValueError:
             # Fallback si les données ne permettent pas la classification
             risk_labels = pd.Series(['Moyen'] * len(df), index=df.index)
-            
-        return risk_labels
+        
+        # Assurer la continuité des index pour éviter les erreurs de masquage
+        return risk_labels.reset_index(drop=True)
 
 class ContractClusteringModel:
     """
@@ -232,12 +246,49 @@ class ContractClusteringModel:
                 
             cluster_data = df_with_clusters[df_with_clusters['cluster'] == cluster_id]
             
+            # Calculer les moyennes de façon sécurisée
+            avg_prime = 0.0
+            if 'MNTPRNET' in cluster_data.columns:
+                try:
+                    avg_prime = float(cluster_data['MNTPRNET'].mean())
+                except (TypeError, ValueError):
+                    avg_prime = 0.0
+            
+            avg_duration = 0.0
+            if 'DUREE' in cluster_data.columns:
+                try:
+                    # Convertir DUREE en numérique si possible, sinon compter les modes
+                    duree_numeric = pd.to_numeric(cluster_data['DUREE'], errors='coerce')
+                    if not duree_numeric.isna().all():
+                        avg_duration = float(duree_numeric.mean())
+                    else:
+                        # Pour les colonnes catégorielles, compter le mode le plus fréquent
+                        avg_duration = float(len(cluster_data['DUREE'].mode()))
+                except (TypeError, ValueError):
+                    avg_duration = 0.0
+            
+            avg_ppna = 0.0
+            if 'MNTPPNA' in cluster_data.columns:
+                try:
+                    avg_ppna = float(cluster_data['MNTPPNA'].mean())
+                except (TypeError, ValueError):
+                    avg_ppna = 0.0
+            
+            main_product = 'N/A'
+            if 'CODPROD' in cluster_data.columns:
+                try:
+                    mode_values = cluster_data['CODPROD'].mode()
+                    if len(mode_values) > 0:
+                        main_product = str(mode_values.iloc[0])
+                except (TypeError, ValueError, IndexError):
+                    main_product = 'N/A'
+            
             cluster_stats[cluster_id] = {
                 'size': len(cluster_data),
-                'avg_prime': cluster_data['MNTPRNET'].mean() if 'MNTPRNET' in cluster_data.columns else 0,
-                'avg_duration': cluster_data['DUREE'].mean() if 'DUREE' in cluster_data.columns else 0,
-                'avg_ppna': cluster_data['MNTPPNA'].mean() if 'MNTPPNA' in cluster_data.columns else 0,
-                'main_product': cluster_data['CODPROD'].mode().iloc[0] if 'CODPROD' in cluster_data.columns and len(cluster_data['CODPROD'].mode()) > 0 else 'N/A'
+                'avg_prime': avg_prime,
+                'avg_duration': avg_duration,
+                'avg_ppna': avg_ppna,
+                'main_product': main_product
             }
         
         return cluster_stats
@@ -360,14 +411,21 @@ class LRCPredictionModel(BaseMLModel):
         lrc_estimate = pd.Series(0.0, index=df.index)
         
         if 'MNTPPNA' in df.columns:
-            lrc_estimate += df['MNTPPNA']
+            # Conversion sécurisée des types mixtes
+            mntppna_numeric = pd.to_numeric(df['MNTPPNA'], errors='coerce').fillna(0)
+            lrc_estimate += mntppna_numeric
         
         if 'MNTPRNET' in df.columns and 'DUREE' in df.columns:
             # Estimation basée sur la prime et la durée restante
-            remaining_premium = df['MNTPRNET'] * (df['DUREE'] / 12)  # Conversion en années
+            # Conversion sécurisée des types mixtes
+            mntprnet_numeric = pd.to_numeric(df['MNTPRNET'], errors='coerce').fillna(0)
+            duree_numeric = pd.to_numeric(df['DUREE'], errors='coerce').fillna(12)  # Default 12 mois
+            remaining_premium = mntprnet_numeric * (duree_numeric / 12)  # Conversion en années
             lrc_estimate += remaining_premium * 0.8  # Facteur d'ajustement
         
         if 'MNTACCESS' in df.columns:
-            lrc_estimate += df['MNTACCESS']
+            # Conversion sécurisée des types mixtes
+            mntaccess_numeric = pd.to_numeric(df['MNTACCESS'], errors='coerce').fillna(0)
+            lrc_estimate += mntaccess_numeric
         
         return lrc_estimate
