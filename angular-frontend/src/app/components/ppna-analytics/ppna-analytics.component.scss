@@ -1,0 +1,444 @@
+/* src/app/components/ppna-analytics/ppna-analytics.component.scss */
+
+/* ================================================= */
+/* 🔍 STYLES PPNA ANALYTICS IFRS17 */
+/* ================================================= */
+
+.ppna-analytics-container {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+}
+
+/* ================================================= */
+/* 📊 HEADER ANALYTICS */
+/* ================================================= */
+
+.analytics-header {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--ifrs17-primary, #2c5aa0);
+  
+  .page-title {
+    color: var(--ifrs17-primary, #2c5aa0);
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+  }
+  
+  .status-badge {
+    .badge {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+}
+
+/* ================================================= */
+/* 📊 MÉTRIQUES CARDS */
+/* ================================================= */
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  
+  .metric-icon {
+    font-size: 2.5rem;
+    margin-right: 1rem;
+    opacity: 0.8;
+  }
+  
+  .metric-content {
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+  }
+}
+
+/* ================================================= */
+/* 🎛️ FILTRES SIDEBAR */
+/* ================================================= */
+
+.filters-sidebar {
+  position: sticky;
+  top: 2rem;
+  
+  .card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+  }
+  
+  .filter-group {
+    .form-label {
+      font-weight: 600;
+      color: var(--ifrs17-dark, #2c3e50);
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      
+      &:focus {
+        border-color: var(--ifrs17-primary, #2c5aa0);
+        box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+      }
+    }
+  }
+  
+  .filter-actions {
+    .btn {
+      border-radius: 8px;
+      font-weight: 500;
+    }
+  }
+}
+
+/* ================================================= */
+/* 📑 ONGLETS ANALYTICS */
+/* ================================================= */
+
+.analytics-tabs {
+  .nav-tabs {
+    border: none;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    .nav-link {
+      border: none;
+      color: #6c757d;
+      font-weight: 500;
+      padding: 1rem 1.5rem;
+      border-radius: 12px 12px 0 0;
+      
+      &.active {
+        background: var(--ifrs17-primary, #2c5aa0);
+        color: white;
+        border-bottom: 3px solid var(--ifrs17-success, #27ae60);
+      }
+      
+      &:hover:not(.active) {
+        background: rgba(44, 90, 160, 0.1);
+        color: var(--ifrs17-primary, #2c5aa0);
+      }
+    }
+  }
+  
+  .tab-content {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    min-height: 600px;
+  }
+}
+
+/* ================================================= */
+/* 📊 CHARTS ET ANALYSES */
+/* ================================================= */
+
+.chart-container {
+  position: relative;
+  margin: 1rem 0;
+  
+  canvas {
+    max-height: 100%;
+    width: 100% !important;
+  }
+}
+
+.data-preview {
+  .alert {
+    border-radius: 8px;
+    
+    .badge {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+    }
+  }
+}
+
+/* ================================================= */
+/* 📊 MÉTRIQUES GROUPES */
+/* ================================================= */
+
+.metrics-grid {
+  .metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-label {
+      font-weight: 600;
+      color: #6c757d;
+    }
+    
+    .metric-value {
+      font-weight: 700;
+      color: var(--ifrs17-primary, #2c5aa0);
+    }
+  }
+}
+
+/* ================================================= */
+/* ⚙️ PARAMÈTRES TABLEAU */
+/* ================================================= */
+
+.table-responsive {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  .table {
+    margin-bottom: 0;
+    
+    thead th {
+      background: var(--ifrs17-primary, #2c5aa0);
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+    
+    tbody {
+      tr {
+        &:hover {
+          background: rgba(44, 90, 160, 0.05);
+        }
+        
+        td {
+          vertical-align: middle;
+          padding: 0.75rem 0.5rem;
+          
+          .form-control {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            
+            &:focus {
+              border-color: var(--ifrs17-primary, #2c5aa0);
+              box-shadow: 0 0 0 0.1rem rgba(44, 90, 160, 0.25);
+            }
+          }
+          
+          .form-check-input {
+            transform: scale(1.2);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ================================================= */
+/* ⬇️ EXPORTS CARDS */
+/* ================================================= */
+
+.export-card {
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  height: 100%;
+  
+  &:hover {
+    border-color: var(--ifrs17-primary, #2c5aa0);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .export-icon {
+    margin-bottom: 1rem;
+  }
+  
+  h6 {
+    font-weight: 700;
+    color: var(--ifrs17-dark, #2c3e50);
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* ================================================= */
+/* 📒 REGISTRE TABLE */
+/* ================================================= */
+
+.table-bordered {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  thead th {
+    background: var(--ifrs17-secondary, #34495e);
+    color: white;
+    font-weight: 600;
+    border: none;
+  }
+  
+  tbody {
+    tr {
+      &:nth-child(even) {
+        background: rgba(44, 90, 160, 0.02);
+      }
+      
+      td {
+        padding: 1rem;
+        vertical-align: middle;
+        
+        strong {
+          color: var(--ifrs17-dark, #2c3e50);
+        }
+      }
+    }
+  }
+}
+
+/* ================================================= */
+/* 🎨 ANIMATIONS */
+/* ================================================= */
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card,
+.metric-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ================================================= */
+/* 📱 RESPONSIVE */
+/* ================================================= */
+
+@media (max-width: 768px) {
+  .ppna-analytics-container {
+    padding: 1rem;
+  }
+  
+  .analytics-header {
+    padding: 1.5rem;
+    
+    .page-title {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .metric-card {
+    flex-direction: column;
+    text-align: center;
+    
+    .metric-icon {
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .filters-sidebar {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  .analytics-tabs {
+    .nav-tabs {
+      .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .export-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* ================================================= */
+/* 🔧 UTILITAIRES */
+/* ================================================= */
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  
+  &.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    color: #117a8b;
+  }
+  
+  &.alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+  }
+  
+  &.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #155724;
+  }
+}

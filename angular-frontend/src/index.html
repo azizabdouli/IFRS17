@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>🏦 IFRS17 - Comptabilité d'Assurance BNA</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interface professionnelle de comptabilité d'assurance IFRS17 - Actuariat et gestion des contrats d'assurance">
+  <meta name="keywords" content="IFRS17, comptabilité, assurance, actuariat, LRC, LIC, CSM, Risk Adjustment">
+  <meta name="author" content="BNA - Banque Nationale d'Algérie">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Font Awesome pour les icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <!-- PrimeNG Theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeng@17.0.0/resources/themes/saga-blue/theme.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeng@17.0.0/resources/primeng.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@6.0.1/primeicons.css">
+  
+  <style>
+    /* 🎨 Variables CSS globales */
+    :root {
+      --primary-color: #2c5aa0;
+      --secondary-color: #e8f2ff;
+      --accent-color: #ffd700;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+      --info-color: #17a2b8;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --border-radius: 12px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+      --font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --font-mono: 'Roboto Mono', 'Courier New', monospace;
+    }
+    
+    /* 🌐 Styles globaux */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: var(--font-family);
+      line-height: 1.6;
+      color: var(--dark-color);
+      background-color: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    /* 📱 Responsivité */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+    }
+    
+    /* 🔄 Écran de chargement initial */
+    .app-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--primary-color) 0%, #1a365d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+    
+    .loading-content {
+      text-align: center;
+      animation: fadeInUp 1s ease-out;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid var(--accent-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    .loading-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .loading-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+    
+    /* 🎨 Animations */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* 🎯 Classes utilitaires */
+    .text-primary { color: var(--primary-color) !important; }
+    .text-success { color: var(--success-color) !important; }
+    .text-warning { color: var(--warning-color) !important; }
+    .text-danger { color: var(--danger-color) !important; }
+    .text-info { color: var(--info-color) !important; }
+    
+    .bg-primary { background-color: var(--primary-color) !important; }
+    .bg-light { background-color: var(--light-color) !important; }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: #1a365d;
+      border-color: #1a365d;
+    }
+    
+    /* 🖥️ Scrollbar personnalisée */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--light-color);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #1a365d;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🚀 Application principale -->
+  <app-root>
+    <!-- 🔄 Écran de chargement initial -->
+    <div class="app-loading">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h1 class="loading-title">
+          <i class="fas fa-chart-line" style="color: var(--accent-color); margin-right: 12px;"></i>
+          IFRS17 Analytics
+        </h1>
+        <p class="loading-subtitle">
+          Chargement de l'interface de comptabilité d'assurance...
+        </p>
+      </div>
+    </div>
+  </app-root>
+  
+  <!-- 📊 Chart.js pour les graphiques -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  
+  <!-- 🔧 Scripts personnalisés -->
+  <script>
+    // 🎯 Configuration globale pour Chart.js
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.font.family = 'Inter, sans-serif';
+      Chart.defaults.font.size = 12;
+      Chart.defaults.color = '#343a40';
+      Chart.defaults.backgroundColor = 'rgba(44, 90, 160, 0.1)';
+      Chart.defaults.borderColor = 'rgba(44, 90, 160, 0.2)';
+    }
+    
+    // 🔄 Masquer l'écran de chargement une fois Angular chargé
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const loadingElement = document.querySelector('.app-loading');
+        if (loadingElement) {
+          loadingElement.style.opacity = '0';
+          loadingElement.style.transition = 'opacity 0.5s ease-out';
+          setTimeout(() => {
+            loadingElement.style.display = 'none';
+          }, 500);
+        }
+      }, 2000);
+    });
+    
+    // 📱 Gestion responsive
+    function handleViewportResize() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    window.addEventListener('resize', handleViewportResize);
+    handleViewportResize();
+  </script>
+</body>
+</html>

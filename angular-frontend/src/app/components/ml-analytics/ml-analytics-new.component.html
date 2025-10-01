@@ -1,0 +1,749 @@
+<!-- src/app/components/ml-analytics/ml-analytics.component.html -->
+
+<div class="ml-analytics-container">
+  <!-- Header avec titre et actions principales -->
+  <div class="header-section mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="page-title">
+          <i class="fas fa-brain text-primary me-3"></i>
+          🤖 IFRS 17 - Machine Learning Dashboard
+        </h1>
+        <p class="page-subtitle text-muted">
+          Intelligence Artificielle appliquée à la comptabilité d'assurance et l'actuariat
+        </p>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="action-buttons">
+          <button class="btn btn-primary me-2" (click)="checkAPIStatus()">
+            <i class="fas fa-heartbeat me-2"></i>Status API
+          </button>
+          <button class="btn btn-outline-secondary" (click)="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i>Actualiser
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status API -->
+  <div class="row mb-4" *ngIf="apiStatus">
+    <div class="col-12">
+      <div class="alert" [class.alert-success]="apiStatus.status === 'healthy'" [class.alert-danger]="apiStatus.status !== 'healthy'">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-circle me-2" [class.text-success]="apiStatus.status === 'healthy'" [class.text-danger]="apiStatus.status !== 'healthy'"></i>
+          <span><strong>Service ML:</strong> {{ apiStatus.status === 'healthy' ? '✅ Opérationnel' : '❌ Non disponible' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs nav-fill mb-4" id="mlTabs">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'home'" (click)="selectTab('home')">
+            <i class="fas fa-home me-2"></i>🏠 Accueil
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'upload'" (click)="selectTab('upload')">
+            <i class="fas fa-upload me-2"></i>📊 Upload & Insights
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'models'" (click)="selectTab('models')">
+            <i class="fas fa-brain me-2"></i>🎯 Modèles Prédictifs
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'clustering'" (click)="selectTab('clustering')">
+            <i class="fas fa-project-diagram me-2"></i>🔍 Clustering
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'anomaly'" (click)="selectTab('anomaly')">
+            <i class="fas fa-exclamation-triangle me-2"></i>⚠️ Détection Anomalies
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'results'" (click)="selectTab('results')">
+            <i class="fas fa-chart-bar me-2"></i>📈 Résultats
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="tab-content">
+    
+    <!-- ================================================= -->
+    <!-- 🏠 ONGLET ACCUEIL -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'home'" [class.active]="activeTab === 'home'">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">🏠 Bienvenue dans le module Machine Learning</h5>
+            </div>
+            <div class="card-body">
+              <h6>🎯 Fonctionnalités disponibles</h6>
+              <p>Cette interface vous permet d'utiliser des algorithmes de machine learning avancés pour analyser vos données IFRS 17:</p>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="text-primary">🔮 Modèles Prédictifs:</h6>
+                  <ul class="list-unstyled ms-3">
+                    <li><i class="fas fa-chart-line text-primary me-2"></i>📊 Prédiction des sinistres</li>
+                    <li><i class="fas fa-coins text-success me-2"></i>💰 Prédiction de la rentabilité</li>
+                    <li><i class="fas fa-shield-alt text-warning me-2"></i>⚠️ Classification des risques</li>
+                    <li><i class="fas fa-balance-scale text-info me-2"></i>📈 Prédiction du LRC</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-primary">🔍 Analyse Exploratoire:</h6>
+                  <ul class="list-unstyled ms-3">
+                    <li><i class="fas fa-sitemap text-primary me-2"></i>🎯 Clustering de contrats</li>
+                    <li><i class="fas fa-exclamation-circle text-danger me-2"></i>🚨 Détection d'anomalies</li>
+                    <li><i class="fas fa-search text-info me-2"></i>📊 Analyse des patterns</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="alert alert-info mt-3">
+                <h6 class="text-primary">🚀 Algorithmes Supportés:</h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <span class="badge bg-primary me-1">XGBoost</span>
+                    <span class="badge bg-success me-1">LightGBM</span>
+                    <span class="badge bg-info me-1">Random Forest</span>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="badge bg-warning me-1">Ridge/Lasso</span>
+                    <span class="badge bg-secondary me-1">SVM</span>
+                    <span class="badge bg-dark me-1">Neural Networks</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">📊 Statistiques ML</h5>
+            </div>
+            <div class="card-body">
+              <div class="metric mb-3">
+                <div class="d-flex justify-content-between">
+                  <span>Modèles Entraînés:</span>
+                  <span class="badge bg-primary">{{ modelesSummary.trainedModels || 0 }}</span>
+                </div>
+              </div>
+              <div class="metric mb-3">
+                <div class="d-flex justify-content-between">
+                  <span>Meilleure Accuracy:</span>
+                  <span class="badge bg-success">{{ (modelesSummary.bestAccuracy || 0) | number:'1.3-3' }}</span>
+                </div>
+              </div>
+              <div class="metric mb-3">
+                <div class="d-flex justify-content-between">
+                  <span>Prédictions Totales:</span>
+                  <span class="badge bg-info">{{ modelesSummary.totalPredictions || 0 | number }}</span>
+                </div>
+              </div>
+              <div class="metric">
+                <div class="d-flex justify-content-between">
+                  <span>Dernière MAJ:</span>
+                  <span class="badge bg-secondary">{{ modelesSummary.lastUpdate || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- 📊 ONGLET UPLOAD & INSIGHTS -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'upload'" [class.active]="activeTab === 'upload'">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">📊 Upload des Données & Insights</h5>
+        </div>
+        <div class="card-body">
+          <!-- Upload de fichier -->
+          <div class="upload-section mb-4">
+            <h6>📁 Upload de Données</h6>
+            <div class="upload-area" 
+                 (dragover)="onDragOver($event)" 
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)">
+              <div class="text-center py-4">
+                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                <p class="mb-3">Glissez-déposez votre fichier ou cliquez pour sélectionner</p>
+                <input type="file" 
+                       #fileInput 
+                       class="d-none" 
+                       (change)="onFileSelected($event)"
+                       accept=".csv,.xlsx,.xls">
+                <button class="btn btn-primary" (click)="fileInput.click()">
+                  <i class="fas fa-folder-open me-2"></i>
+                  Choisir un fichier
+                </button>
+              </div>
+            </div>
+            
+            <!-- Fichier sélectionné -->
+            <div *ngIf="selectedFile" class="selected-file mt-3">
+              <div class="alert alert-success">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <i class="fas fa-file-excel me-2"></i>
+                    <strong>{{ selectedFile.name }}</strong>
+                    <span class="text-muted ms-2">({{ formatFileSize(selectedFile.size) }})</span>
+                  </div>
+                  <button class="btn btn-success btn-sm" (click)="uploadToAPI()">
+                    <i class="fas fa-upload me-1"></i>
+                    Envoyer vers ML
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Résultats upload -->
+          <div *ngIf="uploadResult" class="upload-results">
+            <div class="alert alert-success">
+              <h6 class="text-success">✅ Données uploadées avec succès!</h6>
+              
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <div class="info-card">
+                    <h6>📋 Informations sur les données</h6>
+                    <div class="metrics-list">
+                      <div class="metric-item">
+                        <span class="label">Nombre de lignes:</span>
+                        <span class="value">{{ uploadResult.dataInfo?.n_rows | number }}</span>
+                      </div>
+                      <div class="metric-item">
+                        <span class="label">Nombre de colonnes:</span>
+                        <span class="value">{{ uploadResult.dataInfo?.n_columns | number }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-card">
+                    <h6>🔍 Aperçu des colonnes</h6>
+                    <div class="columns-list">
+                      <span *ngFor="let col of uploadResult.dataInfo?.columns?.slice(0, 8)" 
+                            class="badge bg-secondary me-1 mb-1">{{ col }}</span>
+                      <span *ngIf="getAdditionalColumnsCount() > 0"
+                            class="badge bg-light text-dark">+{{ getAdditionalColumnsCount() }} autres</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Bouton insights -->
+              <div class="text-center mt-3">
+                <button class="btn btn-primary btn-lg" (click)="generateInsights()">
+                  <i class="fas fa-brain me-2"></i>
+                  🧠 Générer les insights ML
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Insights ML -->
+          <div *ngIf="mlInsights" class="ml-insights">
+            <h6 class="text-primary">🧠 Insights Machine Learning</h6>
+            
+            <!-- Vue d'ensemble -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="mb-0">📊 Vue d'ensemble</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ mlInsights.dataOverview?.n_contracts | number }}</span>
+                      <span class="metric-label">Contrats</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ mlInsights.dataOverview?.n_features | number }}</span>
+                      <span class="metric-label">Features</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ mlInsights.dataOverview?.dateRange?.min || 'N/A' }}</span>
+                      <span class="metric-label">Période (min)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Métriques business -->
+            <div class="card mb-3" *ngIf="mlInsights.businessMetrics">
+              <div class="card-header">
+                <h6 class="mb-0">💰 Métriques Business</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ formatCurrency(mlInsights.businessMetrics.total_premium || 0) }}</span>
+                      <span class="metric-label">Prime Totale</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ formatCurrency(mlInsights.businessMetrics.avg_premium || 0) }}</span>
+                      <span class="metric-label">Prime Moyenne</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="metric-box">
+                      <span class="metric-value">{{ formatCurrency(mlInsights.businessMetrics.total_ppna || 0) }}</span>
+                      <span class="metric-label">PPNA Total</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommandations -->
+            <div class="card" *ngIf="mlInsights.modelRecommendations">
+              <div class="card-header">
+                <h6 class="mb-0">🎯 Recommandations</h6>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-info">
+                  <strong>Algorithme recommandé:</strong> 
+                  <span class="badge bg-primary ms-2">{{ mlInsights.modelRecommendations.preferred_algorithm }}</span>
+                </div>
+                <p><strong>Raison:</strong> {{ mlInsights.modelRecommendations.reason }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- 🎯 ONGLET MODÈLES PRÉDICTIFS -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'models'" [class.active]="activeTab === 'models'">
+      <div class="card">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">🎯 Modèles Prédictifs</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Choisissez le type de modèle</label>
+              <select class="form-select" [(ngModel)]="selectedModelType">
+                <option value="claims-prediction">📊 Prédiction des Sinistres</option>
+                <option value="profitability">💰 Prédiction de Rentabilité</option>
+                <option value="risk-classification">⚠️ Classification des Risques</option>
+                <option value="lrc-prediction">📈 Prédiction LRC (IFRS 17)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Algorithme</label>
+              <select class="form-select" [(ngModel)]="selectedAlgorithm">
+                <option value="xgboost">XGBoost (recommandé)</option>
+                <option value="lightgbm">LightGBM</option>
+                <option value="random_forest">Random Forest</option>
+                <option value="linear">Linéaire</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Description du modèle -->
+          <div class="alert alert-info mb-4">
+            <h6>📋 Description</h6>
+            <p class="mb-0">{{ getModelDescription(selectedModelType) }}</p>
+          </div>
+
+          <!-- Entraînement -->
+          <div class="text-center mb-4">
+            <button class="btn btn-primary btn-lg" 
+                    (click)="trainModel()" 
+                    [disabled]="isTraining">
+              <span *ngIf="isTraining" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isTraining" class="fas fa-play me-2"></i>
+              {{ isTraining ? 'Entraînement en cours...' : 'Entraîner le modèle ' + selectedModelType }}
+            </button>
+          </div>
+
+          <!-- Résultats entraînement -->
+          <div *ngIf="trainingResult" class="training-results">
+            <div class="alert alert-success">
+              <h6>✅ Entraînement terminé!</h6>
+              <pre>{{ trainingResult | json }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- 🔍 ONGLET CLUSTERING -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'clustering'" [class.active]="activeTab === 'clustering'">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">🔍 Clustering de Contrats</h5>
+        </div>
+        <div class="card-body">
+          <p>Le clustering permet de segmenter automatiquement votre portefeuille de contrats en groupes homogènes basés sur leurs caractéristiques.</p>
+          
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Nombre de clusters</label>
+              <input type="range" class="form-range" min="2" max="10" 
+                     [(ngModel)]="clusterConfig.n_clusters" 
+                     (ngModelChange)="updateClusterSlider($event)">
+              <span class="badge bg-primary">{{ clusterConfig.n_clusters }}</span>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Méthode</label>
+              <select class="form-select" [(ngModel)]="clusterConfig.method">
+                <option value="kmeans">K-Means</option>
+                <option value="dbscan">DBSCAN</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6>Applications:</h6>
+              <ul class="list-unstyled">
+                <li><i class="fas fa-check text-success me-2"></i>Segmentation du portefeuille</li>
+                <li><i class="fas fa-check text-success me-2"></i>Tarification par segment</li>
+                <li><i class="fas fa-check text-success me-2"></i>Allocation des ressources</li>
+                <li><i class="fas fa-check text-success me-2"></i>Stratégies marketing ciblées</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <button class="btn btn-info btn-lg w-100" 
+                      (click)="performClustering()" 
+                      [disabled]="isClustering">
+                <span *ngIf="isClustering" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!isClustering" class="fas fa-sitemap me-2"></i>
+                {{ isClustering ? 'Clustering en cours...' : 'Effectuer le clustering' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Résultats clustering -->
+          <div *ngIf="clusteringResult" class="clustering-results">
+            <div class="alert alert-success">
+              <h6>✅ Clustering terminé!</h6>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="metric-box">
+                    <span class="metric-value">{{ clusteringResult.results?.n_clusters }}</span>
+                    <span class="metric-label">Clusters identifiés</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <!-- Chart placeholder -->
+                  <div class="chart-placeholder">
+                    <canvas id="clusterChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Caractéristiques des clusters -->
+              <div *ngIf="clusteringResult.results?.cluster_characteristics" class="cluster-characteristics mt-4">
+                <h6>📊 Caractéristiques des Clusters</h6>
+                <div class="row">
+                  <div class="col-md-4 mb-3" *ngFor="let cluster of (clusteringResult?.results?.cluster_characteristics | keyvalue) || []">
+                    <div class="card border-primary">
+                      <div class="card-body">
+                        <h6 class="card-title">Cluster {{ cluster.key }}</h6>
+                        <p class="text-muted">{{ cluster.value.size }} contrats</p>
+                        <div class="metrics-grid">
+                          <div class="metric-item">
+                            <span class="label">Prime moyenne:</span>
+                            <span class="value">{{ formatCurrency(cluster.value.avg_prime) }}</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="label">Durée moyenne:</span>
+                            <span class="value">{{ cluster.value.avg_duration | number:'1.1-1' }}</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="label">PPNA moyenne:</span>
+                            <span class="value">{{ formatCurrency(cluster.value.avg_ppna) }}</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="label">Produit principal:</span>
+                            <span class="value badge bg-secondary">{{ cluster.value.main_product }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- ⚠️ ONGLET DÉTECTION ANOMALIES -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'anomaly'" [class.active]="activeTab === 'anomaly'">
+      <div class="card">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">⚠️ Détection d'Anomalies</h5>
+        </div>
+        <div class="card-body">
+          <p>La détection d'anomalies identifie les contrats atypiques qui pourraient nécessiter une attention particulière.</p>
+          
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Méthode de détection</label>
+              <select class="form-select" [(ngModel)]="anomalyConfig.method">
+                <option value="isolation_forest">Isolation Forest (recommandé)</option>
+                <option value="local_outlier_factor">Local Outlier Factor</option>
+                <option value="one_class_svm">One-Class SVM</option>
+              </select>
+              
+              <label class="form-label mt-3">Taux d'anomalies attendu (%)</label>
+              <input type="range" class="form-range" min="1" max="20" 
+                     [(ngModel)]="anomalyConfig.contamination" 
+                     (ngModelChange)="updateAnomalySlider($event)">
+              <span class="badge bg-warning">{{ anomalyConfig.contamination }}%</span>
+            </div>
+            <div class="col-md-6">
+              <h6>Cas d'usage:</h6>
+              <ul class="list-unstyled">
+                <li><i class="fas fa-shield-alt text-danger me-2"></i>Détection de fraude</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Contrôle qualité des données</li>
+                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Identification de contrats à risque</li>
+                <li><i class="fas fa-search text-info me-2"></i>Audit automatisé</li>
+              </ul>
+              
+              <button class="btn btn-danger btn-lg w-100 mt-3" 
+                      (click)="detectAnomalies()" 
+                      [disabled]="isDetecting">
+                <span *ngIf="isDetecting" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!isDetecting" class="fas fa-search me-2"></i>
+                {{ isDetecting ? 'Détection en cours...' : 'Détecter les anomalies' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Résultats détection -->
+          <div *ngIf="anomalyResult" class="anomaly-results">
+            <div class="alert alert-warning">
+              <h6>⚠️ Détection terminée!</h6>
+              
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="metric-box">
+                    <span class="metric-value text-danger">{{ anomalyResult.results?.n_anomalies }}</span>
+                    <span class="metric-label">Anomalies détectées</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="metric-box">
+                    <span class="metric-value text-warning">{{ anomalyResult.results?.anomaly_rate }}</span>
+                    <span class="metric-label">Taux d'anomalies</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="metric-box">
+                    <span class="metric-value text-info">{{ anomalyConfig.method }}</span>
+                    <span class="metric-label">Méthode utilisée</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contrats anormaux -->
+              <div *ngIf="(anomalyResult?.results?.anomalous_contracts?.length || 0) > 0" class="anomalous-contracts mt-4">
+                <h6>🚨 Contrats Anormaux (échantillon)</h6>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Prime</th>
+                        <th>PPNA</th>
+                        <th>Produit</th>
+                        <th>Score Anomalie</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let contract of (anomalyResult?.results?.anomalous_contracts || []).slice(0, 10)">
+                        <td>{{ contract.id || 'N/A' }}</td>
+                        <td>{{ formatCurrency(contract.prime || 0) }}</td>
+                        <td>{{ formatCurrency(contract.ppna || 0) }}</td>
+                        <td>
+                          <span class="badge bg-secondary">{{ contract.produit || 'N/A' }}</span>
+                        </td>
+                        <td>
+                          <span class="badge bg-danger">{{ contract.anomaly_score || 'N/A' }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- 📈 ONGLET RÉSULTATS -->
+    <!-- ================================================= -->
+    <div class="tab-pane" [class.show]="activeTab === 'results'" [class.active]="activeTab === 'results'">
+      <div class="card">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">📈 Résultats des Modèles</h5>
+          <button class="btn btn-light btn-sm" (click)="loadModelsSummary()">
+            <i class="fas fa-sync-alt me-1"></i>Actualiser
+          </button>
+        </div>
+        <div class="card-body">
+          
+          <!-- Modèles disponibles -->
+          <div *ngIf="(modelsSummary?.trained_models?.length || 0) > 0" class="models-summary">
+            <div class="alert alert-success">
+              <h6>✅ {{ modelsSummary?.trained_models?.length || 0 }} modèle(s) entraîné(s)</h6>
+              
+              <!-- Liste des modèles -->
+              <div class="models-list mt-3">
+                <h6>🎯 Modèles Disponibles</h6>
+                <ul class="list-group">
+                  <li class="list-group-item" *ngFor="let model of modelsSummary?.trained_models || []">
+                    <i class="fas fa-brain text-primary me-2"></i>{{ model }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Performance des modèles -->
+              <div *ngIf="modelsSummary?.model_performance" class="model-performance mt-4">
+                <h6>📊 Performance des Modèles</h6>
+                
+                <div class="accordion" id="performanceAccordion">
+                  <div class="accordion-item" *ngFor="let model of (modelsSummary?.model_performance | keyvalue) || []; let i = index">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button" [class.collapsed]="i !== 0" 
+                              type="button" data-bs-toggle="collapse" 
+                              [attr.data-bs-target]="'#collapse' + i">
+                        📈 {{ model.key }}
+                      </button>
+                    </h2>
+                    <div [id]="'collapse' + i" class="accordion-collapse collapse" [class.show]="i === 0">
+                      <div class="accordion-body">
+                        
+                        <!-- Métriques de régression -->
+                        <div *ngIf="model.value.r2 !== undefined" class="regression-metrics">
+                          <div class="row">
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.r2 | number:'1.3-3' }}</span>
+                                <span class="metric-label">R²</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.rmse | number:'1.2-2' }}</span>
+                                <span class="metric-label">RMSE</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.mae | number:'1.2-2' }}</span>
+                                <span class="metric-label">MAE</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.mse | number:'1.2-2' }}</span>
+                                <span class="metric-label">MSE</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Métriques de classification -->
+                        <div *ngIf="model.value.accuracy !== undefined" class="classification-metrics">
+                          <div class="row">
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.accuracy | number:'1.3-3' }}</span>
+                                <span class="metric-label">Accuracy</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.precision | number:'1.3-3' }}</span>
+                                <span class="metric-label">Precision</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.recall | number:'1.3-3' }}</span>
+                                <span class="metric-label">Recall</span>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="metric-box">
+                                <span class="metric-value">{{ model.value.f1 | number:'1.3-3' }}</span>
+                                <span class="metric-label">F1-Score</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="actions mt-4">
+                <button class="btn btn-success" (click)="saveAllModels()">
+                  <i class="fas fa-save me-2"></i>💾 Sauvegarder tous les modèles
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aucun modèle -->
+          <div *ngIf="!modelsSummary?.trained_models?.length" class="no-models text-center py-5">
+            <i class="fas fa-brain fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Aucun modèle entraîné</h5>
+            <p class="text-muted">Utilisez la section 'Modèles Prédictifs' pour commencer l'entraînement.</p>
+            <button class="btn btn-primary" (click)="selectTab('models')">
+              <i class="fas fa-brain me-2"></i>
+              Aller aux Modèles Prédictifs
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

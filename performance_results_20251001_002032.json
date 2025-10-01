@@ -1,0 +1,58 @@
+{
+  "data_loading": {
+    "1000": {
+      "creation_time": 0.01360630989074707,
+      "memory_used": 1.08984375,
+      "rows_per_second": 73495.31269165396
+    },
+    "5000": {
+      "creation_time": 0.005603313446044922,
+      "memory_used": 1.33984375,
+      "rows_per_second": 892329.1634754488
+    },
+    "10000": {
+      "creation_time": 0.009013652801513672,
+      "memory_used": 1.98046875,
+      "rows_per_second": 1109428.133100566
+    },
+    "50000": {
+      "creation_time": 0.04268693923950195,
+      "memory_used": 8.5390625,
+      "rows_per_second": 1171318.461590018
+    }
+  },
+  "api_performance": {
+    "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002B573E1F530>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))"
+  },
+  "concurrent_performance": {
+    "total_requests": 10,
+    "successful_requests": 0,
+    "success_rate": 0.0,
+    "total_time": 4.12484335899353,
+    "requests_per_second": 2.4243344848954504
+  },
+  "memory_optimization": {
+    "initial_memory": 91.62109375,
+    "peak_memory": 2.953125,
+    "memory_usage_by_size": [
+      {
+        "size": 10000,
+        "memory_mb": 0.3203125
+      },
+      {
+        "size": 20000,
+        "memory_mb": 1.05859375
+      },
+      {
+        "size": 50000,
+        "memory_mb": 2.953125
+      }
+    ]
+  },
+  "test_summary": {
+    "start_time": "2025-10-01T00:20:24.601795",
+    "end_time": "2025-10-01T00:20:32.961999",
+    "total_duration": "0:00:08.360204",
+    "tests_completed": 3
+  }
+}

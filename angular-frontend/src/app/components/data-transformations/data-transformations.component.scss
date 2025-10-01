@@ -1,0 +1,23 @@
+// Data Transformations Component Styles
+.data-transformations {
+  .stat-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    
+    h5 {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #007bff;
+    }
+  }
+}

@@ -6,43 +6,163 @@ from typing import Dict, Any, List, Optional, Tuple
 import logging
 import os
 from datetime import datetime
+from functools import lru_cache
+import asyncio
+import concurrent.futures
+from cachetools import TTLCache
 
-from .data_preprocessing import DataPreprocessor
+# Import optimisé avec lazy loading
+from .data_preprocessing import OptimizedDataPreprocessor
 from .models.insurance_models import (
-    ClaimsPredictionModel, ProfitabilityModel, RiskClassificationModel,
-    ContractClusteringModel, AnomalyDetectionModel, LRCPredictionModel
+    ContractClusteringModel,
+    ClaimsPredictionModel,
+    ProfitabilityModel,
+    RiskClassificationModel,
+    AnomalyDetectionModel,
+    LRCPredictionModel,
+    OnerousContractsModel
 )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class MLService:
+class OptimizedMLService:
     """
-    Service principal pour toutes les fonctionnalités ML du projet IFRS17
+    Service ML optimisé avec cache, lazy loading et traitement asynchrone
     """
     
-    def __init__(self):
-        self.preprocessor = DataPreprocessor()
+    def __init__(self, max_workers: int = 4, cache_ttl: int = 3600):
+        self.preprocessor = OptimizedDataPreprocessor()
         self.models = {}
         self.model_results = {}
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         
-    def load_and_preprocess_data(self, data_path: str) -> pd.DataFrame:
-        """
-        Chargement et préprocessing des données
-        """
-        logger.info(f"📁 Chargement des données depuis {data_path}")
+        # Cache pour les modèles et résultats
+        self.model_cache = TTLCache(maxsize=64, ttl=cache_ttl)
+        self.data_cache = TTLCache(maxsize=32, ttl=cache_ttl)
         
-        if data_path.endswith('.xlsx'):
-            df = pd.read_excel(data_path)
-        elif data_path.endswith('.csv'):
-            df = pd.read_csv(data_path)
+        # Import lazy des modèles (plus rapide au démarrage)
+        self._models_imported = False
+        
+    def _lazy_import_models(self):
+        """Import paresseux des modèles ML"""
+        if not self._models_imported:
+            logger.info("📦 Import des modèles ML...")
+            from .models.insurance_models import (
+                ClaimsPredictionModel, ProfitabilityModel, RiskClassificationModel,
+                ContractClusteringModel, AnomalyDetectionModel, LRCPredictionModel
+            )
+            self.ClaimsPredictionModel = ClaimsPredictionModel
+            self.ProfitabilityModel = ProfitabilityModel
+            self.RiskClassificationModel = RiskClassificationModel
+            self.ContractClusteringModel = ContractClusteringModel
+            self.AnomalyDetectionModel = AnomalyDetectionModel
+            self.LRCPredictionModel = LRCPredictionModel
+            self._models_imported = True
+            logger.info("✅ Modèles ML importés")
+    
+    @lru_cache(maxsize=16)
+    def _get_file_info(self, data_path: str) -> dict:
+        """Cache des infos de fichier"""
+        return {
+            'size': os.path.getsize(data_path),
+            'modified': os.path.getmtime(data_path),
+            'extension': os.path.splitext(data_path)[1]
+        }
+    
+    async def load_and_preprocess_data_async(self, data_path: str) -> pd.DataFrame:
+        """
+        Chargement asynchrone et optimisé des données
+        """
+        file_info = self._get_file_info(data_path)
+        cache_key = f"{data_path}_{file_info['modified']}"
+        
+        # Vérifier le cache
+        if cache_key in self.data_cache:
+            logger.info("📈 Données récupérées du cache")
+            return self.data_cache[cache_key]
+        
+        logger.info(f"📁 Chargement optimisé des données ({file_info['size']/1024/1024:.1f}MB)")
+        
+        # Chargement chunk par chunk pour gros fichiers
+        if file_info['size'] > 50 * 1024 * 1024:  # > 50MB
+            df = await self._load_large_file_async(data_path, file_info['extension'])
         else:
-            raise ValueError("Format de fichier non supporté. Utilisez .xlsx ou .csv")
+            df = await self._load_small_file_async(data_path, file_info['extension'])
         
-        logger.info(f"✅ Données chargées: {df.shape[0]} lignes, {df.shape[1]} colonnes")
+        logger.info(f"✅ Données chargées: {df.shape[0]:,} lignes, {df.shape[1]} colonnes")
+        
+        # Cache le résultat
+        self.data_cache[cache_key] = df
         return df
     
-    def train_claims_prediction_model(self, df: pd.DataFrame, target_column: str = None, model_type: str = 'xgboost') -> Dict[str, Any]:
+    async def _load_small_file_async(self, data_path: str, extension: str) -> pd.DataFrame:
+        """Chargement asynchrone des petits fichiers"""
+        loop = asyncio.get_event_loop()
+        
+        if extension == '.xlsx':
+            df = await loop.run_in_executor(self.executor, pd.read_excel, data_path)
+        elif extension == '.csv':
+            df = await loop.run_in_executor(self.executor, pd.read_csv, data_path)
+        else:
+            raise ValueError("Format non supporté. Utilisez .xlsx ou .csv")
+        
+        return df
+    
+    async def _load_large_file_async(self, data_path: str, extension: str) -> pd.DataFrame:
+        """Chargement optimisé des gros fichiers avec chunks"""
+        logger.info("📊 Fichier volumineux détecté - chargement par chunks")
+        
+        if extension == '.csv':
+            # Chargement par chunks pour CSV
+            chunks = []
+            loop = asyncio.get_event_loop()
+            
+            def read_chunk(chunk):
+                return chunk
+            
+            chunk_reader = pd.read_csv(data_path, chunksize=10000)
+            for chunk in chunk_reader:
+                processed_chunk = await loop.run_in_executor(self.executor, read_chunk, chunk)
+                chunks.append(processed_chunk)
+            
+            return pd.concat(chunks, ignore_index=True)
+        else:
+            # Pour Excel, chargement normal (pas de chunks supportés par pandas)
+            return await self._load_small_file_async(data_path, extension)
+    
+    def load_and_preprocess_data(self, data_path: str) -> pd.DataFrame:
+        """
+        Version synchrone pour compatibilité
+        """
+        return asyncio.run(self.load_and_preprocess_data_async(data_path))
+    
+    async def train_claims_prediction_model_async(self, df: pd.DataFrame, target_column: str = None, model_type: str = 'xgboost') -> Dict[str, Any]:
+        """
+        Entraînement asynchrone du modèle de prédiction des sinistres
+        """
+        self._lazy_import_models()
+        logger.info("🎯 Entraînement optimisé du modèle de prédiction des sinistres")
+        
+        # Cache check
+        cache_key = f"claims_{model_type}_{hash(str(df.iloc[:100].values.tobytes()))}"
+        if cache_key in self.model_cache:
+            logger.info("📈 Modèle récupéré du cache")
+            return self.model_cache[cache_key]
+        
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            self.executor, 
+            self._train_claims_prediction_sync, 
+            df, target_column, model_type
+        )
+        
+        # Cache le résultat
+        self.model_cache[cache_key] = result
+        return result
+    
+    def _train_claims_prediction_sync(self, df: pd.DataFrame, target_column: str, model_type: str) -> Dict[str, Any]:
+        """Version synchrone pour l'executor"""
         """
         Entraînement du modèle de prédiction des sinistres
         """
@@ -271,7 +391,105 @@ class MLService:
         self.models[model_key] = model
         self.model_results[model_key] = results
         
-        logger.info("✅ Modèle LRC entraîné avec succès")
+        logger.info("✅ Prédiction LRC terminée avec succès")
+        return results
+    
+    def train_onerous_contracts_model(self, df: pd.DataFrame, model_type: str = 'xgboost') -> Dict[str, Any]:
+        """
+        Entraînement du modèle de détection des contrats onéreux
+        """
+        logger.info(f"🎯 Entraînement modèle contrats onéreux avec {model_type}")
+        
+        # Preprocessing
+        X, _ = self.preprocessor.prepare_data_for_training(df)
+        
+        # Modèle spécialisé contrats onéreux
+        model = OnerousContractsModel(model_type)
+        model.build_model()
+        
+        # Préparation des features spécifiques
+        X_enhanced = model.prepare_features(df)
+        X_processed, _ = self.preprocessor.prepare_data_for_training(X_enhanced)
+        
+        # Création de la cible
+        y_onerous = model.create_onerous_target(df)
+        
+        # Entraînement
+        model.train(X_processed, y_onerous)
+        
+        # Évaluation
+        from sklearn.model_selection import cross_val_score
+        from sklearn.metrics import classification_report, confusion_matrix
+        
+        cv_scores = cross_val_score(model.model, X_processed, y_onerous, cv=5, scoring='accuracy')
+        predictions = model.predict(X_processed)
+        
+        # Analyse des patterns
+        onerous_analysis = model.analyze_onerous_patterns(df, predictions)
+        
+        # Insights détaillés
+        probabilities = model.predict_proba(X_processed)
+        insights = model.get_onerous_insights(df, predictions, probabilities)
+        
+        # Sauvegarde
+        model_key = f'onerous_contracts_{model_type}'
+        self.models[model_key] = model
+        
+        results = {
+            'model_type': model_type,
+            'cv_accuracy': cv_scores.mean(),
+            'cv_std': cv_scores.std(),
+            'predictions': predictions.tolist(),
+            'probabilities': probabilities[:, 1].tolist(),  # Probabilité d'être onéreux
+            'onerous_analysis': onerous_analysis,
+            'insights': insights,
+            'feature_importance': model.feature_importance,
+            'performance_metrics': {
+                'accuracy': cv_scores.mean(),
+                'std_deviation': cv_scores.std(),
+                'onerous_rate': np.mean(predictions),
+                'high_risk_count': len(insights['high_risk_contracts'])
+            }
+        }
+        
+        self.model_results[model_key] = results
+        
+        logger.info("✅ Modèle contrats onéreux entraîné avec succès")
+        logger.info(f"📊 Taux de contrats onéreux: {np.mean(predictions):.1%}")
+        logger.info(f"🎯 Précision: {cv_scores.mean():.3f} (±{cv_scores.std():.3f})")
+        
+        return results
+    
+    def predict_onerous_contracts(self, df: pd.DataFrame, model_type: str = 'xgboost') -> Dict[str, Any]:
+        """
+        Prédiction des contrats onéreux
+        """
+        model_key = f'onerous_contracts_{model_type}'
+        
+        if model_key not in self.models:
+            raise ValueError(f"Modèle {model_key} non trouvé. Entraînez d'abord le modèle.")
+        
+        model = self.models[model_key]
+        
+        # Préparation des données
+        X_enhanced = model.prepare_features(df)
+        X_processed, _ = self.preprocessor.prepare_data_for_training(X_enhanced)
+        
+        # Prédictions
+        predictions = model.predict(X_processed)
+        probabilities = model.predict_proba(X_processed)
+        
+        # Analyse
+        onerous_analysis = model.analyze_onerous_patterns(df, predictions)
+        insights = model.get_onerous_insights(df, predictions, probabilities)
+        
+        return {
+            'predictions': predictions.tolist(),
+            'probabilities': probabilities[:, 1].tolist(),
+            'onerous_analysis': onerous_analysis,
+            'insights': insights,
+            'model_used': model_type
+        }
         return results
     
     def predict_with_model(self, model_name: str, df: pd.DataFrame) -> np.ndarray:

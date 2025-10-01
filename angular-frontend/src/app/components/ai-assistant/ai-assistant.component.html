@@ -1,0 +1,204 @@
+<!-- src/app/components/ai-assistant/ai-assistant.component.html -->
+
+<div class="ai-assistant-container">
+  <!-- Header de l'assistant -->
+  <div class="assistant-header">
+    <div class="assistant-info">
+      <div class="assistant-avatar">
+        <i class="fas fa-brain"></i>
+      </div>
+      <div class="assistant-details">
+        <h5 class="assistant-name">Assistant IA IFRS17</h5>
+        <span class="assistant-status" [class.online]="isConnected">
+          <i class="fas fa-circle"></i>
+          {{ isConnected ? 'En ligne' : 'Hors ligne' }}
+        </span>
+      </div>
+    </div>
+    <div class="assistant-actions">
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="exportChat()">
+        <i class="fas fa-download me-1"></i>Export
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="clearChat()">
+        <i class="fas fa-trash me-1"></i>Effacer
+      </button>
+    </div>
+  </div>
+
+  <!-- Zone de chat -->
+  <div class="chat-container" #chatContainer>
+    <div class="messages-wrapper">
+      
+      <!-- Messages de conversation -->
+      <div class="message-group" *ngFor="let message of messages">
+        <div class="message" [ngClass]="'message-' + message.type">
+          
+          <!-- Avatar du message -->
+          <div class="message-avatar" *ngIf="message.type === 'assistant'">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-avatar user-avatar" *ngIf="message.type === 'user'">
+            <i class="fas fa-user"></i>
+          </div>
+
+          <!-- Contenu du message -->
+          <div class="message-content">
+            <div class="message-bubble" [innerHTML]="formatMessage(message.content)">
+            </div>
+            
+            <!-- Timestamp -->
+            <div class="message-time">
+              {{ getMessageTime(message.timestamp) }}
+            </div>
+
+            <!-- Suggestions rapides -->
+            <div class="message-suggestions" *ngIf="message.suggestions && message.suggestions.length > 0">
+              <p class="suggestions-label">
+                <i class="fas fa-lightbulb me-1"></i>Suggestions :
+              </p>
+              <div class="suggestions-list">
+                <button 
+                  class="suggestion-chip"
+                  *ngFor="let suggestion of message.suggestions"
+                  (click)="sendSuggestion(suggestion)">
+                  {{ suggestion }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indicateur de frappe -->
+      <div class="typing-indicator" *ngIf="isTyping">
+        <div class="message message-assistant">
+          <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-content">
+            <div class="typing-animation">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span class="typing-text">L'assistant analyse votre demande...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone de saisie -->
+  <div class="input-area">
+    
+    <!-- Suggestions rapides en haut -->
+    <div class="quick-suggestions" *ngIf="messages.length <= 1">
+      <p class="suggestions-title">
+        <i class="fas fa-magic me-2"></i>Questions fréquentes :
+      </p>
+      <div class="suggestions-grid">
+        <button 
+          class="suggestion-button"
+          *ngFor="let suggestion of suggestionsRapides"
+          (click)="sendSuggestion(suggestion)">
+          <i class="fas fa-comment-dots me-2"></i>
+          {{ suggestion }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Zone de saisie du message -->
+    <div class="input-wrapper">
+      <div class="input-container">
+        <textarea 
+          #messageInput
+          class="form-control message-input"
+          [(ngModel)]="currentMessage"
+          (keydown)="onKeyPress($event)"
+          placeholder="Posez votre question sur IFRS17, l'actuariat ou l'analyse de données..."
+          rows="2">
+        </textarea>
+        
+        <button 
+          class="btn btn-primary send-button"
+          [disabled]="!currentMessage.trim() || isTyping"
+          (click)="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      
+      <!-- Barre d'aide contextuelle -->
+      <div class="context-help">
+        <div class="help-item">
+          <i class="fas fa-info-circle text-info me-1"></i>
+          <span>Mentionnez des termes comme CSM, LRC, LIC pour des réponses spécialisées</span>
+        </div>
+        <div class="help-item">
+          <i class="fas fa-keyboard text-warning me-1"></i>
+          <span>Entrée pour envoyer • Maj+Entrée pour nouvelle ligne</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panneau latéral d'aide contextuelle -->
+  <div class="context-panel">
+    <div class="panel-header">
+      <h6>
+        <i class="fas fa-book text-primary me-2"></i>
+        Aide Contextuelle
+      </h6>
+    </div>
+    
+    <div class="panel-content">
+      <!-- Terminologie IFRS17 -->
+      <div class="help-section">
+        <h6 class="help-title">
+          <i class="fas fa-tags me-2"></i>Terminologie IFRS17
+        </h6>
+        <div class="terminology-list">
+          <div class="term-item" *ngFor="let term of contexteActuariel.terminologieIFRS17">
+            <span class="term-code">{{ term.split(' - ')[0] }}</span>
+            <span class="term-definition">{{ term.split(' - ')[1] }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Domaines d'expertise -->
+      <div class="help-section">
+        <h6 class="help-title">
+          <i class="fas fa-cogs me-2"></i>Domaines d'Expertise
+        </h6>
+        <div class="domains-list">
+          <div class="domain-item" *ngFor="let domaine of contexteActuariel.domaines">
+            <i class="fas fa-check-circle text-success me-2"></i>
+            {{ domaine }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques de session -->
+      <div class="help-section">
+        <h6 class="help-title">
+          <i class="fas fa-chart-line me-2"></i>Session Actuelle
+        </h6>
+        <div class="session-stats">
+          <div class="stat-item">
+            <span class="stat-label">Messages échangés :</span>
+            <span class="stat-value">{{ messages.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Questions posées :</span>
+            <span class="stat-value">{{ getUserMessagesCount() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Réponses fournies :</span>
+            <span class="stat-value">{{ getAssistantMessagesCount() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 # backend/routers/ml_router.py
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 import pandas as pd
 import numpy as np
@@ -9,14 +9,21 @@ import io
 import logging
 from datetime import datetime
 import json
+from cachetools import TTLCache
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
-from backend.ml.ml_service import MLService
+from backend.ml.optimized_ml_service import EnhancedMLService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Instance globale du service ML
-ml_service = MLService()
+# Cache pour les résultats de requêtes
+query_cache = TTLCache(maxsize=100, ttl=600)  # 10 minutes
+executor = ThreadPoolExecutor(max_workers=4)
+
+# Instance globale du service ML optimisé
+ml_service = EnhancedMLService()
 
 def clean_for_json(obj):
     """
@@ -357,11 +364,253 @@ async def health_check():
     """
     Vérification de l'état du service ML
     """
+    # Cache des statistiques de santé
+    cache_key = "health_stats"
+    if cache_key in query_cache:
+        cached_stats = query_cache[cache_key]
+    else:
+        cached_stats = {
+            "models_loaded": len(ml_service.models),
+            "models_available": list(ml_service.models.keys()),
+            "cache_stats": ml_service.get_cache_stats() if hasattr(ml_service, 'get_cache_stats') else {}
+        }
+        query_cache[cache_key] = cached_stats
+    
     return {
         "status": "healthy",
-        "service": "IFRS17 ML Service",
-        "version": "1.0.0",
+        "service": "IFRS17 ML Service Optimized",
+        "version": "2.0.0",
         "timestamp": datetime.now().isoformat(),
-        "models_loaded": len(ml_service.models),
-        "models_available": list(ml_service.models.keys())
+        **cached_stats
     }
+
+@router.get("/data/paginated")
+async def get_data_paginated(
+    page: int = Query(1, ge=1, description="Numéro de page"),
+    size: int = Query(50, ge=1, le=1000, description="Taille de la page"),
+    columns: Optional[str] = Query(None, description="Colonnes spécifiques (séparées par virgules)")
+):
+    """
+    Récupération paginée des données avec cache
+    """
+    try:
+        if not hasattr(ml_service, 'current_dataset'):
+            raise HTTPException(status_code=400, detail="Aucune données uploadées.")
+        
+        # Clé de cache basée sur les paramètres
+        cache_key = f"data_page_{page}_{size}_{columns or 'all'}"
+        
+        if cache_key in query_cache:
+            logger.info(f"Cache hit pour {cache_key}")
+            return query_cache[cache_key]
+        
+        df = ml_service.current_dataset
+        
+        # Sélection des colonnes
+        if columns:
+            selected_cols = [col.strip() for col in columns.split(',')]
+            available_cols = [col for col in selected_cols if col in df.columns]
+            if available_cols:
+                df = df[available_cols]
+        
+        # Pagination
+        start_idx = (page - 1) * size
+        end_idx = start_idx + size
+        
+        paginated_data = df.iloc[start_idx:end_idx]
+        total_rows = len(df)
+        total_pages = (total_rows + size - 1) // size
+        
+        result = {
+            "data": clean_for_json(paginated_data.to_dict('records')),
+            "pagination": {
+                "page": page,
+                "size": size,
+                "total_rows": total_rows,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1
+            },
+            "columns": list(df.columns),
+            "data_types": {col: str(dtype) for col, dtype in df.dtypes.items()}
+        }
+        
+        # Mise en cache
+        query_cache[cache_key] = result
+        logger.info(f"Données mises en cache pour {cache_key}")
+        
+        return result
+    
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération paginée: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.get("/data/summary")
+async def get_data_summary_cached():
+    """
+    Résumé statistique des données avec cache
+    """
+    try:
+        cache_key = "data_summary"
+        
+        if cache_key in query_cache:
+            logger.info("Cache hit pour le résumé des données")
+            return query_cache[cache_key]
+        
+        if not hasattr(ml_service, 'current_dataset'):
+            raise HTTPException(status_code=400, detail="Aucune données uploadées.")
+        
+        # Génération du résumé en arrière-plan si possible
+        def generate_summary():
+            df = ml_service.current_dataset
+            summary = {
+                "shape": df.shape,
+                "memory_usage": df.memory_usage(deep=True).sum(),
+                "null_counts": df.isnull().sum().to_dict(),
+                "data_types": df.dtypes.astype(str).to_dict(),
+                "numerical_summary": df.describe().to_dict() if len(df.select_dtypes(include=[np.number]).columns) > 0 else {},
+                "categorical_summary": {
+                    col: {
+                        "unique_count": df[col].nunique(),
+                        "top_values": df[col].value_counts().head(5).to_dict()
+                    }
+                    for col in df.select_dtypes(include=['object']).columns
+                }
+            }
+            return clean_for_json(summary)
+        
+        # Exécution asynchrone
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, generate_summary)
+        
+        # Mise en cache
+        query_cache[cache_key] = result
+        logger.info("Résumé des données mis en cache")
+        
+        return result
+    
+    except Exception as e:
+        logger.error(f"Erreur lors de la génération du résumé: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.get("/cache/stats")
+async def get_cache_stats():
+    """
+    Statistiques du cache
+    """
+    ml_cache_stats = ml_service.get_cache_stats() if hasattr(ml_service, 'get_cache_stats') else {}
+    
+    return {
+        "query_cache": {
+            "size": len(query_cache),
+            "maxsize": query_cache.maxsize,
+            "ttl": query_cache.ttl,
+            "keys": list(query_cache.keys())
+        },
+        "ml_service_cache": ml_cache_stats,
+        "performance": {
+            "executor_threads": executor._max_workers,
+            "cache_hit_rate": "Données non disponibles pour le moment"
+        }
+    }
+
+@router.post("/cache/clear")
+async def clear_cache():
+    """
+    Nettoyage du cache
+    """
+    try:
+        # Nettoyage du cache de requêtes
+        query_cache.clear()
+        
+        # Nettoyage du cache ML si disponible
+        if hasattr(ml_service, 'clear_cache'):
+            ml_service.clear_cache()
+        
+        return {
+            "message": "Cache nettoyé avec succès",
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Erreur lors du nettoyage du cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.post("/train/onerous-contracts")
+async def train_onerous_contracts(
+    background_tasks: BackgroundTasks,
+    model_type: str = "xgboost"
+):
+    """
+    Entraînement du modèle de détection des contrats onéreux
+    """
+    try:
+        if not hasattr(ml_service, 'current_dataset'):
+            raise HTTPException(status_code=400, detail="Aucune données uploadées.")
+        
+        df = ml_service.current_dataset
+        
+        def train_model():
+            results = ml_service.train_onerous_contracts_model(df, model_type)
+            logger.info(f"Modèle contrats onéreux entraîné: {results}")
+        
+        background_tasks.add_task(train_model)
+        
+        return {
+            "message": "Entraînement du modèle de contrats onéreux démarré",
+            "model_type": model_type,
+            "status": "training_started"
+        }
+    
+    except Exception as e:
+        logger.error(f"Erreur: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.post("/predict/onerous-contracts")
+async def predict_onerous_contracts(model_type: str = "xgboost"):
+    """
+    Prédiction des contrats onéreux
+    """
+    try:
+        if not hasattr(ml_service, 'current_dataset'):
+            raise HTTPException(status_code=400, detail="Aucune données uploadées.")
+        
+        df = ml_service.current_dataset
+        predictions = ml_service.predict_onerous_contracts(df, model_type)
+        
+        return clean_for_json({
+            "message": "Prédictions contrats onéreux générées",
+            "model_used": model_type,
+            "results": predictions
+        })
+    
+    except Exception as e:
+        logger.error(f"Erreur lors de la prédiction: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.get("/onerous-analysis")
+async def get_onerous_analysis():
+    """
+    Analyse détaillée des contrats onéreux
+    """
+    try:
+        # Chercher les résultats d'analyse onéreuse
+        onerous_results = None
+        for key, results in ml_service.model_results.items():
+            if 'onerous_contracts' in key:
+                onerous_results = results
+                break
+        
+        if not onerous_results:
+            raise HTTPException(status_code=404, detail="Aucune analyse de contrats onéreux trouvée. Entraînez d'abord le modèle.")
+        
+        return clean_for_json({
+            "analysis": onerous_results.get('onerous_analysis', {}),
+            "insights": onerous_results.get('insights', {}),
+            "performance": onerous_results.get('performance_metrics', {}),
+            "recommendations": onerous_results.get('onerous_analysis', {}).get('recommendations', [])
+        })
+    
+    except Exception as e:
+        logger.error(f"Erreur lors de l'analyse onéreuse: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

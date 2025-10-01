@@ -184,6 +184,186 @@ class RiskClassificationModel(BaseMLModel):
         # Assurer la continuité des index pour éviter les erreurs de masquage
         return risk_labels.reset_index(drop=True)
 
+class OnerousContractsModel:
+    """
+    Modèle ML spécialisé pour la détection et analyse des contrats onéreux IFRS17
+    """
+    
+    def __init__(self, model_type='xgboost'):
+        self.model_type = model_type
+        self.model = None
+        self.feature_importance = None
+        self.performance_metrics = {}
+        
+    def build_model(self, **kwargs):
+        """Construction du modèle pour contrats onéreux"""
+        if self.model_type == 'xgboost':
+            import xgboost as xgb
+            self.model = xgb.XGBClassifier(
+                n_estimators=100,
+                max_depth=6,
+                learning_rate=0.1,
+                random_state=42,
+                **kwargs
+            )
+        elif self.model_type == 'random_forest':
+            from sklearn.ensemble import RandomForestClassifier
+            self.model = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=10,
+                random_state=42,
+                **kwargs
+            )
+        elif self.model_type == 'lightgbm':
+            import lightgbm as lgb
+            self.model = lgb.LGBMClassifier(
+                n_estimators=100,
+                max_depth=6,
+                learning_rate=0.1,
+                random_state=42,
+                **kwargs
+            )
+        else:
+            raise ValueError(f"Type de modèle non supporté: {self.model_type}")
+    
+    def prepare_features(self, df):
+        """Préparation des features spécifiques aux contrats onéreux"""
+        features = df.copy()
+        
+        # Features de base IFRS17
+        if 'prime_brute' in features.columns and 'lrc' in features.columns:
+            # Ratio LRC/Prime (indicateur clé d'onérosité)
+            features['lrc_prime_ratio'] = features['lrc'] / (features['prime_brute'] + 1e-8)
+            
+            # Indicateur onéreux (LRC négatif)
+            features['is_onerous'] = (features['lrc'] < 0).astype(int)
+        
+        # Features de risque
+        if 'duree_mois' in features.columns:
+            # Risque de durée
+            features['duration_risk'] = np.where(features['duree_mois'] > 120, 1, 0)  # Plus de 10 ans
+        
+        # Features de sinistralité
+        if 'sinistres' in features.columns and 'prime_brute' in features.columns:
+            features['loss_ratio'] = features['sinistres'] / (features['prime_brute'] + 1e-8)
+            features['high_loss_ratio'] = (features['loss_ratio'] > 0.8).astype(int)
+        
+        # Features temporelles
+        if 'date_effet' in features.columns:
+            features['annee_effet'] = pd.to_datetime(features['date_effet']).dt.year
+            features['mois_effet'] = pd.to_datetime(features['date_effet']).dt.month
+            
+            # Saisonnalité
+            features['trimestre'] = pd.to_datetime(features['date_effet']).dt.quarter
+        
+        # Features de concentration par produit
+        if 'CODPROD' in features.columns:
+            prod_counts = features['CODPROD'].value_counts()
+            features['product_concentration'] = features['CODPROD'].map(prod_counts)
+        
+        return features
+    
+    def create_onerous_target(self, df):
+        """Création de la variable cible pour les contrats onéreux"""
+        if 'lrc' in df.columns:
+            # Contrat onéreux si LRC < 0
+            return (df['lrc'] < 0).astype(int)
+        elif 'prime_brute' in df.columns and 'sinistres' in df.columns:
+            # Approximation: contrat onéreux si sinistres > prime + marge
+            marge_securite = 0.1  # 10% de marge
+            return (df['sinistres'] > df['prime_brute'] * (1 + marge_securite)).astype(int)
+        else:
+            raise ValueError("Impossible de déterminer les contrats onéreux - colonnes manquantes")
+    
+    def train(self, X, y):
+        """Entraînement du modèle"""
+        self.model.fit(X, y)
+        
+        # Importance des features
+        if hasattr(self.model, 'feature_importances_'):
+            self.feature_importance = dict(zip(X.columns, self.model.feature_importances_))
+        
+        return self
+    
+    def predict(self, X):
+        """Prédiction des contrats onéreux"""
+        if self.model is None:
+            raise ValueError("Modèle non entraîné")
+        return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        """Probabilité de contrat onéreux"""
+        if self.model is None:
+            raise ValueError("Modèle non entraîné")
+        return self.model.predict_proba(X)
+    
+    def analyze_onerous_patterns(self, df, predictions):
+        """Analyse des patterns des contrats onéreux"""
+        analysis = {
+            'onerous_count': np.sum(predictions),
+            'onerous_percentage': np.mean(predictions) * 100,
+            'risk_factors': {},
+            'recommendations': []
+        }
+        
+        # Analyser les facteurs de risque
+        if hasattr(self, 'feature_importance') and self.feature_importance:
+            # Top 5 facteurs
+            top_factors = sorted(self.feature_importance.items(), key=lambda x: x[1], reverse=True)[:5]
+            analysis['risk_factors'] = {factor: importance for factor, importance in top_factors}
+        
+        # Recommandations basées sur l'analyse
+        if analysis['onerous_percentage'] > 10:
+            analysis['recommendations'].append("⚠️ Taux élevé de contrats onéreux - révision tarifaire recommandée")
+        
+        if 'lrc_prime_ratio' in analysis.get('risk_factors', {}):
+            analysis['recommendations'].append("📊 Surveiller le ratio LRC/Prime comme indicateur clé")
+        
+        if analysis['onerous_count'] > 100:
+            analysis['recommendations'].append("🎯 Mise en place d'un suivi spécifique pour les contrats à risque")
+        
+        return analysis
+    
+    def get_onerous_insights(self, df, predictions, probabilities=None):
+        """Insights détaillés sur les contrats onéreux"""
+        insights = {
+            'summary': {},
+            'high_risk_contracts': [],
+            'patterns': {},
+            'business_impact': {}
+        }
+        
+        # Résumé
+        insights['summary'] = {
+            'total_contracts': len(df),
+            'onerous_contracts': np.sum(predictions),
+            'onerous_rate': np.mean(predictions),
+            'potential_loss': 0  # À calculer selon les données disponibles
+        }
+        
+        # Contrats à haut risque
+        if probabilities is not None:
+            high_risk_idx = np.where(probabilities[:, 1] > 0.8)[0]  # Probabilité > 80%
+            insights['high_risk_contracts'] = high_risk_idx.tolist()
+        
+        # Patterns par segment
+        if 'CODPROD' in df.columns:
+            product_onerous = df.groupby('CODPROD').apply(
+                lambda x: np.mean(predictions[x.index])
+            ).to_dict()
+            insights['patterns']['by_product'] = product_onerous
+        
+        # Impact business
+        if 'prime_brute' in df.columns:
+            onerous_premium = df.loc[predictions == 1, 'prime_brute'].sum()
+            total_premium = df['prime_brute'].sum()
+            insights['business_impact'] = {
+                'affected_premium': onerous_premium,
+                'premium_percentage': onerous_premium / total_premium if total_premium > 0 else 0
+            }
+        
+        return insights
+
 class ContractClusteringModel:
     """
     Modèle de clustering des contrats d'assurance

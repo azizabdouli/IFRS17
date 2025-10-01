@@ -1,19 +1,58 @@
-streamlit
-pandas
-openpyxl
-fastapi
-uvicorn
-pandas
-numpy
-xlsxwriter
-plotly
-reportlab
-python-multipart
-scikit-learn
-seaborn
-matplotlib
-joblib
-xgboost
-lightgbm
-tensorflow
-keras
+# =======================
+# 🎯 CORE FRAMEWORK
+# =======================
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+streamlit==1.28.1
+
+# =======================
+# 🤖 DATA PROCESSING
+# =======================
+pandas==2.1.3
+numpy==1.25.2
+openpyxl==3.1.2
+
+# =======================
+# 🤖 MACHINE LEARNING
+# =======================
+scikit-learn==1.3.2
+xgboost==2.0.1
+lightgbm==4.1.0
+joblib==1.3.2
+
+# =======================
+# 🧠 INTELLIGENCE ARTIFICIELLE  
+# =======================
+transformers==4.35.0
+torch==2.1.0
+tokenizers==0.14.1
+datasets==2.14.6
+nltk==3.8.1
+spacy==3.7.2
+
+# =======================
+# 📊 VISUALISATION
+# =======================
+plotly==5.17.0
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# =======================
+# ⚡ PERFORMANCE & CACHE
+# =======================
+cachetools==5.3.1
+uvloop>=0.17.0
+httptools>=0.6.0
+asyncio-mqtt==0.16.1
+
+# =======================
+# 📁 FILE PROCESSING
+# =======================
+xlsxwriter==3.1.9
+python-multipart==0.0.6
+reportlab==4.0.4
+
+# =======================
+# 🌐 HTTP & REQUESTS
+# =======================
+requests==2.31.0

@@ -6,48 +6,86 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder, MinMaxScaler
 from sklearn.impute import SimpleImputer
 from typing import Tuple, Dict, Any
 import logging
+from functools import lru_cache
+import hashlib
+from cachetools import TTLCache
+import pickle
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class DataPreprocessor:
+class OptimizedDataPreprocessor:
     """
-    Classe pour le préprocessing des données IFRS17 PAA
+    Classe optimisée pour le préprocessing des données IFRS17 PAA
+    Avec cache intelligent et traitement vectorisé
     """
     
-    def __init__(self):
+    def __init__(self, cache_size: int = 128, cache_ttl: int = 3600):
         self.scalers = {}
         self.encoders = {}
         self.imputers = {}
         
+        # Cache optimisé
+        self.data_cache = TTLCache(maxsize=cache_size, ttl=cache_ttl)
+        self.preprocessing_cache = TTLCache(maxsize=64, ttl=cache_ttl)
+        
+        # Colonnes prédéfinies pour optimisation
+        self.numeric_columns = ['DUREE', 'MNTPRNET', 'MNTPPNA', 'MNTACCESS', 'MNTPRASSI', 
+                               'NBPPNATOT', 'NBPPNAJ', 'NUMQUITT', 'CODFAM', 'CODPROD', 'FRACT']
+        self.date_columns = ['DATECREA', 'DATEEMISS', 'DEBEFFQUI', 'FINEFFQUI', 'DATEPAIEM']
+    
+    def _get_data_hash(self, df: pd.DataFrame) -> str:
+        """Génère un hash unique pour les données"""
+        return hashlib.md5(pd.util.hash_pandas_object(df.head(100)).values).hexdigest()
+    
+    @lru_cache(maxsize=32)
+    def _get_available_columns(self, df_columns_tuple: tuple) -> dict:
+        """Cache des colonnes disponibles"""
+        df_columns = list(df_columns_tuple)
+        return {
+            'numeric': [col for col in self.numeric_columns if col in df_columns],
+            'date': [col for col in self.date_columns if col in df_columns]
+        }
+    
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Nettoyage initial des données
+        Nettoyage optimisé des données avec cache
         """
+        data_hash = self._get_data_hash(df)
+        
+        # Vérifier le cache
+        if data_hash in self.data_cache:
+            logger.info("📈 Données récupérées du cache")
+            return self.data_cache[data_hash]
+        
+        logger.info("🔄 Nettoyage des données...")
         df_clean = df.copy()
         
-        # Conversion des colonnes numériques importantes
-        numeric_columns = ['DUREE', 'MNTPRNET', 'MNTPPNA', 'MNTACCESS', 'MNTPRASSI', 
-                          'NBPPNATOT', 'NBPPNAJ', 'NUMQUITT', 'CODFAM', 'CODPROD', 'FRACT']
-        for col in numeric_columns:
-            if col in df_clean.columns:
+        # Colonnes disponibles (avec cache)
+        available_cols = self._get_available_columns(tuple(df.columns))
+        
+        # Conversion vectorisée des colonnes numériques
+        if available_cols['numeric']:
+            for col in available_cols['numeric']:
                 df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
         
-        # Conversion des dates
-        date_columns = ['DATECREA', 'DATEEMISS', 'DEBEFFQUI', 'FINEFFQUI', 'DATEPAIEM']
-        for col in date_columns:
-            if col in df_clean.columns:
+        # Conversion optimisée des dates
+        if available_cols['date']:
+            for col in available_cols['date']:
                 df_clean[col] = pd.to_datetime(df_clean[col], format='%Y%m%d', errors='coerce')
         
-        # Création de features temporelles
+        # Features temporelles vectorisées
         if 'DEBEFFQUI' in df_clean.columns:
-            df_clean['annee_effet'] = df_clean['DEBEFFQUI'].dt.year
-            df_clean['mois_effet'] = df_clean['DEBEFFQUI'].dt.month
-            df_clean['jour_semaine_effet'] = df_clean['DEBEFFQUI'].dt.dayofweek
+            date_col = df_clean['DEBEFFQUI']
+            df_clean['annee_effet'] = date_col.dt.year
+            df_clean['mois_effet'] = date_col.dt.month
+            df_clean['jour_semaine_effet'] = date_col.dt.dayofweek
             
         if 'DATEEMISS' in df_clean.columns:
-            df_clean['annee_emission'] = df_clean['DATEEMISS'].dt.year
-            df_clean['mois_emission'] = df_clean['DATEEMISS'].dt.month
+            date_col = df_clean['DATEEMISS']
+            df_clean['annee_emission'] = date_col.dt.year
+            df_clean['mois_emission'] = date_col.dt.month
             
         # Calcul de durées
         if 'DEBEFFQUI' in df_clean.columns and 'FINEFFQUI' in df_clean.columns:

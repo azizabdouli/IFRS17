@@ -1,0 +1,563 @@
+/* src/styles.scss */
+
+/* ================================================= */
+/* 🎨 STYLES GLOBAUX IFRS17 - COMPTABILITÉ ASSURANCE */
+/* ================================================= */
+
+/* 📦 Imports Bootstrap et PrimeNG */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+/* ================================================= */
+/* 🎯 VARIABLES CSS PERSONNALISÉES */
+/* ================================================= */
+
+:root {
+  /* 🎨 Palette de couleurs IFRS17 */
+  --ifrs17-primary: #2c5aa0;        /* Bleu professionnel */
+  --ifrs17-secondary: #e8f2ff;      /* Bleu clair */
+  --ifrs17-accent: #ffd700;         /* Or pour les highlights */
+  --ifrs17-success: #28a745;        /* Vert validation */
+  --ifrs17-warning: #ffc107;        /* Jaune attention */
+  --ifrs17-danger: #dc3545;         /* Rouge erreur */
+  --ifrs17-info: #17a2b8;          /* Bleu information */
+  --ifrs17-light: #f8f9fa;         /* Gris très clair */
+  --ifrs17-dark: #343a40;          /* Gris foncé */
+  
+  /* 📐 Espacements et mesures */
+  --ifrs17-border-radius: 12px;
+  --ifrs17-border-radius-sm: 6px;
+  --ifrs17-border-radius-lg: 16px;
+  --ifrs17-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --ifrs17-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --ifrs17-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+  
+  /* ⏱️ Animations */
+  --ifrs17-transition: all 0.3s ease;
+  --ifrs17-transition-fast: all 0.15s ease;
+  --ifrs17-transition-slow: all 0.5s ease;
+  
+  /* 🔤 Typographie */
+  --ifrs17-font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --ifrs17-font-mono: 'Roboto Mono', 'Courier New', monospace;
+  --ifrs17-font-size-xs: 0.75rem;
+  --ifrs17-font-size-sm: 0.875rem;
+  --ifrs17-font-size-base: 1rem;
+  --ifrs17-font-size-lg: 1.125rem;
+  --ifrs17-font-size-xl: 1.25rem;
+  --ifrs17-font-size-2xl: 1.5rem;
+  --ifrs17-font-size-3xl: 1.875rem;
+  --ifrs17-font-size-4xl: 2.25rem;
+  
+  /* 📊 Couleurs spécifiques aux métriques */
+  --lrc-color: #4a90e2;            /* Liability Remaining Coverage */
+  --lic-color: #e74c3c;            /* Liability Incurred Claims */
+  --csm-color: #2ecc71;            /* Contractual Service Margin */
+  --ra-color: #f39c12;             /* Risk Adjustment */
+  --solvabilite-color: #9b59b6;    /* Solvabilité */
+}
+
+/* ================================================= */
+/* 🌐 RESET ET STYLES DE BASE */
+/* ================================================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: var(--ifrs17-font-family);
+  font-size: var(--ifrs17-font-size-base);
+  line-height: 1.6;
+  color: var(--ifrs17-dark);
+  background-color: #f8fafc;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================================= */
+/* 🔤 TYPOGRAPHIE PROFESSIONNELLE */
+/* ================================================= */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ifrs17-dark);
+  margin-bottom: 0.5em;
+}
+
+h1 { font-size: var(--ifrs17-font-size-4xl); }
+h2 { font-size: var(--ifrs17-font-size-3xl); }
+h3 { font-size: var(--ifrs17-font-size-2xl); }
+h4 { font-size: var(--ifrs17-font-size-xl); }
+h5 { font-size: var(--ifrs17-font-size-lg); }
+h6 { font-size: var(--ifrs17-font-size-base); }
+
+p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.text-mono {
+  font-family: var(--ifrs17-font-mono);
+}
+
+/* ================================================= */
+/* 🎨 CLASSES UTILITAIRES */
+/* ================================================= */
+
+/* Couleurs texte */
+.text-ifrs17-primary { color: var(--ifrs17-primary) !important; }
+.text-ifrs17-secondary { color: var(--ifrs17-secondary) !important; }
+.text-ifrs17-success { color: var(--ifrs17-success) !important; }
+.text-ifrs17-warning { color: var(--ifrs17-warning) !important; }
+.text-ifrs17-danger { color: var(--ifrs17-danger) !important; }
+.text-ifrs17-info { color: var(--ifrs17-info) !important; }
+
+/* Couleurs métriques */
+.text-lrc { color: var(--lrc-color) !important; }
+.text-lic { color: var(--lic-color) !important; }
+.text-csm { color: var(--csm-color) !important; }
+.text-ra { color: var(--ra-color) !important; }
+
+/* Arrière-plans */
+.bg-ifrs17-primary { background-color: var(--ifrs17-primary) !important; }
+.bg-ifrs17-secondary { background-color: var(--ifrs17-secondary) !important; }
+.bg-ifrs17-light { background-color: var(--ifrs17-light) !important; }
+
+/* Ombres */
+.shadow-ifrs17 { box-shadow: var(--ifrs17-shadow) !important; }
+.shadow-ifrs17-lg { box-shadow: var(--ifrs17-shadow-lg) !important; }
+.shadow-ifrs17-xl { box-shadow: var(--ifrs17-shadow-xl) !important; }
+
+/* Bordures arrondies */
+.rounded-ifrs17 { border-radius: var(--ifrs17-border-radius) !important; }
+.rounded-ifrs17-sm { border-radius: var(--ifrs17-border-radius-sm) !important; }
+.rounded-ifrs17-lg { border-radius: var(--ifrs17-border-radius-lg) !important; }
+
+/* Transitions */
+.transition-ifrs17 { transition: var(--ifrs17-transition) !important; }
+.transition-ifrs17-fast { transition: var(--ifrs17-transition-fast) !important; }
+.transition-ifrs17-slow { transition: var(--ifrs17-transition-slow) !important; }
+
+/* ================================================= */
+/* 🔘 BOUTONS PERSONNALISÉS */
+/* ================================================= */
+
+.btn-ifrs17-primary {
+  background-color: var(--ifrs17-primary);
+  border-color: var(--ifrs17-primary);
+  color: white;
+  font-weight: 500;
+  border-radius: var(--ifrs17-border-radius-sm);
+  transition: var(--ifrs17-transition);
+  
+  &:hover {
+    background-color: #1a365d;
+    border-color: #1a365d;
+    transform: translateY(-1px);
+    box-shadow: var(--ifrs17-shadow-lg);
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+  }
+}
+
+.btn-ifrs17-outline {
+  background-color: transparent;
+  border: 2px solid var(--ifrs17-primary);
+  color: var(--ifrs17-primary);
+  font-weight: 500;
+  border-radius: var(--ifrs17-border-radius-sm);
+  transition: var(--ifrs17-transition);
+  
+  &:hover {
+    background-color: var(--ifrs17-primary);
+    color: white;
+    transform: translateY(-1px);
+  }
+}
+
+/* ================================================= */
+/* 📊 CARTES MÉTRIQUES */
+/* ================================================= */
+
+.card-ifrs17 {
+  background: white;
+  border-radius: var(--ifrs17-border-radius);
+  box-shadow: var(--ifrs17-shadow);
+  border: none;
+  transition: var(--ifrs17-transition);
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ifrs17-shadow-lg);
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, var(--ifrs17-primary) 0%, #1a365d 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.metric-card {
+  background: white;
+  border-radius: var(--ifrs17-border-radius);
+  box-shadow: var(--ifrs17-shadow);
+  padding: 1.5rem;
+  text-align: center;
+  transition: var(--ifrs17-transition);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ifrs17-shadow-lg);
+  }
+  
+  .metric-value {
+    font-size: var(--ifrs17-font-size-3xl);
+    font-weight: 700;
+    font-family: var(--ifrs17-font-mono);
+    color: var(--ifrs17-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .metric-label {
+    font-size: var(--ifrs17-font-size-sm);
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+}
+
+/* ================================================= */
+/* 📈 INDICATEURS DE TENDANCE */
+/* ================================================= */
+
+.trend-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--ifrs17-font-size-sm);
+  font-weight: 600;
+  
+  &.positive {
+    color: var(--ifrs17-success);
+  }
+  
+  &.negative {
+    color: var(--ifrs17-danger);
+  }
+  
+  &.neutral {
+    color: var(--ifrs17-warning);
+  }
+}
+
+/* ================================================= */
+/* 🏷️ BADGES STATUT */
+/* ================================================= */
+
+.badge-ifrs17 {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: var(--ifrs17-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &.badge-actif {
+    background-color: var(--ifrs17-success);
+    color: white;
+  }
+  
+  &.badge-en-attente {
+    background-color: var(--ifrs17-warning);
+    color: var(--ifrs17-dark);
+  }
+  
+  &.badge-expire {
+    background-color: var(--ifrs17-danger);
+    color: white;
+  }
+  
+  &.badge-conforme {
+    background-color: var(--ifrs17-info);
+    color: white;
+  }
+}
+
+/* ================================================= */
+/* 📋 TABLEAUX */
+/* ================================================= */
+
+.table-ifrs17 {
+  background: white;
+  border-radius: var(--ifrs17-border-radius);
+  box-shadow: var(--ifrs17-shadow);
+  overflow: hidden;
+  
+  th {
+    background-color: var(--ifrs17-light);
+    font-weight: 600;
+    color: var(--ifrs17-dark);
+    border: none;
+    padding: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--ifrs17-font-size-sm);
+  }
+  
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+  }
+  
+  tbody tr {
+    transition: var(--ifrs17-transition-fast);
+    
+    &:hover {
+      background-color: var(--ifrs17-secondary);
+    }
+  }
+}
+
+/* ================================================= */
+/* 🔔 ALERTES */
+/* ================================================= */
+
+.alert-ifrs17 {
+  border: none;
+  border-radius: var(--ifrs17-border-radius);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
+  
+  &.alert-info-ifrs17 {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-left-color: var(--ifrs17-info);
+    color: #0c5460;
+  }
+  
+  &.alert-success-ifrs17 {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-left-color: var(--ifrs17-success);
+    color: #155724;
+  }
+  
+  &.alert-warning-ifrs17 {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left-color: var(--ifrs17-warning);
+    color: #856404;
+  }
+  
+  &.alert-danger-ifrs17 {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-left-color: var(--ifrs17-danger);
+    color: #721c24;
+  }
+}
+
+/* ================================================= */
+/* 🖥️ SCROLLBAR PERSONNALISÉE */
+/* ================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifrs17-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--ifrs17-primary) 0%, #1a365d 100%);
+  border-radius: 4px;
+  
+  &:hover {
+    background: linear-gradient(135deg, #1a365d 0%, #2c5aa0 100%);
+  }
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ifrs17-primary) var(--ifrs17-light);
+}
+
+/* ================================================= */
+/* 🎨 ANIMATIONS */
+/* ================================================= */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-fadeInRight {
+  animation: fadeInRight 0.6s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* ================================================= */
+/* 📱 RESPONSIVE DESIGN */
+/* ================================================= */
+
+@media (max-width: 1200px) {
+  :root {
+    --ifrs17-font-size-4xl: 2rem;
+    --ifrs17-font-size-3xl: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --ifrs17-font-size-4xl: 1.75rem;
+    --ifrs17-font-size-3xl: 1.5rem;
+    --ifrs17-font-size-2xl: 1.25rem;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  .card-ifrs17 .card-header,
+  .card-ifrs17 .card-body {
+    padding: 1rem;
+  }
+  
+  .metric-card {
+    padding: 1rem;
+  }
+  
+  .table-ifrs17 th,
+  .table-ifrs17 td {
+    padding: 0.75rem 0.5rem;
+    font-size: var(--ifrs17-font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-card .metric-value {
+    font-size: var(--ifrs17-font-size-2xl);
+  }
+  
+  .btn-ifrs17-primary,
+  .btn-ifrs17-outline {
+    padding: 0.5rem 1rem;
+    font-size: var(--ifrs17-font-size-sm);
+  }
+}
+
+/* ================================================= */
+/* 🎯 CLASSES D'AIDE POUR L'ACCESSIBILITÉ */
+/* ================================================= */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.focus-visible:focus {
+  outline: 2px solid var(--ifrs17-primary);
+  outline-offset: 2px;
+}
+
+/* ================================================= */
+/* 🖨️ STYLES D'IMPRESSION */
+/* ================================================= */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .card-ifrs17 {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+  
+  .table-ifrs17 {
+    box-shadow: none;
+  }
+  
+  body {
+    background: white;
+  }
+}
