@@ -1,53 +1,38 @@
 <!-- ================================================= -->
-<!-- 🏠 DASHBOARD UNIFIÉ ANALYSTE IFRS17 BNA -->
+<!-- 📊 DASHBOARD PROFESSIONNEL IFRS17 BNA -->
 <!-- ================================================= -->
-<div class="unified-dashboard animate-fade-in" *ngIf="!isLoading">
+<div class="professional-dashboard" *ngIf="!isLoading">
   
-  <!-- 🎯 EN-TÊTE UTILISATEUR AVEC PROGRESSION -->
-  <header class="dashboard-header glassmorphism-card">
-    <div class="user-welcome-section">
-      <div class="user-info">
-        <div class="user-avatar" [ngClass]="getLevelClass()">
-          <span class="level-icon">{{ getLevelIcon() }}</span>
+  <!-- 📋 EN-TÊTE PROFESSIONNEL -->
+  <header class="dashboard-header-pro">
+    <div class="header-content-pro">
+      <div class="user-info-pro">
+        <div class="user-avatar-pro">
+          <i class="fas fa-user"></i>
         </div>
-        <div class="user-details">
-          <h1 class="welcome-title">
-            Bienvenue, {{ authService.getFullName() }}
+        <div class="user-details-pro">
+          <h1 class="welcome-title-pro">
+            {{ authService.getFullName() }}
           </h1>
-          <p class="user-role">
-            <i class="fas fa-briefcase"></i>
-            Analyste IFRS17 BNA - {{ currentUser?.department }}
+          <p class="user-role-pro">
+            <i class="fas fa-building"></i>
+            {{ currentUser?.role }} - {{ currentUser?.company }}
           </p>
-          <div class="user-level-badge" [ngClass]="getLevelClass()">
-            {{ currentUser?.level }}
-          </div>
+          <p class="user-department-pro">
+            <i class="fas fa-briefcase"></i>
+            {{ currentUser?.department }}
+          </p>
         </div>
       </div>
       
-      <!-- Progression utilisateur -->
-      <div class="user-progression" *ngIf="userProgress">
-        <div class="progress-stats">
-          <div class="stat-item">
-            <i class="fas fa-star text-warning"></i>
-            <span class="stat-value">{{ currentUser?.points }}</span>
-            <span class="stat-label">Points</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-trophy text-success"></i>
-            <span class="stat-value">{{ userProgress.badges.length }}</span>
-            <span class="stat-label">Badges</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-target text-info"></i>
-            <span class="stat-value">{{ userProgress.accuracy_streak }}</span>
-            <span class="stat-label">Précision</span>
-          </div>
+      <div class="header-meta-pro">
+        <div class="meta-item">
+          <i class="far fa-calendar"></i>
+          <span>{{ getCurrentDate() }}</span>
         </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="userProgress.progress_percentage"></div>
-          </div>
-          <span class="progress-text">{{ userProgress.progress_percentage.toFixed(1) }}% vers le niveau suivant</span>
+        <div class="meta-item">
+          <i class="far fa-clock"></i>
+          <span>{{ getCurrentTime() }}</span>
         </div>
       </div>
     </div>
@@ -151,155 +136,56 @@
     </div>
   </section>
 
-  <!-- 🎯 ACTIONS RECOMMANDÉES -->
-  <section class="recommended-actions-section">
-    <h2 class="section-title">
-      <i class="fas fa-lightbulb"></i>
-      Actions Recommandées pour Vous
+  <!-- 📊 ACCÈS RAPIDES PROFESSIONNELS -->
+  <section class="quick-access-section-pro">
+    <h2 class="section-title-pro">
+      <i class="fas fa-th-large"></i>
+      Modules IFRS17
     </h2>
-    <div class="actions-grid">
-      <div class="action-card glassmorphism-card" 
-           *ngFor="let action of recommendedActions"
-           [ngClass]="'priority-' + action.priority">
-        <div class="action-header">
-          <div class="action-icon">
-            <i class="fas" [ngClass]="action.icon"></i>
-          </div>
-          <div class="action-meta">
-            <span class="action-category">{{ action.category }}</span>
-            <span class="action-time">{{ action.estimated_time }}min</span>
-          </div>
+    <div class="quick-access-grid-pro">
+      <a routerLink="/ppna" class="access-card-pro">
+        <div class="card-icon-pro ppna">
+          <i class="fas fa-file-invoice"></i>
         </div>
-        <div class="action-content">
-          <h3 class="action-title">{{ action.title }}</h3>
-          <p class="action-description">{{ action.description }}</p>
+        <div class="card-content-pro">
+          <h3>Analyse PPNA</h3>
+          <p>Gestion des provisions non acquises</p>
         </div>
-        <div class="action-footer">
-          <div class="points-reward">
-            <i class="fas fa-star"></i>
-            +{{ action.points_reward }} points
-          </div>
-          <button class="action-execute-btn" (click)="executeAction(action)">
-            Commencer
-            <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
+        <i class="fas fa-arrow-right card-arrow-pro"></i>
+      </a>
 
-  <!-- 🏆 RÉSUMÉ HEBDOMADAIRE -->
-  <section class="weekly-summary-section" *ngIf="dashboardData?.weekly_summary">
-    <div class="row g-4">
-      <div class="col-lg-8">
-        <div class="summary-card glassmorphism-card">
-          <h2 class="section-title">
-            <i class="fas fa-calendar-week"></i>
-            Résumé de la Semaine
-          </h2>
-          <div class="summary-stats">
-            <div class="summary-stat">
-              <div class="stat-icon gradient-primary">
-                <i class="fas fa-tasks"></i>
-              </div>
-              <div class="stat-info">
-                <h3>{{ dashboardData?.weekly_summary?.tasks_completed || 0 }}</h3>
-                <p>Tâches Complétées</p>
-              </div>
-            </div>
-            <div class="summary-stat">
-              <div class="stat-icon gradient-warning">
-                <i class="fas fa-star"></i>
-              </div>
-              <div class="stat-info">
-                <h3>{{ dashboardData?.weekly_summary?.points_earned || 0 }}</h3>
-                <p>Points Gagnés</p>
-              </div>
-            </div>
-            <div class="summary-stat">
-              <div class="stat-icon gradient-success">
-                <i class="fas fa-trophy"></i>
-              </div>
-              <div class="stat-info">
-                <h3>{{ dashboardData?.weekly_summary?.badges_earned?.length || 0 }}</h3>
-                <p>Nouveaux Badges</p>
-              </div>
-            </div>
-            <div class="summary-stat">
-              <div class="stat-icon gradient-info">
-                <i class="fas fa-bullseye"></i>
-              </div>
-              <div class="stat-info">
-                <h3>{{ formatPercentage(dashboardData?.weekly_summary?.accuracy_avg || 0) }}</h3>
-                <p>Précision Moyenne</p>
-              </div>
-            </div>
-          </div>
+      <a routerLink="/ml-analytics" class="access-card-pro">
+        <div class="card-icon-pro ml">
+          <i class="fas fa-brain"></i>
         </div>
-      </div>
-      <div class="col-lg-4">
-        <div class="achievements-card glassmorphism-card" *ngIf="dashboardData?.achievements">
-          <h3 class="card-title">
-            <i class="fas fa-medal"></i>
-            Succès Récents
-          </h3>
-          <div class="recent-badges">
-            <div class="badge-item" *ngFor="let badge of dashboardData?.achievements?.recent_badges">
-              <span class="badge-emoji">🏆</span>
-              <span class="badge-name">{{ badge }}</span>
-            </div>
-          </div>
-          <div class="next-level-progress">
-            <p class="progress-label">Progression vers le niveau suivant</p>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="dashboardData?.achievements?.next_level_progress || 0"></div>
-            </div>
-            <span class="progress-percentage">{{ dashboardData?.achievements?.next_level_progress || 0 }}%</span>
-          </div>
+        <div class="card-content-pro">
+          <h3>ML Analytics</h3>
+          <p>Analyses prédictives avancées</p>
         </div>
-      </div>
-    </div>
-  </section>
+        <i class="fas fa-arrow-right card-arrow-pro"></i>
+      </a>
 
-  <!-- 🧠 INSIGHTS CONTEXTUELS -->
-  <section class="insights-section" *ngIf="dashboardData?.contextual_insights">
-    <h2 class="section-title">
-      <i class="fas fa-brain"></i>
-      Insights Intelligents
-    </h2>
-    <div class="insights-grid">
-      <div class="insight-card glassmorphism-card" *ngFor="let insight of dashboardData?.contextual_insights">
-        <div class="insight-icon">
-          <i class="fas fa-lightbulb"></i>
+      <a routerLink="/transform" class="access-card-pro">
+        <div class="card-icon-pro transform">
+          <i class="fas fa-exchange-alt"></i>
         </div>
-        <p class="insight-text">{{ insight }}</p>
-      </div>
-    </div>
-  </section>
+        <div class="card-content-pro">
+          <h3>Transformations</h3>
+          <p>Conversion des données</p>
+        </div>
+        <i class="fas fa-arrow-right card-arrow-pro"></i>
+      </a>
 
-  <!-- 🔧 ACTIONS RAPIDES -->
-  <section class="quick-actions-section">
-    <h2 class="section-title">
-      <i class="fas fa-bolt"></i>
-      Actions Rapides
-    </h2>
-    <div class="quick-actions-grid">
-      <button class="quick-action-btn glassmorphism-card" (click)="navigateTo('/ppna-analytics')">
-        <i class="fas fa-chart-bar"></i>
-        <span>Analyse PPNA</span>
-      </button>
-      <button class="quick-action-btn glassmorphism-card" (click)="navigateTo('/ml-analytics')">
-        <i class="fas fa-robot"></i>
-        <span>ML Analytics</span>
-      </button>
-      <button class="quick-action-btn glassmorphism-card" (click)="navigateTo('/data-transformations')">
-        <i class="fas fa-exchange-alt"></i>
-        <span>Transformations</span>
-      </button>
-      <button class="quick-action-btn glassmorphism-card" (click)="navigateTo('/ai-assistant')">
-        <i class="fas fa-brain"></i>
-        <span>Assistant IA</span>
-      </button>
+      <a routerLink="/ai-assistant" class="access-card-pro">
+        <div class="card-icon-pro ai">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="card-content-pro">
+          <h3>Assistant IA</h3>
+          <p>Support intelligent IFRS17</p>
+        </div>
+        <i class="fas fa-arrow-right card-arrow-pro"></i>
+      </a>
     </div>
   </section>
 
@@ -307,8 +193,8 @@
 
 <!-- 🔄 LOADING STATE -->
 <div class="loading-container" *ngIf="isLoading">
-  <div class="loading-spinner">
-    <div class="spinner-ring"></div>
-    <p class="loading-text">Chargement de votre dashboard personnel...</p>
+  <div class="loading-spinner-pro">
+    <div class="spinner-ring-pro"></div>
+    <p class="loading-text-pro">Chargement du tableau de bord...</p>
   </div>
 </div>

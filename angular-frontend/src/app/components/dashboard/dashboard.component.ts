@@ -8,7 +8,7 @@ import { DashboardService, DashboardResponse, Alert, RecommendedAction } from '.
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  styleUrls: ['./dashboard-professional.scss'],
   standalone: true,
   imports: [CommonModule]
 })
@@ -27,7 +27,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     public authService: AuthService,
     private dashboardService: DashboardService,
-    private router: Router
+    public router: Router
   ) {}
 
   ngOnInit() {
@@ -85,43 +85,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // 🎯 Méthodes d'interaction avec le dashboard
-
-  /**
-   * Naviguer vers une section spécifique
-   */
-  navigateTo(route: string, queryParams?: any) {
-    if (queryParams) {
-      this.router.navigate([route], { queryParams });
-    } else {
-      this.router.navigate([route]);
-    }
-  }
-
-  /**
-   * Exécuter une action recommandée
-   */
-  executeAction(action: RecommendedAction) {
-    // Attribuer les points pour l'action
-    this.authService.awardPoints(action.points_reward, action.category).subscribe({
-      next: () => {
-        console.log(`Points attribués: +${action.points_reward} pour ${action.title}`);
-        // Naviguer vers l'action
-        this.navigateTo(action.action_url);
-      },
-      error: (error) => {
-        console.error('Erreur lors de l\'attribution des points:', error);
-        // Naviguer quand même vers l'action
-        this.navigateTo(action.action_url);
-      }
-    });
-  }
-
-  /**
-   * Marquer une alerte comme lue
-   */
-  dismissAlert(alert: Alert) {
-    this.dashboardService.markAlertAsRead(alert.id);
-  }
 
   /**
    * Rafraîchir le dashboard
@@ -201,5 +164,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (value >= threshold) return 'indicator-success';
     if (value >= threshold * 0.75) return 'indicator-warning';
     return 'indicator-danger';
+  }
+
+  /**
+   * Obtenir la date actuelle formatée
+   */
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  /**
+   * Obtenir l'heure actuelle formatée
+   */
+  getCurrentTime(): string {
+    return new Date().toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /**
+   * Naviguer vers une route
+   */
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
+  }
+
+  /**
+   * Fermer une alerte
+   */
+  dismissAlert(alert: Alert): void {
+    this.alerts = this.alerts.filter(a => a !== alert);
+  }
+
+  /**
+   * Exécuter une action recommandée
+   */
+  executeAction(action: RecommendedAction): void {
+    if (action.action_url) {
+      this.navigateTo(action.action_url);
+    }
   }
 }
