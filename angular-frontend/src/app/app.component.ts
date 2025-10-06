@@ -2,11 +2,13 @@
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
+import { HeaderComponent } from './components/header/header.component';
+import { AuthService, User } from './services/auth.service';
 
 /**
  * 🏢 Composant principal de l'application IFRS17
- * Interface de comptabilité d'assurance avec terminologie technique
+ * Interface de comptabilité d'assurance avec authentification
  */
 
 @Component({
@@ -14,7 +16,7 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterOutlet]
+  imports: [CommonModule, RouterOutlet, HeaderComponent]
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'IFRS17 - Comptabilité Assurance';
@@ -22,7 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // État de l'application
   isLoading = false;
   apiConnected = false;
-  currentUser: any = null;
+  currentUser: User | null = null;
   notifications: any[] = [];
   
   // Navigation state
@@ -41,16 +43,31 @@ export class AppComponent implements OnInit, OnDestroy {
     ratioSolvabilite: 0
   };
 
-  constructor() {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.initializeApplication();
     this.verifierConnexionAPI();
     this.chargerMetriquesTempsReel();
+    this.setupAuthenticationListener();
   }
 
   ngOnDestroy(): void {
     // Nettoyage des ressources
+  }
+
+  private setupAuthenticationListener(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      
+      // Rediriger vers l'authentification si pas connecté
+      if (!user && !this.router.url.startsWith('/auth')) {
+        this.router.navigate(['/auth/signin']);
+      }
+    });
   }
 
   private initializeApplication(): void {

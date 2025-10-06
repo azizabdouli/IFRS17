@@ -18,6 +18,14 @@ async def lifespan(app: FastAPI):
     # Démarrage
     logger.info("🚀 Démarrage de l'API IFRS17 ML Analytics...")
     
+    # Initialisation de la base de données
+    try:
+        from backend.database.connection import engine, Base
+        Base.metadata.create_all(bind=engine)
+        logger.info("💾 Base de données initialisée avec succès")
+    except Exception as e:
+        logger.warning(f"⚠️ Erreur initialisation base de données: {e}")
+    
     # Initialisation des services IA
     try:
         from backend.ai.ifrs17_ai_assistant import IFRS17AIAssistant
@@ -68,7 +76,11 @@ app.add_middleware(
 # Import et inclusion des routers
 from backend.routers import transform, projection, ml_router, ai_router
 from backend.routers.ppna_router import router as ppna_router
+from backend.routers.auth_router import router as auth_router
+from backend.routers.dashboard_router import router as dashboard_router
 
+app.include_router(auth_router, tags=["🔐 Authentification"])
+app.include_router(dashboard_router, tags=["📊 Dashboard Unifié"])
 app.include_router(transform.router, prefix="/transform", tags=["🔄 Transformations"])
 app.include_router(projection.router, prefix="/projection", tags=["📊 Projections"])
 app.include_router(ml_router.router, prefix="/ml", tags=["🤖 Machine Learning"])
@@ -93,6 +105,8 @@ async def root():
             "performance": "⚡ Optimisé haute performance"
         },
         "endpoints": {
+            "auth": "/auth - Authentification unifiée",
+            "dashboard": "/dashboard - Dashboard intelligent",
             "ml": "/ml - Modèles ML",
             "ai": "/ai - Intelligence Artificielle",
             "projection": "/projection - Projections",

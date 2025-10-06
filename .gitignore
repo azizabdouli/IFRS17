@@ -48,6 +48,33 @@ Thumbs.db
 *.log
 logs/
 
+# Angular
+angular-frontend/node_modules/
+angular-frontend/dist/
+angular-frontend/.angular/
+angular-frontend/.nx/cache
+
+# Base de données
+*.db-journal
+*.sqlite3-journal
+
+# Fichiers de test et développement
+test_*.py
+*_test.py
+performance_*.json
+*.profiling
+
+# Modèles ML et données temporaires
+models/
+captures-*/
+screenshots/
+temp_data/
+
+# Fichiers de configuration sensibles
+.env.local
+.env.production
+secrets.json
+
 # Modèles ML sauvegardés (optionnel - décommenter si modèles trop volumineux)
 # models/*.joblib
 # models/*.pkl

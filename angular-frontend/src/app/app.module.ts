@@ -8,11 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // Routing Module
 import { AppRoutingModule } from './app-routing.module';
-
-// PrimeNG Modules
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
@@ -48,30 +43,9 @@ import { MessageService } from 'primeng/api';
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule,
-    
-    // PrimeNG Modules
-    ButtonModule,
-    CardModule,
-    ChartModule,
-    TableModule,
-    InputTextModule,
-    DropdownModule,
-    CalendarModule,
-    DialogModule,
-    ToastModule,
-    ProgressBarModule,
-    TabViewModule,
-    PanelModule,
-    ToolbarModule,
-    MenubarModule,
-    SidebarModule
+    ReactiveFormsModule
   ],
-  providers: [
-    IFRS17ApiService,
-    PPNAService,
-    MessageService
-  ],
+  providers: [],
   bootstrap: []
 })
 export class AppModule { }

@@ -1,52 +1,426 @@
-// Dashboard Component SCSS - IFRS17 Professional Theme
+/* ================================================= */
+/* 🎨 DASHBOARD MODERNE - DESIGN SYSTEM AVANCÉ */
+/* ================================================= */
 
-.dashboard-container {
-  min-height: calc(100vh - 120px);
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 20px 0;
+.ifrs17-dashboard {
+  min-height: 100vh;
+  background: var(--ifrs17-bg-primary);
+  font-family: var(--ifrs17-font-family);
 }
 
-.features-section .section-title {
-  color: #2c3e50;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 25px;
+/* 🎯 EN-TÊTE MODERNE */
+.dashboard-header {
+  background: linear-gradient(135deg, var(--ifrs17-primary) 0%, var(--ifrs17-secondary) 100%);
+  padding: 2rem 0;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs><circle cx="10" cy="10" r="10" fill="url(%23a)"/><circle cx="30" cy="10" r="10" fill="url(%23a)"/><circle cx="50" cy="10" r="10" fill="url(%23a)"/><circle cx="70" cy="10" r="10" fill="url(%23a)"/><circle cx="90" cy="10" r="10" fill="url(%23a)"/></svg>') repeat;
+    opacity: 0.1;
+  }
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+
+  .dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+}
+
+.header-stats {
   display: flex;
-  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    i {
+      font-size: 1.2rem;
+    }
+
+    span {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
 }
 
-.features-section .section-title i {
-  margin-right: 12px;
-  color: #3498db;
+/* 🎮 CARTES DE FONCTIONNALITÉS MODERNES */
+.dashboard-main {
+  padding: 3rem 0;
 }
 
 .feature-card {
-  background: white;
-  border-radius: 15px;
-  padding: 25px;
-  height: 420px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  background: var(--ifrs17-surface);
+  border-radius: 20px;
+  padding: 0;
+  height: auto;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--ifrs17-shadow-md);
+  border: 1px solid var(--ifrs17-border);
   cursor: pointer;
-  border: 2px solid transparent;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--ifrs17-gradient-primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+
+  .card-header {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--ifrs17-border);
+
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ifrs17-gradient-primary);
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .card-badge {
+      .modern-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.primary {
+          background: rgba(59, 130, 246, 0.1);
+          color: var(--ifrs17-primary);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        &.success {
+          background: rgba(34, 197, 94, 0.1);
+          color: var(--ifrs17-success);
+          border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        &.warning {
+          background: rgba(251, 191, 36, 0.1);
+          color: var(--ifrs17-warning);
+          border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+      }
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ifrs17-text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-description {
+      color: var(--ifrs17-text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-size: 0.9rem;
+        color: var(--ifrs17-text-secondary);
+
+        i {
+          margin-right: 0.5rem;
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+
+  .card-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--ifrs17-border);
+
+    .modern-button {
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      background: var(--ifrs17-gradient-primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+      }
+    }
+  }
+}
+
+/* 📊 MÉTRIQUES & STATISTIQUES */
+.metrics-section {
+  margin-bottom: 3rem;
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ifrs17-text-primary);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: var(--ifrs17-primary);
+      margin-right: 0.75rem;
+    }
+  }
+}
+
+.metric-card {
+  background: var(--ifrs17-surface);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--ifrs17-border);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &:hover {
+    box-shadow: var(--ifrs17-shadow-lg);
+    border-color: var(--ifrs17-primary);
+  }
+
+  .metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1.5rem;
+    }
+  }
+
+  .metric-content {
+    flex: 1;
+
+    .metric-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--ifrs17-text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: var(--ifrs17-text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-trend {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+
+      &.positive {
+        color: var(--ifrs17-success);
+        background: rgba(34, 197, 94, 0.1);
+      }
+
+      &.negative {
+        color: var(--ifrs17-danger);
+        background: rgba(239, 68, 68, 0.1);
+      }
+
+      i {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+}
+
+/* 🚀 ACTIONS RAPIDES */
+.quick-actions-section {
+  margin-bottom: 3rem;
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ifrs17-text-primary);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: var(--ifrs17-primary);
+      margin-right: 0.75rem;
+    }
+  }
+}
+
+.quick-action-card {
+  background: var(--ifrs17-surface);
+  border: 1px solid var(--ifrs17-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  height: 100%;
+
+  &:hover {
+    background: var(--ifrs17-primary);
+    color: white;
+    border-color: var(--ifrs17-primary);
+    transform: translateY(-4px);
+    box-shadow: var(--ifrs17-shadow-lg);
+
+    i {
+      color: white !important;
+    }
+  }
+
+  i {
+    font-size: 2rem;
+    transition: all 0.3s ease;
+  }
+
+  span {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
 }
 
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+/* 🔗 FOOTER */
+.dashboard-footer {
+  background: var(--ifrs17-surface);
+  border-top: 1px solid var(--ifrs17-border);
+  padding: 1.5rem 0;
+  margin-top: 3rem;
+
+  .footer-text {
+    color: var(--ifrs17-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+
+    i {
+      color: var(--ifrs17-primary);
+    }
+  }
 }
 
-.feature-card .card-icon {
-  text-align: center;
-  margin-bottom: 20px;
-}
+/* 📱 RESPONSIF */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1.5rem 0;
 
-.feature-card .card-icon i {
-  font-size: 3rem;
-  color: #3498db;
-  transition: all 0.3s ease;
+    .header-content .dashboard-title {
+      font-size: 2rem;
+    }
+
+    .header-stats {
+      justify-content: center;
+      margin-top: 1rem;
+
+      .stat-card {
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .dashboard-main {
+    padding: 2rem 0;
+  }
+
+  .feature-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .metrics-section .section-title,
+  .quick-actions-section .section-title {
+    font-size: 1.5rem;
+  }
 }
 
 .feature-card .card-content {
@@ -350,35 +724,43 @@
 }
 
 .btn-action.btn-primary {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
 }
 
 .btn-action.btn-primary:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
 }
 
 .btn-action.btn-success {
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-action.btn-success:hover {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
 }
 
 .btn-action.btn-info {
-  background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
 }
 
 .btn-action.btn-info:hover {
-  background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.5);
 }
 
 .btn-action.btn-warning {
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
 }
 
 .btn-action.btn-warning:hover {
-  background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
 }
 
 // Responsive Design

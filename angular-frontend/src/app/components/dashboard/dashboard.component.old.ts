@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    public authService: AuthService,
+    private authService: AuthService,
     private dashboardService: DashboardService,
     private router: Router
   ) {}
@@ -83,12 +83,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     this.subscriptions.push(dashboardSub, alertsSub);
   }
+    this.alerts = [];
+    
+    if (metrics.lrc_total < 0) {
+      this.alerts.push({
+        severity: 'danger',
+        title: 'LRC Négatif',
+        message: 'Le LRC total est négatif, vérifiez les calculs PAA'
+      });
+    }
+    
+    if (metrics.risk_adjustment > metrics.lrc_total * 0.1) {
+      this.alerts.push({
+        severity: 'warning', 
+        title: 'Ajustement Risque Élevé',
+        message: 'L\'ajustement pour risque dépasse 10% du LRC'
+      });
+    }
+  }
 
-  // 🎯 Méthodes d'interaction avec le dashboard
-
-  /**
-   * Naviguer vers une section spécifique
-   */
+  // 🎯 Méthodes de navigation
   navigateTo(route: string, queryParams?: any) {
     if (queryParams) {
       this.router.navigate([route], { queryParams });
@@ -97,83 +111,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Exécuter une action recommandée
-   */
-  executeAction(action: RecommendedAction) {
-    // Attribuer les points pour l'action
-    this.authService.awardPoints(action.points_reward, action.category).subscribe({
-      next: () => {
-        console.log(`Points attribués: +${action.points_reward} pour ${action.title}`);
-        // Naviguer vers l'action
-        this.navigateTo(action.action_url);
-      },
-      error: (error) => {
-        console.error('Erreur lors de l\'attribution des points:', error);
-        // Naviguer quand même vers l'action
-        this.navigateTo(action.action_url);
-      }
-    });
+  // 📤 Méthode d'export
+  exportData() {
+    // Logique d'export à implémenter
+    console.log('Export des données en cours...');
   }
 
-  /**
-   * Marquer une alerte comme lue
-   */
-  dismissAlert(alert: Alert) {
-    this.dashboardService.markAlertAsRead(alert.id);
-  }
-
-  /**
-   * Rafraîchir le dashboard
-   */
-  refreshDashboard() {
-    this.isLoading = true;
-    this.dashboardService.refreshDashboard();
-  }
-
-  /**
-   * Obtenir la classe CSS pour le niveau utilisateur
-   */
-  getLevelClass(): string {
-    if (!this.currentUser) return '';
-    
-    switch (this.currentUser.level) {
-      case UserLevel.DEBUTANT:
-        return 'level-debutant';
-      case UserLevel.INTERMEDIAIRE:
-        return 'level-intermediaire';
-      case UserLevel.EXPERT:
-        return 'level-expert';
-      case UserLevel.MAITRE_IFRS17:
-        return 'level-maitre';
-      default:
-        return '';
-    }
-  }
-
-  /**
-   * Obtenir l'icône pour le niveau utilisateur
-   */
-  getLevelIcon(): string {
-    if (!this.currentUser) return '🌱';
-    
-    switch (this.currentUser.level) {
-      case UserLevel.DEBUTANT:
-        return '🌱';
-      case UserLevel.INTERMEDIAIRE:
-        return '🌿';
-      case UserLevel.EXPERT:
-        return '🌳';
-      case UserLevel.MAITRE_IFRS17:
-        return '🏆';
-      default:
-        return '🌱';
-    }
-  }
-
-  /**
-   * Formater les nombres en devise
-   */
+  // 🔧 Méthodes utilitaires
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('fr-TN', {
       style: 'currency',
@@ -183,23 +127,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }).format(value);
   }
 
-  /**
-   * Formater les pourcentages
-   */
   formatPercentage(value: number): string {
-    return new Intl.NumberFormat('fr-TN', {
+    return new Intl.NumberFormat('fr-FR', {
       style: 'percent',
       minimumFractionDigits: 1,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 1
     }).format(value / 100);
   }
 
-  /**
-   * Obtenir la classe CSS pour les indicateurs
-   */
-  getIndicatorClass(value: number, threshold: number = 90): string {
-    if (value >= threshold) return 'indicator-success';
-    if (value >= threshold * 0.75) return 'indicator-warning';
-    return 'indicator-danger';
+  getRatioClass(ratio: number): string {
+    if (ratio > 100) return 'text-danger font-weight-bold';
+    if (ratio > 80) return 'text-warning font-weight-bold';
+    return 'text-success';
   }
 }

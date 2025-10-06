@@ -1,0 +1,529 @@
+<!-- ================================================= -->
+<!-- 🏠 DASHBOARD PRINCIPAL IFRS17 - MODERNE & PROFESSIONNEL -->
+<!-- ================================================= -->
+<div class="ifrs17-dashboard animate-fade-in">
+  
+  <!-- 🎯 EN-TÊTE MODERNE -->
+  <header class="dashboard-header">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="header-content animate-slide-in-left">
+            <h1 class="dashboard-title text-gradient">
+              <i class="fas fa-chart-line me-3"></i>
+              IFRS17 Analytics Hub
+            </h1>
+            <p class="dashboard-subtitle">
+              Plateforme d'analytics actuarielle avancée avec IA intégrée
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="header-stats animate-slide-in-right">
+            <div class="stat-card">
+              <i class="fas fa-database text-primary"></i>
+              <span>Données PPNA</span>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-brain text-success"></i>
+              <span>4 Modèles ML</span>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-robot text-info"></i>
+              <span>Assistant IA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🎮 CARTES DE FONCTIONNALITÉS MODERNES -->
+  <main class="dashboard-main">
+    <div class="container-fluid">
+      <div class="row g-4 mb-5">
+        <!-- PPNA Analytics Card -->
+        <div class="col-xl-4 col-lg-6 animate-slide-up">
+          <div class="feature-card modern-card hover-lift" routerLink="/ppna-analytics">
+            <div class="card-header">
+              <div class="card-icon gradient-primary">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="card-badge">
+                <span class="modern-badge primary">PPNA</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">PPNA Analytics</h3>
+              <p class="card-description">
+                Analyse complète des Primes Non Acquises selon IFRS17
+              </p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check-circle text-success me-2"></i>6 onglets d'analyse</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Upload fichiers Excel</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Projections mensuelles</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Export automatisé</li>
+              </ul>
+            </div>
+            <div class="card-footer">
+              <button class="modern-button w-100">
+                <i class="fas fa-arrow-right me-2"></i>
+                Explorer PPNA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ML Analytics Card -->
+        <div class="col-xl-4 col-lg-6 animate-slide-up" style="animation-delay: 0.1s;">
+          <div class="feature-card modern-card hover-lift" routerLink="/ml-analytics-new">
+            <div class="card-header">
+              <div class="card-icon gradient-primary">
+                <i class="fas fa-brain"></i>
+              </div>
+              <div class="card-badge">
+                <span class="modern-badge success">ML</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">ML Analytics</h3>
+              <p class="card-description">
+                Machine Learning avancé pour prédictions actuarielles
+              </p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check-circle text-success me-2"></i>Modèles LightGBM & XGBoost</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Prédictions en temps réel</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Visualisations interactives</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Analyses prédictives</li>
+              </ul>
+            </div>
+            <div class="card-footer">
+              <button class="modern-button w-100">
+                <i class="fas fa-arrow-right me-2"></i>
+                Explorer ML
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assistant IA Card -->
+        <div class="col-xl-4 col-lg-6 animate-slide-up" style="animation-delay: 0.2s;">
+          <div class="feature-card modern-card hover-lift" routerLink="/ai-assistant">
+            <div class="card-header">
+              <div class="card-icon gradient-primary">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="card-badge">
+                <span class="modern-badge warning">IA</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Assistant IA IFRS17</h3>
+              <p class="card-description">
+                Intelligence artificielle dédiée à la norme IFRS17
+              </p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check-circle text-success me-2"></i>Chat intelligent</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Conseils IFRS17</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Assistance contextuelle</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i>Réponses expertes</li>
+              </ul>
+            </div>
+            <div class="card-footer">
+              <button class="modern-button w-100">
+                <i class="fas fa-arrow-right me-2"></i>
+                Chatter avec l'IA
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+            <li>🎯 Paramètres par produit</li>
+            <li>📋 Exports professionnels</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="btn-explore">Explorer PPNA <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-6 mb-4">
+      <div class="feature-card ml-card" routerLink="/ml-analytics-complete">
+        <div class="card-icon">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div class="card-content">
+          <h3>Machine Learning</h3>
+          <p>Analytics ML avancés pour la prédiction et l'analyse</p>
+          <ul class="feature-list">
+            <li>🤖 4 types de modèles ML</li>
+            <li>📤 Upload et insights automatiques</li>
+            <li>🔍 Clustering et segmentation</li>
+            <li>⚠️ Détection d'anomalies</li>
+            <li>📊 Performances détaillées</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="btn-explore">Explorer ML <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-6 mb-4">
+      <div class="feature-card ai-card" routerLink="/ai-assistant">
+        <div class="card-icon">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="card-content">
+          <h3>Assistant IA</h3>
+          <p>Intelligence artificielle conversationnelle IFRS17</p>
+          <ul class="feature-list">
+            <li>💬 Chat interactif</li>
+            <li>📚 Base de connaissances IFRS17</li>
+            <li>🎯 Recommandations expertes</li>
+            <li>🔍 Analyse contextuelle</li>
+            <li>📈 Suggestions d'optimisation</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="btn-explore">Consulter IA <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6 mb-4">
+      <div class="feature-card transform-card" routerLink="/data-transformations">
+        <div class="card-icon">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="card-content">
+          <h3>Transformations de Données</h3>
+          <p>Outils de transformation et préparation des données</p>
+          <ul class="feature-list">
+            <li>🔄 Mapping automatique</li>
+            <li>🧹 Nettoyage des données</li>
+            <li>🎯 Validation et contrôle</li>
+            <li>📊 Prévisualisation en temps réel</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="btn-explore">Transformer <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6 mb-4">
+      <div class="feature-card upload-card">
+        <div class="card-icon">
+          <i class="fas fa-file-excel"></i>
+        </div>
+        <div class="card-content">
+          <h3>Upload Rapide PPNA</h3>
+          <p>Zone de téléchargement rapide pour vos fichiers Excel</p>
+          <div class="upload-zone-mini">
+            <app-ppna-upload></app-ppna-upload>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 MÉTRIQUES EN TEMPS RÉEL -->
+  <div class="row mb-4" *ngIf="ppnaMetrics">
+    <div class="col-12">
+      <div class="metrics-section">
+        <h2 class="section-title">
+          <i class="fas fa-chart-bar me-2"></i>
+          Métriques IFRS17 en Temps Réel
+        </h2>
+        
+        <div class="row">
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card lrc-card">
+              <div class="metric-icon">
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">LRC Total (PAA)</div>
+                <div class="metric-value">{{ formatCurrency(ppnaMetrics.lrc_total) }}</div>
+                <div class="metric-trend positive">
+                  <i class="fas fa-arrow-up"></i> +2.3%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card contracts-card">
+              <div class="metric-icon">
+                <i class="fas fa-file-contract"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Contrats Onéreux</div>
+                <div class="metric-value">{{ ppnaMetrics.onerous_contracts_count | number }}</div>
+                <div class="metric-trend neutral">
+                  <i class="fas fa-exclamation-triangle"></i> Surveillance
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card premiums-card">
+              <div class="metric-icon">
+                <i class="fas fa-money-bill-wave"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">PPNA Total</div>
+                <div class="metric-value">{{ formatCurrency(ppnaMetrics.ppna_total) }}</div>
+                <div class="metric-trend positive">
+                  <i class="fas fa-arrow-up"></i> +5.7%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card risk-card">
+              <div class="metric-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Risk Adjustment</div>
+                <div class="metric-value">{{ formatCurrency(ppnaMetrics.risk_adjustment) }}</div>
+                <div class="metric-trend neutral">
+                  <i class="fas fa-minus"></i> 0.0%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🎯 ACTIONS RAPIDES -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="quick-actions-section">
+        <h2 class="section-title">
+          <i class="fas fa-bolt me-2"></i>
+          Actions Rapides
+        </h2>
+        
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <button class="btn btn-primary btn-action w-100" (click)="navigateTo('/ppna-analytics', {tab: 'donnees'})">
+              <i class="fas fa-upload"></i>
+              <span>Nouveau Upload PPNA</span>
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button class="btn btn-success btn-action w-100" (click)="navigateTo('/ml-analytics-complete', {tab: 'models'})">
+              <i class="fas fa-robot"></i>
+              <span>Entraîner Modèle ML</span>
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button class="btn btn-info btn-action w-100" (click)="navigateTo('/ai-assistant')">
+              <i class="fas fa-comments"></i>
+              <span>Consulter Assistant IA</span>
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button class="btn btn-warning btn-action w-100" (click)="navigateTo('/ppna-analytics', {tab: 'exports'})">
+              <i class="fas fa-download"></i>
+              <span>Exporter Rapport</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 MÉTRIQUES PRINCIPALES PPNA -->
+  <div class="row mt-4" *ngIf="ppnaMetrics">
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                LRC Total (PAA)
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ formatCurrency(ppnaMetrics.lrc_total) }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-coins fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                Ajustement Risque
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ formatCurrency(ppnaMetrics.risk_adjustment) }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                Contrats Déficitaires
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ ppnaMetrics.onerous_contracts_count }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                Composante Perte
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ formatCurrency(ppnaMetrics.loss_component) }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📈 GRAPHIQUES ET ANALYTICS -->
+  <div class="row mt-4">
+    <!-- Graphique évolution LRC -->
+    <div class="col-lg-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Évolution LRC (Liability for Remaining Coverage)
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="lrcChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Répartition par segments -->
+    <div class="col-lg-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Répartition PPNA par Segments
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="chart-pie pt-4 pb-2">
+            <canvas id="segmentChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📋 TABLEAU DÉTAILLÉ PPNA -->
+  <div class="row mt-4" *ngIf="ppnaData && ppnaData.length > 0">
+    <div class="col-12">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Données PPNA Détaillées
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="thead-dark">
+                <tr>
+                  <th>Segment</th>
+                  <th>Produit</th>
+                  <th>LRC Début</th>
+                  <th>Primes Acquises</th>
+                  <th>Sinistres</th>
+                  <th>LRC Fin</th>
+                  <th>Ratio S/P</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of ppnaData.slice(0, 10)">
+                  <td>{{ item.Segment || 'N/A' }}</td>
+                  <td>{{ item.Produit || 'N/A' }}</td>
+                  <td>{{ formatCurrency(item.LRC_Debut || 0) }}</td>
+                  <td>{{ formatCurrency(item.Primes_Acquises || 0) }}</td>
+                  <td>{{ formatCurrency(item.Sinistres || 0) }}</td>
+                  <td>{{ formatCurrency(item.LRC_Fin || 0) }}</td>
+                  <td>
+                    <span [ngClass]="getRatioClass(item.Ratio_SP || 0)">
+                      {{ formatPercentage(item.Ratio_SP || 0) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🚨 ALERTES IFRS17 -->
+  <div class="row mt-4" *ngIf="alerts && alerts.length > 0">
+    <div class="col-12">
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <h6 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Alertes IFRS17
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="alert" 
+               *ngFor="let alert of alerts" 
+               [ngClass]="'alert-' + alert.severity">
+            <strong>{{ alert.title }}</strong>: {{ alert.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -13,33 +13,49 @@
 /* ================================================= */
 
 :root {
-  /* 🎨 Palette de couleurs IFRS17 */
-  --ifrs17-primary: #2c5aa0;        /* Bleu professionnel */
-  --ifrs17-secondary: #e8f2ff;      /* Bleu clair */
-  --ifrs17-accent: #ffd700;         /* Or pour les highlights */
-  --ifrs17-success: #28a745;        /* Vert validation */
-  --ifrs17-warning: #ffc107;        /* Jaune attention */
-  --ifrs17-danger: #dc3545;         /* Rouge erreur */
-  --ifrs17-info: #17a2b8;          /* Bleu information */
-  --ifrs17-light: #f8f9fa;         /* Gris très clair */
-  --ifrs17-dark: #343a40;          /* Gris foncé */
+  /* 🎨 Palette de couleurs moderne IFRS17 */
+  --ifrs17-primary: #3b82f6;        /* Bleu moderne */
+  --ifrs17-primary-dark: #1e40af;   /* Bleu foncé */
+  --ifrs17-primary-light: #dbeafe;  /* Bleu très clair */
+  --ifrs17-secondary: #f1f5f9;      /* Gris neutre */
+  --ifrs17-accent: #8b5cf6;         /* Violet accent */
+  --ifrs17-success: #10b981;        /* Vert moderne */
+  --ifrs17-warning: #f59e0b;        /* Orange moderne */
+  --ifrs17-danger: #ef4444;         /* Rouge moderne */
+  --ifrs17-info: #06b6d4;          /* Cyan moderne */
+  --ifrs17-light: #ffffff;         /* Blanc pur */
+  --ifrs17-dark: #0f172a;          /* Noir moderne */
+  --ifrs17-gray-50: #f8fafc;
+  --ifrs17-gray-100: #f1f5f9;
+  --ifrs17-gray-200: #e2e8f0;
+  --ifrs17-gray-300: #cbd5e1;
+  --ifrs17-gray-400: #94a3b8;
+  --ifrs17-gray-500: #64748b;
+  --ifrs17-gray-600: #475569;
+  --ifrs17-gray-700: #334155;
+  --ifrs17-gray-800: #1e293b;
+  --ifrs17-gray-900: #0f172a;
   
-  /* 📐 Espacements et mesures */
-  --ifrs17-border-radius: 12px;
-  --ifrs17-border-radius-sm: 6px;
-  --ifrs17-border-radius-lg: 16px;
-  --ifrs17-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --ifrs17-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  --ifrs17-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+  /* 📐 Espacements et mesures modernes */
+  --ifrs17-border-radius: 16px;
+  --ifrs17-border-radius-sm: 8px;
+  --ifrs17-border-radius-lg: 24px;
+  --ifrs17-border-radius-xl: 32px;
+  --ifrs17-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ifrs17-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --ifrs17-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --ifrs17-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --ifrs17-shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --ifrs17-shadow-2xl: 0 50px 100px -20px rgba(0, 0, 0, 0.25);
   
-  /* ⏱️ Animations */
-  --ifrs17-transition: all 0.3s ease;
-  --ifrs17-transition-fast: all 0.15s ease;
-  --ifrs17-transition-slow: all 0.5s ease;
+  /* ⏱️ Animations fluides */
+  --ifrs17-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --ifrs17-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --ifrs17-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* 🔤 Typographie */
-  --ifrs17-font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --ifrs17-font-mono: 'Roboto Mono', 'Courier New', monospace;
+  /* 🔤 Typographie moderne */
+  --ifrs17-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifrs17-font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
   --ifrs17-font-size-xs: 0.75rem;
   --ifrs17-font-size-sm: 0.875rem;
   --ifrs17-font-size-base: 1rem;
@@ -55,6 +71,13 @@
   --csm-color: #2ecc71;            /* Contractual Service Margin */
   --ra-color: #f39c12;             /* Risk Adjustment */
   --solvabilite-color: #9b59b6;    /* Solvabilité */
+  
+  /* 🎨 Gradients */
+  --ifrs17-gradient-primary: linear-gradient(135deg, var(--ifrs17-primary) 0%, var(--ifrs17-accent) 100%);
+  --ifrs17-gradient-secondary: linear-gradient(135deg, var(--ifrs17-gray-100) 0%, var(--ifrs17-gray-200) 100%);
+  --ifrs17-gradient-success: linear-gradient(135deg, var(--ifrs17-success) 0%, #059669 100%);
+  --ifrs17-gradient-warning: linear-gradient(135deg, var(--ifrs17-warning) 0%, #d97706 100%);
+  --ifrs17-gradient-danger: linear-gradient(135deg, var(--ifrs17-danger) 0%, #dc2626 100%);
 }
 
 /* ================================================= */
@@ -82,8 +105,8 @@ body {
   font-family: var(--ifrs17-font-family);
   font-size: var(--ifrs17-font-size-base);
   line-height: 1.6;
-  color: var(--ifrs17-dark);
-  background-color: #f8fafc;
+  color: var(--ifrs17-gray-800);
+  background-color: var(--ifrs17-gray-50);
   overflow-x: hidden;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -97,7 +120,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.3;
-  color: var(--ifrs17-dark);
+  color: var(--ifrs17-gray-900);
   margin-bottom: 0.5em;
 }
 
@@ -543,6 +566,242 @@ p {
 /* 🖨️ STYLES D'IMPRESSION */
 /* ================================================= */
 
+/* ================================================= */
+/* 🎯 CLASSES UTILITAIRES MODERNES */
+/* ================================================= */
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--ifrs17-primary) 0%, var(--ifrs17-accent) 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--ifrs17-gray-100) 0%, var(--ifrs17-gray-200) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--ifrs17-primary) 0%, var(--ifrs17-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hover-lift {
+  transition: var(--ifrs17-transition);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-scale {
+  transition: var(--ifrs17-transition);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ================================================= */
+/* 🎨 COMPOSANTS MODERNES */
+/* ================================================= */
+
+.modern-card {
+  background: var(--ifrs17-light);
+  border-radius: var(--ifrs17-border-radius);
+  box-shadow: var(--ifrs17-shadow);
+  border: 1px solid var(--ifrs17-gray-200);
+  transition: var(--ifrs17-transition);
+}
+
+.modern-card:hover {
+  box-shadow: var(--ifrs17-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.modern-button {
+  background: var(--ifrs17-gradient-primary);
+  color: var(--ifrs17-light);
+  border: none;
+  border-radius: var(--ifrs17-border-radius-sm);
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: var(--ifrs17-font-size-sm);
+  cursor: pointer;
+  transition: var(--ifrs17-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+}
+
+.modern-button:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.modern-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--ifrs17-gray-400);
+  box-shadow: none;
+}
+
+.modern-button.secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ifrs17-primary);
+  border: 1px solid var(--ifrs17-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modern-button.secondary:hover {
+  background: var(--ifrs17-primary);
+  color: white;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.modern-button.danger {
+  background: var(--ifrs17-gradient-danger);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modern-button.danger:hover {
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.modern-button.success {
+  background: var(--ifrs17-gradient-success);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.modern-button.success:hover {
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.modern-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--ifrs17-gray-200);
+  border-radius: var(--ifrs17-border-radius-sm);
+  font-size: var(--ifrs17-font-size-base);
+  font-family: var(--ifrs17-font-family);
+  transition: var(--ifrs17-transition);
+  background: var(--ifrs17-light);
+}
+
+.modern-input:focus {
+  outline: none;
+  border-color: var(--ifrs17-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modern-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--ifrs17-border-radius-sm);
+  font-size: var(--ifrs17-font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modern-badge.primary {
+  background: var(--ifrs17-primary-light);
+  color: var(--ifrs17-primary-dark);
+}
+
+.modern-badge.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--ifrs17-success);
+}
+
+.modern-badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--ifrs17-warning);
+}
+
+.modern-badge.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--ifrs17-danger);
+}
+
+/* ================================================= */
+
 @media print {
   .no-print {
     display: none !important;
@@ -559,5 +818,39 @@ p {
   
   body {
     background: white;
+  }
+}
+
+/* ================================================= */
+/* 🔧 FIX POUR LA VISIBILITÉ DU TEXTE DES BOUTONS */
+/* ================================================= */
+
+/* Fix pour assurer la visibilité du texte des boutons d'authentification */
+.auth-btn {
+  color: #ffffff !important;
+  
+  span, i {
+    color: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  &.primary {
+    color: #ffffff !important;
+    
+    span, i {
+      color: #ffffff !important;
+    }
+  }
+}
+
+/* Classe pour améliorer la visibilité générale des boutons */
+button {
+  span, i {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }
