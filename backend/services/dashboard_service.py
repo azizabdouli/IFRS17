@@ -5,7 +5,10 @@ import json
 from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
 from backend.database.models import User
-from backend.database.schemas import KPIMetrics, Alert, DashboardResponse, UserProgress, UserLevel
+from backend.database.schemas import (
+    KPIMetrics, Alert, DashboardResponse, UserProgress, UserLevel,
+    RecommendedAction, WeeklySummary, Achievements
+)
 from backend.services.ppna_service import PPNAService
 import logging
 
@@ -35,30 +38,38 @@ class DashboardService:
             # Génération des alertes contextuelles
             alerts = self._generate_alerts(kpis, user)
             
-            # Actions rapides personnalisées
-            quick_actions = self._get_quick_actions(user)
+            # Actions recommandées
+            recommended_actions = self._get_recommended_actions(user)
             
-            # Progression utilisateur
-            user_progress = self._get_user_progress(user)
+            # Résumé hebdomadaire
+            weekly_summary = self._get_weekly_summary(user)
+            
+            # Réalisations
+            achievements = self._get_achievements(user)
+            
+            # Insights contextuels
+            contextual_insights = self._get_contextual_insights(kpis, user)
             
             return DashboardResponse(
+                user_id=user_id,
                 kpis=kpis,
                 alerts=alerts,
-                quick_actions=quick_actions,
-                last_updated=datetime.now(),
-                user_progress=user_progress
+                recommended_actions=recommended_actions,
+                weekly_summary=weekly_summary,
+                achievements=achievements,
+                contextual_insights=contextual_insights
             )
             
         except Exception as e:
             logger.error(f"Erreur dashboard unifié pour utilisateur {user_id}: {str(e)}")
-            return self._get_default_dashboard()
+            return self._get_default_dashboard(user_id)
     
     def _get_kpi_metrics(self) -> KPIMetrics:
         """Calcule les KPIs principaux IFRS17"""
         try:
             # Chargement des données PPNA
             ppna_data = self.ppna_service.load_ppna_data()
-            metrics = self.ppna_service.calculate_dashboard_metrics()
+            metrics = self.ppna_service.get_dashboard_metrics()
             
             if metrics.get('status') == 'success':
                 data = metrics.get('data', {})
@@ -94,75 +105,70 @@ class DashboardService:
     def _generate_alerts(self, kpis: KPIMetrics, user: User) -> List[Alert]:
         """Génère des alertes intelligentes basées sur les KPIs et le profil utilisateur"""
         alerts = []
-        alert_id = 1
         
         # Alerte contrats onéreux
         if kpis.onerous_contracts_count > 10:
             alerts.append(Alert(
-                id=alert_id,
-                type="critical",
-                title="🚨 Contrats Onéreux Élevés",
+                id="alert_1",
+                type="error",
+                title="Contrats Onéreux Élevés",
                 message=f"{kpis.onerous_contracts_count} contrats onéreux détectés (+12% vs trimestre précédent)",
                 priority="high",
-                created_at=datetime.now(),
-                actions=["Analyser détail", "Ajuster provisions", "Générer rapport"],
-                is_read=False
+                created_at=datetime.now().isoformat(),
+                action_url="/ppna",
+                action_text="Analyser les contrats"
             ))
-            alert_id += 1
         
         # Alerte profitabilité
         if kpis.profitability_ratio < 90:
             alerts.append(Alert(
-                id=alert_id,
+                id="alert_2",
                 type="warning",
-                title="📉 Rentabilité Sous Objectif",
+                title="Rentabilité Sous Objectif",
                 message=f"Ratio à {kpis.profitability_ratio}% (objectif: 90%)",
                 priority="medium",
-                created_at=datetime.now(),
-                actions=["Analyser causes", "Optimiser portefeuille", "Revoir stratégie"],
-                is_read=False
+                created_at=datetime.now().isoformat(),
+                action_url="/ppna",
+                action_text="Optimiser portefeuille"
             ))
-            alert_id += 1
         
         # Alerte composant de perte
         if kpis.loss_component > 100000:
             alerts.append(Alert(
-                id=alert_id,
+                id="alert_3",
                 type="warning",
-                title="💰 Composant de Perte Significatif",
+                title="Composant de Perte Significatif",
                 message=f"Loss component: {self._format_currency_tnd(kpis.loss_component)}",
                 priority="medium",
-                created_at=datetime.now(),
-                actions=["Réviser provisions", "Analyser tendances", "Alerter direction"],
-                is_read=False
+                created_at=datetime.now().isoformat(),
+                action_url="/ppna",
+                action_text="Réviser provisions"
             ))
-            alert_id += 1
         
         # Alerte recommandation PAA
         if kpis.risk_score > 3.0:
             alerts.append(Alert(
-                id=alert_id,
+                id="alert_4",
                 type="info",
-                title="🔧 Révision Paramètres PAA",
+                title="Révision Paramètres PAA",
                 message="Révision des paramètres PAA recommandée pour AUTO_2024",
                 priority="low",
-                created_at=datetime.now(),
-                actions=["Analyser cohorte", "Ajuster paramètres", "Valider changements"],
-                is_read=False
+                created_at=datetime.now().isoformat(),
+                action_url="/ppna",
+                action_text="Ajuster paramètres"
             ))
-            alert_id += 1
         
         # Alerte progression utilisateur
         if user.points < 100 and user.level == "Débutant":
             alerts.append(Alert(
-                id=alert_id,
+                id="alert_5",
                 type="info",
-                title="🎯 Progression Utilisateur",
+                title="Progression Utilisateur",
                 message=f"Complétez 3 analyses pour atteindre le niveau Intermédiaire ({user.points}/100 points)",
                 priority="low",
-                created_at=datetime.now(),
-                actions=["Voir objectifs", "Commencer analyse", "Guide utilisateur"],
-                is_read=False
+                created_at=datetime.now().isoformat(),
+                action_url="/dashboard",
+                action_text="Voir objectifs"
             ))
         
         return alerts
@@ -232,14 +238,99 @@ class DashboardService:
         """Formate un montant en Dinar Tunisien"""
         return f"{amount:,.0f} TND".replace(',', ' ')
     
-    def _get_default_dashboard(self) -> DashboardResponse:
+    def _get_recommended_actions(self, user: User) -> List[Dict]:
+        """Actions recommandées personnalisées"""
+        from backend.database.schemas import RecommendedAction
+        
+        actions = [
+            RecommendedAction(
+                id="1",
+                title="Analyser PPNA Q4",
+                description="Analyser les provisions pour primes non acquises du trimestre",
+                category="IFRS17",
+                priority="high",
+                estimated_time=15,
+                points_reward=25,
+                action_url="/ppna",
+                icon="fas fa-file-invoice"
+            ),
+            RecommendedAction(
+                id="2",
+                title="Détecter contrats onéreux",
+                description="Identifier les contrats déficitaires",
+                category="Risk Management",
+                priority="medium",
+                estimated_time=10,
+                points_reward=30,
+                action_url="/ppna",
+                icon="fas fa-exclamation-triangle"
+            ),
+            RecommendedAction(
+                id="3",
+                title="Analytics ML",
+                description="Analyses prédictives avancées",
+                category="Machine Learning",
+                priority="medium",
+                estimated_time=20,
+                points_reward=40,
+                action_url="/ml-analytics",
+                icon="fas fa-brain"
+            )
+        ]
+        
+        return actions
+    
+    def _get_weekly_summary(self, user: User) -> Dict:
+        """Résumé hebdomadaire"""
+        from backend.database.schemas import WeeklySummary
+        
+        return WeeklySummary(
+            tasks_completed=user.daily_tasks_completed or 0,
+            points_earned=user.points or 0,
+            badges_earned=self._parse_badges(user.badges) if user.badges else [],
+            accuracy_avg=user.accuracy_streak or 0.0
+        )
+    
+    def _get_achievements(self, user: User) -> Dict:
+        """Réalisations utilisateur"""
+        from backend.database.schemas import Achievements
+        
+        badges = self._parse_badges(user.badges) if user.badges else []
+        progress = self._calculate_progress_percentage(user.points or 0)
+        
+        return Achievements(
+            recent_badges=badges[-3:] if len(badges) > 0 else [],
+            next_level_progress=progress,
+            total_achievements=len(badges)
+        )
+    
+    def _get_contextual_insights(self, kpis: Any, user: User) -> List[str]:
+        """Insights contextuels"""
+        insights = []
+        
+        if kpis.onerous_contracts_count > 10:
+            insights.append(f"📊 {kpis.onerous_contracts_count} contrats onéreux nécessitent une attention particulière")
+        
+        if kpis.profitability_ratio < 90:
+            insights.append(f"⚠️ Le ratio de profitabilité ({kpis.profitability_ratio}%) est en dessous de l'objectif")
+        
+        if user.points < 100:
+            insights.append(f"🎯 Encore {100 - user.points} points pour atteindre le niveau Intermédiaire")
+        
+        return insights
+    
+    def _get_default_dashboard(self, user_id: int) -> DashboardResponse:
         """Dashboard par défaut en cas d'erreur"""
+        from backend.database.schemas import WeeklySummary, Achievements
+        
         return DashboardResponse(
+            user_id=user_id,
             kpis=self._get_default_kpis(),
             alerts=[],
-            quick_actions=["Analyser PPNA", "Consulter assistant IA", "Générer rapport"],
-            last_updated=datetime.now(),
-            user_progress=UserProgress()
+            recommended_actions=[],
+            weekly_summary=WeeklySummary(),
+            achievements=Achievements(),
+            contextual_insights=[]
         )
     
     def update_user_progress(self, user_id: int, db: Session, action: str) -> bool:

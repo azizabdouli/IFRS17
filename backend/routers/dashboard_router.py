@@ -38,7 +38,8 @@ async def get_unified_dashboard(
             )
         
         # Générer le dashboard personnalisé
-        dashboard = await DashboardService.get_unified_dashboard(db, user)
+        dashboard_service = DashboardService()
+        dashboard = dashboard_service.get_unified_dashboard(current_user.id, db)
         
         logger.info(f"Dashboard unifié généré pour {user.email}")
         return dashboard

@@ -21,8 +21,9 @@ async def lifespan(app: FastAPI):
     # Initialisation de la base de données
     try:
         from backend.database.connection import engine, Base
+        from backend.database.paa_models import PAAGroup, PAAContract, PAAMovement, PAASnapshot
         Base.metadata.create_all(bind=engine)
-        logger.info("💾 Base de données initialisée avec succès")
+        logger.info("💾 Base de données initialisée avec succès (incluant tables PAA)")
     except Exception as e:
         logger.warning(f"⚠️ Erreur initialisation base de données: {e}")
     
@@ -78,6 +79,7 @@ from backend.routers import transform, projection, ml_router, ai_router
 from backend.routers.ppna_router import router as ppna_router
 from backend.routers.auth_router import router as auth_router
 from backend.routers.dashboard_router import router as dashboard_router
+from backend.routers.paa_router import router as paa_router
 
 app.include_router(auth_router, tags=["🔐 Authentification"])
 app.include_router(dashboard_router, tags=["📊 Dashboard Unifié"])
@@ -86,6 +88,7 @@ app.include_router(projection.router, prefix="/projection", tags=["📊 Projecti
 app.include_router(ml_router.router, prefix="/ml", tags=["🤖 Machine Learning"])
 app.include_router(ai_router.router, prefix="/ai", tags=["🧠 Intelligence Artificielle"])
 app.include_router(ppna_router, tags=["📋 PPNA IFRS17"])
+app.include_router(paa_router, tags=["📘 IFRS17 PAA"])
 
 @app.get("/", tags=["🏠 Accueil"])
 async def root():

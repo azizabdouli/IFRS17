@@ -105,21 +105,45 @@ class KPIMetrics(BaseModel):
     risk_score: float = Field(default=0.0, description="Score de risque sur 5")
 
 class Alert(BaseModel):
-    id: int
-    type: str = Field(..., description="Type d'alerte: critical, warning, info")
+    id: str
+    type: str = Field(..., description="Type d'alerte: info, warning, error, success")
     title: str = Field(..., description="Titre de l'alerte")
     message: str = Field(..., description="Message détaillé")
-    priority: str = Field(..., description="Priorité: high, medium, low")
-    created_at: datetime
-    actions: List[str] = Field(default=[], description="Actions possibles")
-    is_read: bool = False
+    priority: str = Field(..., description="Priorité: low, medium, high, critical")
+    created_at: str
+    action_url: Optional[str] = None
+    action_text: Optional[str] = None
+
+class RecommendedAction(BaseModel):
+    id: str
+    title: str
+    description: str
+    category: str
+    priority: str = Field(..., description="Priority: low, medium, high")
+    estimated_time: int = Field(..., description="Estimated time in minutes")
+    points_reward: int = Field(default=0, description="Points reward")
+    action_url: str
+    icon: str = Field(default="fas fa-tasks")
+
+class WeeklySummary(BaseModel):
+    tasks_completed: int = 0
+    points_earned: int = 0
+    badges_earned: List[str] = []
+    accuracy_avg: float = 0.0
+
+class Achievements(BaseModel):
+    recent_badges: List[str] = []
+    next_level_progress: float = 0.0
+    total_achievements: int = 0
 
 class DashboardResponse(BaseModel):
+    user_id: int
     kpis: KPIMetrics
     alerts: List[Alert] = []
-    quick_actions: List[str] = []
-    last_updated: datetime
-    user_progress: UserProgress
+    recommended_actions: List[RecommendedAction] = []
+    weekly_summary: WeeklySummary
+    achievements: Achievements
+    contextual_insights: List[str] = []
 
 # === SCHEMAS PPNA ===
 

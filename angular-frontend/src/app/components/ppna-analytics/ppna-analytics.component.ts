@@ -1,12 +1,16 @@
 // src/app/components/ppna-analytics/ppna-analytics.component.ts
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PPNAService } from '../../services/ppna.service';
 import { KeyValuePipe } from '../../pipes/keyvalue.pipe';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
+
+// Enregistrer tous les composants Chart.js
+Chart.register(...registerables);
 
 /**
  * 🔍 COMPOSANT ANALYTICS PPNA COMPLET
@@ -53,12 +57,13 @@ interface ParametresProduit {
   standalone: true,
   imports: [CommonModule, FormsModule, KeyValuePipe]
 })
-export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
+export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   
   // État général
   isLoading = false;
   activeTab = 'donnees';
+  currentDateTime: string = '';
   
   // Données
   ppnaData: PPNAData | null = null;
@@ -82,6 +87,11 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
     pctOnereux: 0
   };
   
+  // Charts instances
+  private revenueChart: Chart | null = null;
+  private lrcChart: Chart | null = null;
+  private scatterChart: Chart | null = null;
+  
   // Charts data
   chartRevenueData: any = null;
   chartLRCData: any = null;
@@ -101,13 +111,38 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Initialiser la date une seule fois
+    this.currentDateTime = new Date().toLocaleDateString('fr-TN') + ' ' + new Date().toLocaleTimeString('fr-TN');
+    
     this.loadPPNAData();
     this.initParametresProduits();
   }
 
+  ngAfterViewInit(): void {
+    // Les graphiques seront créés quand l'utilisateur clique sur l'onglet Analyses
+  }
+
   ngOnDestroy(): void {
+    // Détruire les graphiques Chart.js
+    this.destroyCharts();
+    
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private destroyCharts(): void {
+    if (this.revenueChart) {
+      this.revenueChart.destroy();
+      this.revenueChart = null;
+    }
+    if (this.lrcChart) {
+      this.lrcChart.destroy();
+      this.lrcChart = null;
+    }
+    if (this.scatterChart) {
+      this.scatterChart.destroy();
+      this.scatterChart = null;
+    }
   }
 
   // ===============================================
@@ -220,11 +255,12 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
     
     this.isLoading = true;
     
-    // Simulation des analyses basées sur les données PPNA
+    // Générer les données puis créer les graphiques
     setTimeout(() => {
       this.generateChartData();
+      this.createCharts();
       this.isLoading = false;
-    }, 1000);
+    }, 500);
   }
 
   generateChartData(): void {
@@ -232,13 +268,15 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
 
     // Graphique revenus mensuels
     this.chartRevenueData = {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
       datasets: [{
         label: 'Revenue IFRS 17 (TND)',
         data: this.generateMonthlyRevenue(),
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
         borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 2
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
       }]
     };
 
@@ -249,11 +287,11 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
         label: 'Distribution LRC',
         data: [5, 15, 45, 25, 10],
         backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(255, 159, 64, 0.2)',
-          'rgba(255, 205, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(54, 162, 235, 0.2)'
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(255, 205, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(54, 162, 235, 0.6)'
         ],
         borderColor: [
           'rgba(255, 99, 132, 1)',
@@ -265,6 +303,156 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy {
         borderWidth: 1
       }]
     };
+
+    // Graphique scatter PPNA
+    const segments = this.ppnaData['analyse_segments'] || [];
+    this.chartScatterData = {
+      datasets: [{
+        label: 'PPNA comptable vs IFRS17',
+        data: segments.map((s: any) => ({
+          x: s.primes || 0,
+          y: s.provisions || 0
+        })),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }, {
+        label: 'Égalité parfaite',
+        data: [
+          { x: 0, y: 0 },
+          { x: this.metriques.totalPrime, y: this.metriques.totalPrime }
+        ],
+        type: 'line',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false
+      }]
+    };
+  }
+
+  private createCharts(): void {
+    // Détruire les graphiques existants
+    this.destroyCharts();
+
+    // Attendre que le DOM soit prêt
+    setTimeout(() => {
+      // Créer le graphique des revenus
+      const revenueCanvas = document.getElementById('revenueChart') as HTMLCanvasElement;
+      console.log('Revenue canvas:', revenueCanvas);
+      if (revenueCanvas && this.chartRevenueData) {
+        this.revenueChart = new Chart(revenueCanvas, {
+        type: 'line',
+        data: this.chartRevenueData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            title: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value) => {
+                  return new Intl.NumberFormat('fr-TN', {
+                    style: 'currency',
+                    currency: 'TND',
+                    minimumFractionDigits: 0
+                  }).format(value as number);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Créer le graphique LRC
+    const lrcCanvas = document.getElementById('lrcChart') as HTMLCanvasElement;
+    if (lrcCanvas && this.chartLRCData) {
+      this.lrcChart = new Chart(lrcCanvas, {
+        type: 'bar',
+        data: this.chartLRCData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Nombre de contrats'
+              }
+            }
+          }
+        }
+      });
+    }
+
+      // Créer le graphique scatter
+      const scatterCanvas = document.getElementById('scatterChart') as HTMLCanvasElement;
+      console.log('Scatter canvas:', scatterCanvas);
+      if (scatterCanvas && this.chartScatterData) {
+        this.scatterChart = new Chart(scatterCanvas, {
+          type: 'scatter',
+          data: this.chartScatterData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'PPNA Comptable (TND)'
+                },
+                ticks: {
+                  callback: (value) => {
+                    return new Intl.NumberFormat('fr-TN', {
+                      notation: 'compact',
+                      compactDisplay: 'short'
+                    }).format(value as number);
+                  }
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'PPNA IFRS17 (TND)'
+                },
+                ticks: {
+                  callback: (value) => {
+                    return new Intl.NumberFormat('fr-TN', {
+                      notation: 'compact',
+                      compactDisplay: 'short'
+                    }).format(value as number);
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }, 100); // Fermeture du setTimeout
   }
 
   generateMonthlyRevenue(): number[] {

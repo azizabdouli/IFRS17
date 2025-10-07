@@ -1,239 +1,475 @@
-# IFRS17 Insurance Application - Version Production 🎉
+# IFRS17 Hub - BNA (Banque Nationale Agricole)# IFRS17 Insurance Application - Version Production 🎉
 
-## 📋 Aperçu du Projet
+
+
+Application professionnelle de gestion IFRS 17 avec approche PAA (Premium Allocation Approach).## 📋 Aperçu du Projet
+
 Application web full-stack pour la comptabilité d'assurance IFRS17 avec interface moderne Angular et backend FastAPI sécurisé.
 
+## 🚀 Démarrage Rapide
+
 ## 🏗️ Architecture
-- **Frontend**: Angular 17 avec design glassmorphism et authentification JWT
-- **Backend**: FastAPI avec SQLAlchemy ORM et services IFRS17
-- **Base de données**: SQLite (dev) / MySQL (prod) avec XAMPP
-- **Authentification**: JWT tokens avec bcrypt password hashing
+
+### Option 1: Full Stack (Recommandé)- **Frontend**: Angular 17 avec design glassmorphism et authentification JWT
+
+```powershell- **Backend**: FastAPI avec SQLAlchemy ORM et services IFRS17
+
+.\start_fullstack.ps1- **Base de données**: SQLite (dev) / MySQL (prod) avec XAMPP
+
+```- **Authentification**: JWT tokens avec bcrypt password hashing
+
 - **Services IA**: Assistant IA et analytiques ML intégrés
 
-## 📁 Structure du Projet
+### Option 2: Séparé
 
-```
-📦 IFRS17-Application/
+**Backend:**## 📁 Structure du Projet
+
+```powershell
+
+.\start_backend.ps1```
+
+```📦 IFRS17-Application/
+
 ├── 🅰️ angular-frontend/          # Application Angular 17
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/       # Composants UI
-│   │   │   │   ├── auth/         # Authentification
-│   │   │   │   ├── dashboard/    # Tableau de bord
-│   │   │   │   ├── ppna-analytics/   # Analyses PPNA
-│   │   │   │   ├── ml-analytics/     # Analytics ML
-│   │   │   │   └── ai-assistant/     # Assistant IA
-│   │   │   ├── services/         # Services HTTP
-│   │   │   ├── guards/           # Guards de route
-│   │   │   └── models/           # Modèles TypeScript
-│   │   └── environments/         # Configuration environnements
-│   ├── package.json              # Dépendances Node.js
-│   └── angular.json              # Configuration Angular
-├── 🐍 backend/                   # API FastAPI
-│   ├── auth/                     # Services d'authentification
-│   │   ├── security.py           # Sécurité JWT
-│   │   └── user_service.py       # Service utilisateur
-│   ├── database/                 # Couche de données
-│   │   ├── models.py             # Modèles SQLAlchemy
-│   │   ├── schemas.py            # Schémas Pydantic
-│   │   └── connection.py         # Configuration DB
-│   ├── routers/                  # Routes API
-│   │   ├── auth_router.py        # Routes authentification
-│   │   ├── ppna_router.py        # Routes PPNA
-│   │   ├── ml_router.py          # Routes ML
-│   │   └── ai_router.py          # Routes IA
-│   ├── services/                 # Services métier
-│   │   ├── ppna_service.py       # Service PPNA IFRS17
-│   │   ├── data_mapper.py        # Mapping de données
-│   │   └── export_service.py     # Export de données
-│   ├── ai/                       # Services IA
-│   │   ├── ifrs17_ai_assistant.py    # Assistant IA
-│   │   └── predictive_ai_service.py  # IA prédictive
-│   ├── ml/                       # Machine Learning
-│   │   ├── ml_service.py         # Services ML
-│   │   └── models/               # Modèles ML
-│   └── main.py                   # Point d'entrée principal
-├── 📊 Data/                      # Données IFRS17
-│   └── Ppna (4).xlsx             # Données PPNA
-├── ⚙️ Configuration
-│   ├── .env                      # Variables d'environnement
-│   ├── .env.example              # Exemple configuration
-│   ├── requirements.txt          # Dépendances Python
-│   └── .gitignore                # Git ignore
-├── 🚀 Déploiement
-│   ├── simple_auth_server.py     # Serveur auth standalone
-│   └── start_full_stack.bat      # Lanceur production
-└── 📖 README.md                  # Documentation
-```
 
-## ⚡ Démarrage Rapide
+**Frontend:**│   ├── src/
+
+```powershell│   │   ├── app/
+
+.\start_frontend.ps1│   │   │   ├── components/       # Composants UI
+
+```│   │   │   │   ├── auth/         # Authentification
+
+│   │   │   │   ├── dashboard/    # Tableau de bord
+
+## 🌐 URLs│   │   │   │   ├── ppna-analytics/   # Analyses PPNA
+
+│   │   │   │   ├── ml-analytics/     # Analytics ML
+
+- **Frontend**: http://localhost:4200│   │   │   │   └── ai-assistant/     # Assistant IA
+
+- **Backend API**: http://127.0.0.1:8001│   │   │   ├── services/         # Services HTTP
+
+- **Documentation API**: http://127.0.0.1:8001/docs│   │   │   ├── guards/           # Guards de route
+
+│   │   │   └── models/           # Modèles TypeScript
+
+## 📚 Documentation│   │   └── environments/         # Configuration environnements
+
+│   ├── package.json              # Dépendances Node.js
+
+Consultez le dossier `docs/` pour:│   └── angular.json              # Configuration Angular
+
+- `QUICK_START_PAA.md` - Démarrage rapide module PAA├── 🐍 backend/                   # API FastAPI
+
+- `PAA_MODULE_README.md` - Guide utilisateur complet│   ├── auth/                     # Services d'authentification
+
+- `ARCHITECTURE_PAA.md` - Architecture technique│   │   ├── security.py           # Sécurité JWT
+
+- `TRANSFORMATION_PAA_COMPLETE.md` - Rapport de transformation│   │   └── user_service.py       # Service utilisateur
+
+│   ├── database/                 # Couche de données
+
+## 🛠️ Prérequis│   │   ├── models.py             # Modèles SQLAlchemy
+
+│   │   ├── schemas.py            # Schémas Pydantic
+
+- **Python** 3.11+│   │   └── connection.py         # Configuration DB
+
+- **Node.js** 18+│   ├── routers/                  # Routes API
+
+- **MySQL** 8.0+│   │   ├── auth_router.py        # Routes authentification
+
+│   │   ├── ppna_router.py        # Routes PPNA
+
+## 📦 Installation│   │   ├── ml_router.py          # Routes ML
+
+│   │   └── ai_router.py          # Routes IA
+
+### Backend│   ├── services/                 # Services métier
+
+```bash│   │   ├── ppna_service.py       # Service PPNA IFRS17
+
+python -m venv .venv│   │   ├── data_mapper.py        # Mapping de données
+
+.venv\Scripts\Activate.ps1│   │   └── export_service.py     # Export de données
+
+pip install -r requirements.txt│   ├── ai/                       # Services IA
+
+```│   │   ├── ifrs17_ai_assistant.py    # Assistant IA
+
+│   │   └── predictive_ai_service.py  # IA prédictive
+
+### Frontend│   ├── ml/                       # Machine Learning
+
+```bash│   │   ├── ml_service.py         # Services ML
+
+cd angular-frontend│   │   └── models/               # Modèles ML
+
+npm install│   └── main.py                   # Point d'entrée principal
+
+```├── 📊 Data/                      # Données IFRS17
+
+│   └── Ppna (4).xlsx             # Données PPNA
+
+### Base de données├── ⚙️ Configuration
+
+1. Démarrer MySQL (XAMPP ou service Windows)│   ├── .env                      # Variables d'environnement
+
+2. Créer la base: `CREATE DATABASE ifrs17_db;`│   ├── .env.example              # Exemple configuration
+
+3. Le backend créera automatiquement les tables au démarrage│   ├── requirements.txt          # Dépendances Python
+
+│   └── .gitignore                # Git ignore
+
+## 🎯 Fonctionnalités├── 🚀 Déploiement
+
+│   ├── simple_auth_server.py     # Serveur auth standalone
+
+### Modules Principaux│   └── start_full_stack.bat      # Lanceur production
+
+- ✅ **Dashboard IFRS17** - Vue d'ensemble et KPIs└── 📖 README.md                  # Documentation
+
+- ✅ **Module PAA** - Premium Allocation Approach (IFRS 17.53-59)```
+
+- ✅ **PPNA Analytics** - Analyse des données PPNA
+
+- ✅ **ML Analytics** - Machine Learning prédictif## ⚡ Démarrage Rapide
+
+- ✅ **Assistant IA** - Assistant IFRS17 intelligent
 
 ### 1. Prérequis
-- **Python 3.12+** avec pip
-- **Node.js 18+** avec npm/Angular CLI
-- **XAMPP** (pour MySQL en production)
 
-### 2. Installation
+### Fonctionnalités Techniques- **Python 3.12+** avec pip
 
-#### Backend Python
+- ✅ Authentification sécurisée (JWT)- **Node.js 18+** avec npm/Angular CLI
+
+- ✅ API REST documentée (Swagger/OpenAPI)- **XAMPP** (pour MySQL en production)
+
+- ✅ Export Excel/PDF
+
+- ✅ Tests automatisés### 2. Installation
+
+- ✅ Base de données MySQL
+
+- ✅ Architecture modulaire#### Backend Python
+
 ```bash
-# Activer l'environnement virtuel
+
+## 📁 Structure du Projet# Activer l'environnement virtuel
+
 .venv\Scripts\activate
 
-# Installer les dépendances
-pip install -r requirements.txt
 ```
 
-#### Frontend Angular
-```bash
-cd angular-frontend
-npm install
-```
+.# Installer les dépendances
 
-### 3. Configuration
+├── backend/                  # Backend FastAPIpip install -r requirements.txt
 
-#### Variables d'environnement
-Copier `.env.example` vers `.env` et configurer :
-```env
-DATABASE_URL=sqlite:///./ifrs17.db
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
+│   ├── main.py              # Point d'entrée```
 
-#### Base de données
+│   ├── routers/             # Routes API
+
+│   ├── services/            # Logique métier#### Frontend Angular
+
+│   ├── database/            # Modèles et connexion```bash
+
+│   ├── measurement/paa/     # Module PAAcd angular-frontend
+
+│   ├── ml/                  # Machine Learningnpm install
+
+│   ├── ai/                  # Services IA```
+
+│   └── tests/               # Tests unitaires
+
+│### 3. Configuration
+
+├── angular-frontend/         # Frontend Angular 17
+
+│   └── src/app/#### Variables d'environnement
+
+│       ├── components/      # Composants UICopier `.env.example` vers `.env` et configurer :
+
+│       ├── services/        # Services HTTP```env
+
+│       ├── guards/          # Guards de navigationDATABASE_URL=sqlite:///./ifrs17.db
+
+│       └── models/          # Interfaces TypeScriptSECRET_KEY=your-secret-key-here
+
+│ALGORITHM=HS256
+
+├── docs/                     # Documentation complèteACCESS_TOKEN_EXPIRE_MINUTES=30
+
+├── Data/                     # Données de test```
+
+└── requirements.txt          # Dépendances Python
+
+```#### Base de données
+
 - **Développement**: SQLite (automatique)
-- **Production**: MySQL avec XAMPP
 
-### 4. Lancement
+## 🧪 Tests- **Production**: MySQL avec XAMPP
 
-#### Option 1: Lancement automatique (recommandé)
+
+
+### Backend### 4. Lancement
+
 ```bash
+
+# Activer l'environnement virtuel#### Option 1: Lancement automatique (recommandé)
+
+.venv\Scripts\Activate.ps1```bash
+
 start_full_stack.bat
-```
+
+# Lancer les tests```
+
+pytest backend/tests/ -v
 
 #### Option 2: Lancement manuel
-```bash
-# Terminal 1 - Backend
-python simple_auth_server.py
 
-# Terminal 2 - Frontend
-cd angular-frontend
-ng serve
+# Avec coverage```bash
+
+pytest backend/tests/ --cov=backend --cov-report=html# Terminal 1 - Backend
+
+```python simple_auth_server.py
+
+
+
+### Frontend# Terminal 2 - Frontend
+
+```bashcd angular-frontend
+
+cd angular-frontendng serve
+
+npm test```
+
 ```
 
 ### 5. Accès
-- **Frontend**: http://localhost:4200
+
+## 🔧 Configuration- **Frontend**: http://localhost:4200
+
 - **Backend API**: http://localhost:8001
-- **Documentation API**: http://localhost:8001/docs
 
-## 🔐 Authentification
+### Backend (.env)- **Documentation API**: http://localhost:8001/docs
 
-### Comptes par défaut
-- **Actuaire**: `actuaire@bna.tn` / `password123`
-- **Comptable**: `comptable@bna.tn` / `password123`
+```env
 
-### Fonctionnalités
-- JWT Token Authentication
-- Hachage bcrypt des mots de passe
-- Contrôle d'accès basé sur les rôles
-- Guards Angular pour la sécurité des routes
+DATABASE_URL=mysql+pymysql://root:@localhost/ifrs17_db## 🔐 Authentification
 
-## 📊 Fonctionnalités IFRS17
+SECRET_KEY=your-secret-key-here
 
-### Services PPNA
+ALGORITHM=HS256### Comptes par défaut
+
+ACCESS_TOKEN_EXPIRE_MINUTES=30- **Actuaire**: `actuaire@bna.tn` / `password123`
+
+```- **Comptable**: `comptable@bna.tn` / `password123`
+
+
+
+### Frontend (environment.ts)### Fonctionnalités
+
+```typescript- JWT Token Authentication
+
+export const environment = {- Hachage bcrypt des mots de passe
+
+  production: false,- Contrôle d'accès basé sur les rôles
+
+  apiUrl: 'http://127.0.0.1:8001'- Guards Angular pour la sécurité des routes
+
+};
+
+```## 📊 Fonctionnalités IFRS17
+
+
+
+## 📊 Module PAA - Guide Rapide### Services PPNA
+
 - Calculs PAA (Premium Allocation Approach)
-- Gestion des passifs d'assurance
-- Projections financières TND
-- Export de données Excel
 
-### Analytics ML
-- Prédictions basées sur l'IA
-- Analyse de tendances
-- Optimisation des réserves
-- Modèles d'apprentissage automatique
+### 1. Créer un groupe de contrats- Gestion des passifs d'assurance
 
-### Assistant IA
-- Support conversationnel IFRS17
-- Aide à la décision
-- Explications des calculs
-- Recommandations personnalisées
+```json- Projections financières TND
 
-## 🎨 Interface Utilisateur
+POST /paa/groups/init- Export de données Excel
+
+{
+
+  "group_id": "AUTO_2025_Q1",### Analytics ML
+
+  "contracts": [- Prédictions basées sur l'IA
+
+    {- Analyse de tendances
+
+      "contract_id": "C1",- Optimisation des réserves
+
+      "portfolio": "AUTO",- Modèles d'apprentissage automatique
+
+      "inception": "2025-01-01",
+
+      "expiry": "2025-12-31",### Assistant IA
+
+      "written_premium": 15000,- Support conversationnel IFRS17
+
+      "expected_claim_ratio": 0.55,- Aide à la décision
+
+      "expected_expense_ratio": 0.12- Explications des calculs
+
+    }- Recommandations personnalisées
+
+  ]
+
+}## 🎨 Interface Utilisateur
+
+```
 
 ### Design
-- **Style**: Glassmorphism moderne
-- **Responsive**: Support mobile et desktop
-- **Thème**: Violet/blanc professionnel
-- **UX**: Navigation intuitive
 
-### Composants
-- Dashboard interactif
-- Formulaires réactifs Angular
-- Tableaux de données avancés
-- Graphiques et visualisations
+### 2. Traiter une période- **Style**: Glassmorphism moderne
 
-## 🔧 Technologies
+```json- **Responsive**: Support mobile et desktop
 
-### Frontend
-- **Angular 17**: Framework principal
+POST /paa/groups/{group_id}/period- **Thème**: Violet/blanc professionnel
+
+{- **UX**: Navigation intuitive
+
+  "period_start": "2025-01-01",
+
+  "period_end": "2025-01-31",### Composants
+
+  "incurred_claims": 2500,- Dashboard interactif
+
+  "claims_paid": 2000- Formulaires réactifs Angular
+
+}- Tableaux de données avancés
+
+```- Graphiques et visualisations
+
+
+
+### 3. Consulter les mouvements## 🔧 Technologies
+
+```
+
+GET /paa/groups/{group_id}/movements### Frontend
+
+```- **Angular 17**: Framework principal
+
 - **TypeScript**: Langage typé
-- **RxJS**: Programmation réactive
-- **Angular Material**: Composants UI
-- **SCSS**: Styles avancés
 
-### Backend
-- **FastAPI**: Framework API moderne
-- **SQLAlchemy**: ORM Python
+## 🔒 Sécurité- **RxJS**: Programmation réactive
+
+- **Angular Material**: Composants UI
+
+- Authentification JWT avec expiration- **SCSS**: Styles avancés
+
+- CORS configuré (localhost uniquement en dev)
+
+- Protection SQL injection (SQLAlchemy ORM)### Backend
+
+- Validation des entrées (Pydantic)- **FastAPI**: Framework API moderne
+
+- Variables d'environnement pour les secrets- **SQLAlchemy**: ORM Python
+
 - **Pydantic**: Validation de données
-- **Bcrypt**: Hachage de mots de passe
+
+## 🚢 Déploiement- **Bcrypt**: Hachage de mots de passe
+
 - **PyJWT**: Gestion JWT
 
-### Base de données
-- **SQLite**: Développement
-- **MySQL**: Production
-- **XAMPP**: Serveur local
+### Production
+
+1. Configurer `environment.prod.ts`### Base de données
+
+2. Build frontend: `npm run build`- **SQLite**: Développement
+
+3. Configurer variables d'environnement backend- **MySQL**: Production
+
+4. Utiliser Gunicorn/Uvicorn pour le backend- **XAMPP**: Serveur local
+
+5. Servir le frontend via nginx
 
 ## 📈 Déploiement Production
 
-### Préparation
-1. Configurer MySQL dans XAMPP
-2. Mettre à jour les variables d'environnement
-3. Construire la version de production Angular
-4. Optimiser les performances
+## 🐛 Dépannage
 
-### Commandes
-```bash
-# Build Angular pour production
-cd angular-frontend
+### Préparation
+
+### Backend ne démarre pas1. Configurer MySQL dans XAMPP
+
+- Vérifier que MySQL est démarré2. Mettre à jour les variables d'environnement
+
+- Vérifier le fichier `.env`3. Construire la version de production Angular
+
+- Vérifier les dépendances: `pip install -r requirements.txt`4. Optimiser les performances
+
+
+
+### Frontend ne charge pas### Commandes
+
+- Vérifier que le backend est démarré```bash
+
+- Vérifier `environment.ts` (apiUrl)# Build Angular pour production
+
+- Réinstaller: `npm install`cd angular-frontend
+
 ng build --configuration production
 
-# Lancer le serveur complet
-start_full_stack.bat
-```
+### Dashboard lent
 
-## 🛠️ Développement
+- Vérifier la connexion MySQL# Lancer le serveur complet
 
-### Structure de développement
-- Code organisé par domaines métier
-- Services réutilisables
-- Typage strict TypeScript/Python
+- Optimiser les requêtes (voir logs backend)start_full_stack.bat
+
+- Activer le cache si disponible```
+
+
+
+## 👥 Équipe## 🛠️ Développement
+
+
+
+- **Développeur**: Abdouli Aziz### Structure de développement
+
+- **Organisation**: BNA (Banque Nationale Agricole)- Code organisé par domaines métier
+
+- **Version**: 2.0.0- Services réutilisables
+
+- **Date**: Octobre 2025- Typage strict TypeScript/Python
+
 - Tests unitaires intégrés
 
+## 📄 Licence
+
 ### Bonnes pratiques
-- Architecture modulaire
-- Injection de dépendances
+
+Propriétaire - BNA © 2025  - Architecture modulaire
+
+Tous droits réservés.- Injection de dépendances
+
 - Gestion d'erreurs centralisée
-- Logging structuré
 
-## � Support
+## 🔗 Liens Utiles- Logging structuré
 
-### Documentation
-- **API**: http://localhost:8001/docs
+
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)## � Support
+
+- [Angular Documentation](https://angular.io/docs)
+
+- [IFRS 17 Standard](https://www.ifrs.org/issued-standards/list-of-standards/ifrs-17-insurance-contracts/)### Documentation
+
+- [PAA Approach Explained](https://www.ifrs.org/projects/work-plan/ifrs-17-implementation/)- **API**: http://localhost:8001/docs
+
 - **Frontend**: Navigation dans l'application
-- **IFRS17**: Guides intégrés dans l'assistant IA
 
-### Maintenance
+---- **IFRS17**: Guides intégrés dans l'assistant IA
+
+
+
+**Note**: Ce projet implémente la norme IFRS 17 avec l'approche PAA (Premium Allocation Approach) conformément aux paragraphes 53-59 de la norme.### Maintenance
+
 - Logs d'application disponibles
 - Monitoring des performances
 - Sauvegarde automatique des données

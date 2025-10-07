@@ -1,0 +1,304 @@
+<div class="paa-dashboard-container">
+  <!-- Header -->
+  <div class="paa-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="icon">📘</span>
+        Approche PAA IFRS 17
+      </h1>
+      <p class="page-subtitle">Premium Allocation Approach - Gestion & Analytics</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="showInitForm = !showInitForm">
+        <span class="icon">➕</span>
+        Nouveau Groupe
+      </button>
+    </div>
+  </div>
+
+  <!-- Portfolio Summary Cards -->
+  <div class="summary-cards" *ngIf="portfolioSummary">
+    <div class="card summary-card">
+      <div class="card-icon groups-icon">📊</div>
+      <div class="card-content">
+        <div class="card-value">{{ portfolioSummary.total_groups }}</div>
+        <div class="card-label">Groupes PAA</div>
+      </div>
+    </div>
+
+    <div class="card summary-card">
+      <div class="card-icon lrc-icon">💰</div>
+      <div class="card-content">
+        <div class="card-value">{{ formatCurrency(portfolioSummary.total_lrc) }}</div>
+        <div class="card-label">LRC Total</div>
+      </div>
+    </div>
+
+    <div class="card summary-card">
+      <div class="card-icon lic-icon">📉</div>
+      <div class="card-content">
+        <div class="card-value">{{ formatCurrency(portfolioSummary.total_lic) }}</div>
+        <div class="card-label">LIC Total</div>
+      </div>
+    </div>
+
+    <div class="card summary-card" [class.alert]="portfolioSummary.onerous_ratio > 0">
+      <div class="card-icon onerous-icon">⚠️</div>
+      <div class="card-content">
+        <div class="card-value">{{ portfolioSummary.onerous_groups }}</div>
+        <div class="card-label">Groupes Onéreux</div>
+        <div class="card-sublabel">{{ formatPercent(portfolioSummary.onerous_ratio) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Init Form Modal -->
+  <div class="modal-overlay" *ngIf="showInitForm" (click)="showInitForm = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Initialiser un Nouveau Groupe PAA</h2>
+        <button class="close-btn" (click)="showInitForm = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>ID Groupe</label>
+          <input type="text" [(ngModel)]="newGroupId" placeholder="G1" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Portfolio</label>
+          <select [(ngModel)]="newPortfolio" class="form-control">
+            <option value="AUTO">AUTO</option>
+            <option value="SANTE">SANTÉ</option>
+            <option value="HABITATION">HABITATION</option>
+            <option value="VIE">VIE</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Contrats (JSON)</label>
+          <textarea [(ngModel)]="contractsJson" rows="12" class="form-control code"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showInitForm = false">Annuler</button>
+        <button class="btn-primary" (click)="initGroup()" [disabled]="loading">
+          {{ loading ? 'Initialisation...' : 'Initialiser' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Groups List -->
+    <div class="groups-panel">
+      <div class="panel-header">
+        <h3>Groupes de Contrats</h3>
+        <button class="btn-icon" (click)="loadGroups()" title="Actualiser">
+          🔄
+        </button>
+      </div>
+
+      <div class="groups-list" *ngIf="!loadingGroups; else loadingTemplate">
+        <div class="group-card" 
+             *ngFor="let group of groups"
+             [class.selected]="selectedGroup?.group_id === group.group_id"
+             [class.onerous]="group.onerous_flag"
+             (click)="selectGroup(group)">
+          <div class="group-header">
+            <h4>{{ group.group_id }}</h4>
+            <span class="badge" [class.badge-danger]="group.onerous_flag">
+              {{ group.portfolio }}
+            </span>
+          </div>
+          <div class="group-metrics">
+            <div class="metric">
+              <span class="metric-label">LRC</span>
+              <span class="metric-value">{{ formatCurrency(group.lrc_current) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">LIC</span>
+              <span class="metric-value">{{ formatCurrency(group.lic_current) }}</span>
+            </div>
+          </div>
+          <div class="group-footer" *ngIf="group.onerous_flag">
+            <span class="onerous-indicator">⚠️ Contrat Onéreux</span>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="groups.length === 0">
+          <div class="empty-icon">📭</div>
+          <p>Aucun groupe PAA</p>
+          <button class="btn-primary-sm" (click)="showInitForm = true">Créer le premier</button>
+        </div>
+      </div>
+
+      <ng-template #loadingTemplate>
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Chargement...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Details Panel -->
+    <div class="details-panel">
+      <div *ngIf="!selectedGroup" class="empty-details">
+        <div class="empty-icon">👈</div>
+        <p>Sélectionnez un groupe pour voir les détails</p>
+      </div>
+
+      <div *ngIf="selectedGroup" class="details-content">
+        <!-- Group Info -->
+        <div class="card detail-card">
+          <h3>{{ selectedGroup.group_id }}</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Portfolio</span>
+              <span class="detail-value">{{ selectedGroup.portfolio }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">LRC Courante</span>
+              <span class="detail-value">{{ formatCurrency(selectedGroup.lrc_current) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">LIC Courante</span>
+              <span class="detail-value">{{ formatCurrency(selectedGroup.lic_current) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Primes Non Acquises</span>
+              <span class="detail-value">{{ formatCurrency(selectedGroup.unearned_premium) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn-action" (click)="showPeriodForm = !showPeriodForm">
+            <span class="icon">📅</span>
+            Traiter Période
+          </button>
+          <button class="btn-action" (click)="showStressForm = !showStressForm">
+            <span class="icon">⚡</span>
+            Stress Test
+          </button>
+        </div>
+
+        <!-- Period Form -->
+        <div class="card form-card" *ngIf="showPeriodForm">
+          <h4>Nouvelle Période</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Début</label>
+              <input type="date" [(ngModel)]="periodStart" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Fin</label>
+              <input type="date" [(ngModel)]="periodEnd" class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sinistres Encourus</label>
+              <input type="number" [(ngModel)]="incurredClaims" class="form-control" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Sinistres Payés</label>
+              <input type="number" [(ngModel)]="claimsPaid" class="form-control" step="0.01">
+            </div>
+          </div>
+          <button class="btn-primary" (click)="processPeriod()" [disabled]="loading">
+            {{ loading ? 'Traitement...' : 'Valider la Période' }}
+          </button>
+        </div>
+
+        <!-- Stress Test Form -->
+        <div class="card form-card" *ngIf="showStressForm">
+          <h4>Simulation Stress Test</h4>
+          <div class="form-group">
+            <label>Choc Ratio Sinistres (%)</label>
+            <input type="number" [(ngModel)]="claimShock" class="form-control" step="0.01" placeholder="0.10 = +10%">
+          </div>
+          <div class="form-group">
+            <label>Choc Ratio Frais (%)</label>
+            <input type="number" [(ngModel)]="expenseShock" class="form-control" step="0.01" placeholder="0.05 = +5%">
+          </div>
+          <button class="btn-primary" (click)="runStressTest()" [disabled]="loading">
+            {{ loading ? 'Calcul...' : 'Lancer Simulation' }}
+          </button>
+
+          <div class="stress-result" *ngIf="stressResult">
+            <h5>Résultats</h5>
+            <div class="result-grid">
+              <div class="result-item">
+                <span class="result-label">Marge de Base</span>
+                <span class="result-value">{{ formatCurrency(stressResult.base_margin) }}</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Marge Stressée</span>
+                <span class="result-value" [class.negative]="stressResult.shocked_margin < 0">
+                  {{ formatCurrency(stressResult.shocked_margin) }}
+                </span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Impact</span>
+                <span class="result-value" [class.negative]="stressResult.margin_impact < 0">
+                  {{ formatCurrency(stressResult.margin_impact) }}
+                </span>
+              </div>
+              <div class="result-item" *ngIf="stressResult.onerous_flag">
+                <span class="result-label alert-label">⚠️ Devient Onéreux</span>
+                <span class="result-value alert-value">
+                  Loss Component: {{ formatCurrency(stressResult.loss_component) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Movements Table -->
+        <div class="card movements-card">
+          <h4>Mouvements IFRS 17</h4>
+          <div class="movements-table" *ngIf="!loadingMovements; else loadingTemplate">
+            <table *ngIf="movements.length > 0; else noMovements">
+              <thead>
+                <tr>
+                  <th>Période</th>
+                  <th>Prime Acquise</th>
+                  <th>Δ LRC</th>
+                  <th>Sinistres Encourus</th>
+                  <th>Sinistres Payés</th>
+                  <th>LRC Fin</th>
+                  <th>LIC Fin</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let mov of movements" [class.onerous-row]="mov.onerous_flag">
+                  <td>{{ mov.period_label }}</td>
+                  <td>{{ formatCurrency(mov.earned_premium) }}</td>
+                  <td [class.negative]="mov.change_in_lrc < 0">{{ formatCurrency(mov.change_in_lrc) }}</td>
+                  <td>{{ formatCurrency(mov.claims_incurred) }}</td>
+                  <td>{{ formatCurrency(mov.claims_paid) }}</td>
+                  <td>{{ formatCurrency(mov.lrc_end) }}</td>
+                  <td>{{ formatCurrency(mov.lic_end) }}</td>
+                  <td>
+                    <span class="status-badge" [class.status-onerous]="mov.onerous_flag">
+                      {{ mov.onerous_flag ? '⚠️ Onéreux' : '✅ OK' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <ng-template #noMovements>
+              <div class="empty-state-small">
+                <p>Aucun mouvement enregistré</p>
+                <button class="btn-primary-sm" (click)="showPeriodForm = true">Ajouter une période</button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

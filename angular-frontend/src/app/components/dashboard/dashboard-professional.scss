@@ -11,7 +11,103 @@
 }
 
 /* ================================================= */
-/* 📋 EN-TÊTE PROFESSIONNEL */
+/* � PPNA UPLOAD SECTION */
+/* ================================================= */
+
+.ppna-upload-section {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  .upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      color: #111827;
+      i { color: #2563EB; }
+    }
+    .upload-meta {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      .last-file { font-size: .75rem; font-weight: 600; color: #6B7280; }
+      .btn-export {
+        background: #059669;
+        color: #fff;
+        border: none;
+        padding: .5rem .85rem;
+        border-radius: 8px;
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .5px;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        cursor: pointer;
+        transition: background .25s ease;
+        i { font-size: .7rem; }
+        &:hover:not(:disabled) { background:#047857; }
+        &:disabled { opacity:.6; cursor: default; }
+      }
+    }
+  }
+
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+  }
+
+  .upload-panel {
+    background: #F9FAFB;
+    border: 2px dashed #93C5FD;
+    border-radius: 14px;
+    padding: 1.4rem 1.25rem 1.2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+    position: relative;
+    transition: background .25s ease, border-color .25s ease;
+    &:hover { background:#F3F4F6; border-color:#3B82F6; }
+    .upload-instructions { color:#374151; font-size:.8rem; line-height:1.4; }
+    .big-icon { font-size: 2rem; color:#2563EB; margin-bottom:.4rem; }
+    .btn-browse { background:#2563EB; color:#fff; padding:.5rem .9rem; border-radius:8px; font-size:.7rem; font-weight:600; cursor:pointer; display:inline-block; }
+    .selected-file { background:#FFFFFF; border:1px solid #E5E7EB; border-radius:8px; padding:.55rem .65rem; font-size:.7rem; display:flex; align-items:center; gap:.55rem; justify-content:space-between; i { color:#047857; } }
+    .btn-clear { background:none; border:none; color:#9CA3AF; cursor:pointer; font-size:.8rem; &:hover { color:#4B5563; } }
+    .btn-upload { background:#1D4ED8; color:#fff; border:none; padding:.6rem .95rem; font-size:.7rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:.4rem; cursor:pointer; letter-spacing:.5px; transition:background .25s ease; &:hover:not(:disabled){ background:#1E40AF; } &:disabled { opacity:.6; cursor:default; } }
+    .hint { font-size:.6rem; text-transform:uppercase; letter-spacing:.5px; color:#6B7280; font-weight:600; }
+    .error-msg { background:#FEE2E2; color:#B91C1C; padding:.45rem .6rem; border-radius:6px; font-size:.65rem; font-weight:600; }
+  }
+
+  .narrative-panel {
+    background:#FFFFFF;
+    border:1px solid #E5E7EB;
+    border-radius:14px;
+    padding:1.25rem 1.25rem .75rem;
+    h3 { margin:0 0 .8rem; font-size:.95rem; font-weight:600; display:flex; align-items:center; gap:.45rem; i { color:#6366F1; } }
+    ul { margin:0; padding:0 0 0 1.05rem; display:flex; flex-direction:column; gap:.5rem; }
+    li { font-size:.72rem; line-height:1.35; color:#374151; }
+  }
+
+  @media (max-width: 1020px) { .upload-grid { grid-template-columns: 1fr; } }
+}
+
+/* ================================================= */
+/* �📋 EN-TÊTE PROFESSIONNEL */
 /* ================================================= */
 
 .dashboard-header-pro {
@@ -327,7 +423,200 @@
 }
 
 /* ================================================= */
-/* 🚨 ALERTES */
+/* � IFRS17 / PPNA SECTION */
+/* ================================================= */
+
+.ifrs17-section {
+  margin: 2.5rem 0;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 1.75rem 1.75rem 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  .section-title-pro {
+    margin-top: 0;
+    margin-bottom: 1.75rem;
+  }
+
+  .ifrs17-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .ifrs17-card {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: all .25s ease;
+
+    &:hover {
+      background: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+      border-color: #D1D5DB;
+    }
+
+    .ifrs17-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      h3 {
+        font-size: .95rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        line-height: 1.3;
+      }
+    }
+
+    .badge {
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      padding: .35rem .55rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      &.badge-primary { background: #3B82F6; color: #fff; }
+      &.badge-info { background: #2563EB; color: #fff; }
+      &.badge-warning { background: #F59E0B; color: #fff; }
+      &.badge-danger { background: #DC2626; color: #fff; }
+      &.badge-accent { background: #8B5CF6; color: #fff; }
+    }
+
+    .ifrs17-metric-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.1;
+      margin-top: .25rem;
+    }
+
+    .ifrs17-subtext {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-weight: 600;
+      color: #6B7280;
+      margin-top: auto;
+    }
+  }
+
+  .segments-wrapper {
+    margin-top: .5rem;
+
+    .segments-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 .85rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .segments-table-wrapper {
+      overflow-x: auto;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      background: #FFFFFF;
+    }
+
+    .segments-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .8rem;
+
+      th, td {
+        padding: .6rem .75rem;
+        text-align: left;
+        border-bottom: 1px solid #F1F5F9;
+        white-space: nowrap;
+      }
+
+      thead th {
+        background: #F3F4F6;
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .5px;
+        color: #374151;
+        text-transform: uppercase;
+      }
+
+      tbody tr {
+        transition: background .2s ease;
+        &:hover { background: #F9FAFB; }
+      }
+
+      tbody td {
+        font-size: .75rem;
+        color: #374151;
+        &::first-letter { font-variant: normal; }
+      }
+    }
+  }
+
+  .ppna-error {
+    margin-top: 1rem;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FCA5A5;
+    padding: .75rem 1rem;
+    border-radius: 8px;
+    font-size: .75rem;
+    font-weight: 500;
+  }
+
+  .ifrs17-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .ifrs17-actions {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+
+    .btn-refresh-ifrs17 {
+      background: #2563EB;
+      color: #fff;
+      border: none;
+      padding: .55rem .9rem;
+      border-radius: 8px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      cursor: pointer;
+      transition: background .25s ease, transform .25s ease;
+      i { font-size: .8rem; }
+      &:hover:not(:disabled) { background:#1D4ED8; transform: translateY(-2px); }
+      &:disabled { opacity:.6; cursor: default; }
+    }
+  }
+
+  .lrc-chart-wrapper { margin-top: 2rem; }
+  .lrc-chart-container { position: relative; width: 340px; max-width:100%; height: 260px; }
+}
+
+/* ================================================= */
+/* �🚨 ALERTES */
 /* ================================================= */
 
 .alerts-section {

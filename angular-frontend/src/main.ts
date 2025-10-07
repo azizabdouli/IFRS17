@@ -3,13 +3,16 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // Routes
 import { routes } from './app/app-routing.module';
+
+// Interceptors
+import { authInterceptor } from './app/interceptors/auth.interceptor';
 
 // Services
 import { IFRS17ApiService } from './app/services/ifrs17-api.service';
@@ -19,7 +22,7 @@ import { PPNAService } from './app/services/ppna.service';
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     importProvidersFrom(
       BrowserAnimationsModule,
       FormsModule,

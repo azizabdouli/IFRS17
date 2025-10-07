@@ -351,6 +351,32 @@ export class IFRS17ApiService {
   }
 
   // =================================
+  // 🤖 MACHINE LEARNING
+  // =================================
+
+  /**
+   * Récupère le résumé de tous les modèles ML entraînés avec leurs métriques
+   */
+  getModelsSummary(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/ml/models-summary`, this.httpOptions)
+      .pipe(
+        catchError(this.handleError),
+        retry(1)
+      );
+  }
+
+  /**
+   * Prédiction LRC - Retourne les valeurs prédites de LRC pour tous les contrats
+   */
+  predictLRC(modelType: string = 'xgboost'): Observable<any> {
+    return this.http.post(`${this.baseUrl}/ml/predict/lrc?model_type=${modelType}`, {}, this.httpOptions)
+      .pipe(
+        catchError(this.handleError),
+        retry(1)
+      );
+  }
+
+  // =================================
   // 🛠️ MÉTHODES UTILITAIRES
   // =================================
 
@@ -390,6 +416,92 @@ export class IFRS17ApiService {
     }
 
     return throwError(() => new Error(messageErreur));
+  }
+
+  // =================================
+  // 📘 GESTION PAA (Premium Allocation Approach)
+  // =================================
+
+  /**
+   * Initialise un groupe PAA avec des contrats
+   */
+  initPAAGroup(groupId: string, contracts: any[], revenuePattern: string = 'linear'): Observable<any> {
+    return this.http.post(`${this.baseUrl}/paa/groups/init`, contracts, {
+      params: { group_id: groupId, revenue_pattern: revenuePattern, persist: 'true' }
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Traite une période pour un groupe PAA
+   */
+  processPAAPeriod(
+    groupId: string,
+    periodStart: string,
+    periodEnd: string,
+    incurredClaims: number = 0,
+    claimsPaid: number = 0
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/paa/groups/${groupId}/period`, null, {
+      params: {
+        period_start: periodStart,
+        period_end: periodEnd,
+        incurred_claims: incurredClaims.toString(),
+        claims_paid: claimsPaid.toString(),
+        persist: 'true'
+      }
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Récupère l'état courant d'un groupe PAA
+   */
+  getPAAGroupState(groupId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/paa/groups/${groupId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Liste tous les groupes PAA
+   */
+  listPAAGroups(portfolio?: string): Observable<any> {
+    let params = new HttpParams();
+    if (portfolio) {
+      params = params.set('portfolio', portfolio);
+    }
+    return this.http.get(`${this.baseUrl}/paa/groups`, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Récupère les mouvements IFRS17 d'un groupe
+   */
+  getPAAMovements(groupId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/paa/groups/${groupId}/movements`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Effectue un stress test sur un groupe
+   */
+  paaStressTest(
+    groupId: string,
+    claimRatioShock: number = 0,
+    expenseRatioShock: number = 0
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/paa/groups/${groupId}/stress-test`, null, {
+      params: {
+        claim_ratio_shock: claimRatioShock.toString(),
+        expense_ratio_shock: expenseRatioShock.toString()
+      }
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Récupère le résumé portfolio PAA
+   */
+  getPAAPortfolioSummary(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/paa/analytics/portfolio-summary`)
+      .pipe(catchError(this.handleError));
   }
 
   /**

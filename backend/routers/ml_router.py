@@ -614,3 +614,120 @@ async def get_onerous_analysis():
     except Exception as e:
         logger.error(f"Erreur lors de l'analyse onéreuse: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.get("/models-summary")
+async def get_models_summary():
+    """
+    Récupère le résumé de tous les modèles entraînés avec leurs métriques de performance
+    """
+    try:
+        trained_models = []
+        model_performance = {}
+        
+        # Parcourir tous les modèles entraînés
+        for model_key, results in ml_service.model_results.items():
+            trained_models.append(model_key)
+            
+            # Extraire les métriques de performance
+            if 'performance_metrics' in results:
+                metrics = results['performance_metrics']
+                model_performance[model_key] = clean_for_json(metrics)
+            elif 'evaluation' in results:
+                # Format alternatif pour les métriques
+                eval_metrics = results['evaluation']
+                model_performance[model_key] = clean_for_json(eval_metrics)
+        
+        return {
+            "trained_models": trained_models,
+            "model_performance": model_performance,
+            "total_models": len(trained_models),
+            "last_updated": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération du résumé des modèles: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@router.post("/predict/lrc")
+async def predict_lrc(model_type: str = "xgboost"):
+    """
+    Prédiction de la LRC pour les contrats du dataset actuel
+    Retourne les valeurs prédites de LRC pour chaque contrat
+    """
+    try:
+        if not hasattr(ml_service, 'current_dataset') or ml_service.current_dataset is None:
+            raise HTTPException(status_code=400, detail="Aucune données uploadées. Uploadez d'abord un fichier.")
+        
+        df = ml_service.current_dataset
+        
+        # Vérifier si le modèle LRC existe
+        model_key = f'lrc_prediction_{model_type}'
+        if model_key not in ml_service.models:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Modèle LRC '{model_type}' non trouvé. Entraînez d'abord le modèle avec /train/lrc-prediction"
+            )
+        
+        # Récupérer le modèle
+        lrc_model = ml_service.models[model_key]
+        
+        # Préparation des données pour prédiction
+        from backend.ml.data_preprocessing import DataPreprocessor
+        preprocessor = DataPreprocessor()
+        
+        # Créer la target LRC pour avoir les bonnes colonnes
+        lrc_target = lrc_model.create_lrc_target(df)
+        df_with_lrc = df.copy()
+        df_with_lrc['lrc_estimate'] = lrc_target
+        
+        # Préparation des features
+        X_pred, _ = preprocessor.prepare_data_for_training(df_with_lrc, 'lrc_estimate')
+        
+        # Prédiction
+        predictions = lrc_model.predict(X_pred)
+        
+        # Statistiques sur les prédictions
+        pred_stats = {
+            "lrc_moyenne": float(np.mean(predictions)),
+            "lrc_mediane": float(np.median(predictions)),
+            "lrc_min": float(np.min(predictions)),
+            "lrc_max": float(np.max(predictions)),
+            "lrc_std": float(np.std(predictions)),
+            "lrc_total": float(np.sum(predictions)),
+            "nombre_contrats": len(predictions)
+        }
+        
+        # Échantillon de prédictions (premiers 20 contrats)
+        sample_predictions = []
+        for i in range(min(20, len(predictions))):
+            contrat_info = {
+                "index": int(i),
+                "lrc_predite": float(predictions[i])
+            }
+            
+            # Ajouter infos du contrat si disponibles
+            if 'NUMCONT' in df.columns:
+                contrat_info['numero_contrat'] = str(df.iloc[i]['NUMCONT'])
+            if 'CODPROD' in df.columns:
+                contrat_info['produit'] = str(df.iloc[i]['CODPROD'])
+            if 'MNTPRNET' in df.columns:
+                contrat_info['prime'] = float(df.iloc[i]['MNTPRNET']) if pd.notna(df.iloc[i]['MNTPRNET']) else None
+            
+            sample_predictions.append(contrat_info)
+        
+        # Résultat complet
+        result = {
+            "status": "success",
+            "model_type": model_type,
+            "statistiques": pred_stats,
+            "echantillon_predictions": sample_predictions,
+            "message": f"✅ Prédictions LRC générées pour {len(predictions)} contrats"
+        }
+        
+        return clean_for_json(result)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur lors de la prédiction LRC: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

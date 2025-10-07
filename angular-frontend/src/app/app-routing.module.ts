@@ -7,6 +7,7 @@ import { MLAnalyticsNewComponent } from './components/ml-analytics/ml-analytics-
 import { PPNAAnalyticsComponent } from './components/ppna-analytics/ppna-analytics.component';
 import { AIAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { DataTransformationsComponent } from './components/data-transformations/data-transformations.component';
+import { PaaDashboardComponent } from './components/paa-dashboard/paa-dashboard.component';
 import { AuthComponent } from './components/auth/auth.component';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -62,6 +63,12 @@ export const routes: Routes = [
     component: DataTransformationsComponent,
     canActivate: [AuthGuard],
     data: { title: 'Transformations de Données' }
+  },
+  { 
+    path: 'paa-dashboard', 
+    component: PaaDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { title: 'PAA IFRS17 Dashboard' }
   },
   {
     path: '**', 

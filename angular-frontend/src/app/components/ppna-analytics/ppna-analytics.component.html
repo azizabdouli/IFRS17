@@ -193,11 +193,69 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- Tableau des segments -->
+                  <div *ngIf="ppnaData['analyse_segments'] && ppnaData['analyse_segments'].length > 0" class="mt-4">
+                    <h6 class="mb-3">📊 Analyse par Segment</h6>
+                    <div class="table-responsive">
+                      <table class="table table-striped table-hover table-bordered">
+                        <thead class="table-dark">
+                          <tr>
+                            <th>Segment</th>
+                            <th class="text-end">Primes (TND)</th>
+                            <th class="text-end">Provisions (TND)</th>
+                            <th class="text-end">Ratio Prov/Primes</th>
+                            <th class="text-end">Part Primes (%)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let segment of ppnaData['analyse_segments']">
+                            <td><strong>{{ segment.segment || segment.code }}</strong></td>
+                            <td class="text-end">{{ formatCurrency(segment.primes) }}</td>
+                            <td class="text-end">{{ formatCurrency(segment.provisions) }}</td>
+                            <td class="text-end">{{ formatPercentage(segment.ratio_provisions_primes * 100) }}</td>
+                            <td class="text-end">{{ formatPercentage(segment.part_primes * 100) }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Métrique détaillées -->
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="card border-primary">
+                        <div class="card-body">
+                          <h6 class="card-title text-primary">📈 Métriques Globales</h6>
+                          <ul class="list-unstyled mb-0">
+                            <li><strong>Nombre de lignes:</strong> {{ ppnaData['nombre_lignes'] | number }}</li>
+                            <li><strong>Primes totales:</strong> {{ formatCurrency(ppnaData['primes_totales']) }}</li>
+                            <li><strong>PPNA total:</strong> {{ formatCurrency(ppnaData['ppna_total']) }}</li>
+                            <li><strong>LRC total:</strong> {{ formatCurrency(ppnaData['lrc_total']) }}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card border-warning">
+                        <div class="card-body">
+                          <h6 class="card-title text-warning">⚠️ Contrats Onéreux</h6>
+                          <ul class="list-unstyled mb-0" *ngIf="ppnaData['contrats_onereux']">
+                            <li><strong>Nombre:</strong> {{ ppnaData['contrats_onereux']['nombre_onereux'] | number }}</li>
+                            <li><strong>Primes:</strong> {{ formatCurrency(ppnaData['contrats_onereux']['primes_onereux']) }}</li>
+                            <li><strong>Ratio moyen:</strong> {{ formatPercentage(ppnaData['contrats_onereux']['ratio_moyen_onereux'] * 100) }}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 <div *ngIf="!ppnaData" class="text-center py-5">
-                  <i class="fas fa-database fa-3x text-muted mb-3"></i>
-                  <p class="text-muted">Chargement des données PPNA...</p>
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                  </div>
+                  <p class="text-muted mt-3">Chargement des données PPNA...</p>
                 </div>
               </div>
             </div>
@@ -563,7 +621,7 @@
                     <tbody>
                       <tr>
                         <td><strong>Date de gel</strong></td>
-                        <td>{{ getCurrentDateTime() }}</td>
+                        <td>{{ currentDateTime }}</td>
                       </tr>
                       <tr>
                         <td><strong>Source données</strong></td>

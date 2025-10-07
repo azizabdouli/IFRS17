@@ -697,3 +697,111 @@
 .slide-in-right {
   animation: slideInRight 0.5s ease-out;
 }
+
+// ===============================================
+// PRÉDICTIONS LRC
+// ===============================================
+
+.lrc-predictions-section {
+  background: white;
+  border-radius: var(--ifrs17-border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--ifrs17-shadow);
+  
+  .section-header {
+    border-bottom: 2px solid var(--ifrs17-primary);
+    padding-bottom: 1rem;
+    
+    h5 {
+      color: var(--ifrs17-primary);
+      font-weight: 700;
+      margin: 0;
+    }
+  }
+
+  .statistics-cards {
+    .stat-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: var(--ifrs17-transition);
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ifrs17-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .predictions-table {
+    margin-top: 2rem;
+    
+    h6 {
+      color: var(--ifrs17-secondary);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    table {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      
+      thead {
+        background: var(--ifrs17-gradient);
+        color: white;
+        
+        th {
+          padding: 1rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.85rem;
+          letter-spacing: 0.5px;
+          border: none;
+        }
+      }
+
+      tbody {
+        tr {
+          transition: var(--ifrs17-transition);
+          
+          &:hover {
+            background-color: rgba(44, 90, 160, 0.05);
+          }
+
+          td {
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+            
+            &.fw-bold {
+              font-size: 1.1rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}

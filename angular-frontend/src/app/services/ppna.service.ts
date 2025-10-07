@@ -12,8 +12,8 @@ export interface PPNAMetrics {
   lic_total: number;
   csm_total: number;
   contrats_onereux: number;
-  onerous_contracts_count: number;
-  loss_component: number;
+  onerous_contracts_count?: number; // backend may expose a different naming
+  loss_component?: number; // may be absent if zero
   approche: string;
   derniere_maj: string;
 }
