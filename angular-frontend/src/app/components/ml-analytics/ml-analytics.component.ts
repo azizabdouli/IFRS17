@@ -67,8 +67,8 @@ interface AnomalyResult {
 
 @Component({
   selector: 'app-ml-analytics',
-  templateUrl: './ml-analytics.component.html',
-  styleUrls: ['./ml-analytics.component.scss'],
+  templateUrl: './ml-analytics-new.component.html',
+  styleUrls: ['./ml-analytics-new.component.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule]
 })
@@ -119,6 +119,10 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
     totalPredictions: 0,
     lastUpdate: 'N/A'
   };
+  
+  // Prédictions LRC
+  isLoadingLRC = false;
+  lrcPredictions: any = null;
 
   constructor(
     private ifrs17Service: IFRS17ApiService
@@ -425,6 +429,38 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
   // UTILITAIRES
   // ===============================================
   
+  getAdditionalColumnsCount(): number {
+    if (!this.uploadResult?.dataInfo?.columns) return 0;
+    const displayedColumns = 5;
+    return Math.max(0, this.uploadResult.dataInfo.columns.length - displayedColumns);
+  }
+  
+  loadLRCPredictions(): void {
+    this.isLoadingLRC = true;
+    
+    // Simulation du chargement des prédictions LRC
+    setTimeout(() => {
+      this.lrcPredictions = {
+        statistiques: {
+          lrc_total: 326750542.34,
+          lrc_moyenne: 1603.45,
+          nombre_contrats: 203786,
+          lrc_std: 456.78,
+          lrc_min: 234.56,
+          lrc_mediane: 1450.23,
+          lrc_max: 8945.67
+        },
+        echantillon_predictions: [
+          { numquitt: 'Q001', lrc_predicted: 1234.56, mntprnet: 1000, mntppna: 500 },
+          { numquitt: 'Q002', lrc_predicted: 2345.67, mntprnet: 2000, mntppna: 1000 },
+          { numquitt: 'Q003', lrc_predicted: 3456.78, mntprnet: 3000, mntppna: 1500 }
+        ],
+        message: 'Prédictions LRC calculées avec succès'
+      };
+      this.isLoadingLRC = false;
+    }, 2000);
+  }
+  
   formatCurrency(amount: number): string {
     if (!amount && amount !== 0) return '0,00 TND';
     return new Intl.NumberFormat('fr-TN', {
@@ -432,392 +468,5 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
       currency: 'TND',
       minimumFractionDigits: 2
     }).format(amount);
-  }
-}
-
-@Component({
-  selector: 'app-ml-analytics',
-  templateUrl: './ml-analytics.component.html',
-  styleUrls: ['./ml-analytics.component.scss'],
-  standalone: true,
-  imports: [CommonModule, FormsModule, DecimalPipe, DatePipe]
-})
-export class MLAnalyticsComponent implements OnInit, OnDestroy {
-  
-  private destroy$ = new Subject<void>();
-  isLoading = false;
-  selectedModel = 'profitabilite';
-  
-  // Données des modèles ML
-  modelesML: ModelesMLData = {
-    profitabilite: {
-      nom: 'Profitabilité des Contrats',
-      precision: 96.4,
-      statut: 'EXCELLENT',
-      dernierEntrainement: new Date(),
-      nombrePredictions: 45230,
-      caracteristiques: ['Prime', 'Sinistralité', 'Frais', 'Durée', 'Canal'],
-      performance: {
-        accuracy: 96.4,
-        precision: 94.2,
-        recall: 97.1,
-        f1Score: 95.6
-      }
-    },
-    riskClassification: {
-      nom: 'Classification des Risques',
-      precision: 86.5,
-      statut: 'BON',
-      dernierEntrainement: new Date(),
-      nombrePredictions: 38740,
-      caracteristiques: ['Âge', 'Profession', 'Zone', 'Historique', 'Montant'],
-      performance: {
-        accuracy: 86.5,
-        precision: 84.1,
-        recall: 88.9,
-        f1Score: 86.4
-      }
-    },
-    onerousContracts: {
-      nom: 'Détection Contrats Onéreux',
-      precision: 78.9,
-      statut: 'SATISFAISANT',
-      dernierEntrainement: new Date(),
-      nombrePredictions: 12847,
-      caracteristiques: ['LRC/LIC', 'CSM', 'Sinistres', 'Provisions'],
-      performance: {
-        accuracy: 78.9,
-        precision: 82.3,
-        recall: 75.8,
-        f1Score: 79.0
-      }
-    },
-    claimsPrediction: {
-      nom: 'Prédiction des Sinistres',
-      precision: 82.1,
-      statut: 'BON',
-      dernierEntrainement: new Date(),
-      nombrePredictions: 67890,
-      caracteristiques: ['Exposition', 'Fréquence', 'Coût Moyen', 'Tendance'],
-      performance: {
-        accuracy: 82.1,
-        precision: 80.7,
-        recall: 83.5,
-        f1Score: 82.1
-      }
-    }
-  };
-
-  // Analyses prédictives en cours
-  analysesPredictives = [
-    {
-      id: 1,
-      type: 'Profitabilité Future',
-      portefeuille: 'Automobile Particuliers',
-      horizon: '12 mois',
-      statut: 'EN_COURS',
-      progression: 75,
-      resultatsAttendus: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      metriques: {
-        probabiliteProfit: 87.3,
-        margeEstimee: 12.4,
-        risqueEstime: 'MOYEN'
-      }
-    },
-    {
-      id: 2,
-      type: 'Détection Contrats Onéreux',
-      portefeuille: 'Santé Collective',
-      horizon: '6 mois',
-      statut: 'TERMINE',
-      progression: 100,
-      resultatsAttendus: new Date(),
-      metriques: {
-        contratsOnereux: 1847,
-        impactFinancier: 23400000,
-        riskLevel: 'ÉLEVÉ'
-      }
-    }
-  ];
-
-  // Données pour visualisations
-  chartData: {
-    modelPerformance: any[];
-    predictionTrends: any[];
-    riskDistribution: any[];
-    onerousContracts: any[];
-  } = {
-    modelPerformance: [],
-    predictionTrends: [],
-    riskDistribution: [],
-    onerousContracts: []
-  };
-
-  // Configuration des widgets
-  widgetsConfig = {
-    showModelComparison: true,
-    showPredictions: true,
-    showOptimization: true,
-    autoRefresh: true,
-    refreshInterval: 60000
-  };
-
-  constructor(private ifrs17Service: IFRS17ApiService) {}
-
-  ngOnInit(): void {
-    this.loadMLData();
-    this.initializeCharts();
-    this.setupAutoRefresh();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  // ================================
-  // 🔄 CHARGEMENT DES DONNÉES
-  // ================================
-
-  loadMLData(): void {
-    this.isLoading = true;
-    
-    // Simulation du chargement des données ML
-    setTimeout(() => {
-      this.generateChartData();
-      this.isLoading = false;
-    }, 1500);
-  }
-
-  private generateChartData(): void {
-    // Performance des modèles au fil du temps
-    this.chartData.modelPerformance = this.generateModelPerformanceData();
-    
-    // Tendances de prédiction
-    this.chartData.predictionTrends = this.generatePredictionTrendsData();
-    
-    // Distribution des risques
-    this.chartData.riskDistribution = this.generateRiskDistributionData();
-    
-    // Évolution contrats onéreux
-    this.chartData.onerousContracts = this.generateOnerousContractsData();
-  }
-
-  private generateModelPerformanceData(): any[] {
-    const models = Object.keys(this.modelesML);
-    return models.map(key => ({
-      model: this.modelesML[key as keyof typeof this.modelesML].nom,
-      accuracy: this.modelesML[key as keyof typeof this.modelesML].performance.accuracy,
-      precision: this.modelesML[key as keyof typeof this.modelesML].performance.precision,
-      recall: this.modelesML[key as keyof typeof this.modelesML].performance.recall,
-      f1Score: this.modelesML[key as keyof typeof this.modelesML].performance.f1Score
-    }));
-  }
-
-  private generatePredictionTrendsData(): any[] {
-    const data = [];
-    const currentDate = new Date();
-    
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date(currentDate);
-      date.setMonth(date.getMonth() - i);
-      
-      data.push({
-        mois: date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
-        predictions: Math.floor(Math.random() * 2000) + 3000,
-        precision: 85 + Math.random() * 10,
-        contratsOnereux: Math.floor(Math.random() * 500) + 100
-      });
-    }
-    
-    return data;
-  }
-
-  private generateRiskDistributionData(): any[] {
-    return [
-      { niveau: 'Risque Faible', pourcentage: 65.2, contrats: 32450, couleur: '#27ae60' },
-      { niveau: 'Risque Moyen', pourcentage: 28.7, contrats: 14350, couleur: '#f39c12' },
-      { niveau: 'Risque Élevé', pourcentage: 5.4, contrats: 2700, couleur: '#e74c3c' },
-      { niveau: 'Risque Critique', pourcentage: 0.7, contrats: 350, couleur: '#8e44ad' }
-    ];
-  }
-
-  private generateOnerousContractsData(): any[] {
-    const data = [];
-    const currentDate = new Date();
-    
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(currentDate);
-      date.setMonth(date.getMonth() - i);
-      
-      data.push({
-        mois: date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
-        detectes: Math.floor(Math.random() * 500) + 1200,
-        resolus: Math.floor(Math.random() * 400) + 800,
-        impactFinancier: (Math.random() * 10 + 15) * 1000000
-      });
-    }
-    
-    return data;
-  }
-
-  private initializeCharts(): void {
-    // Initialisation des graphiques Chart.js
-    console.log('📊 Initialisation des graphiques ML...');
-  }
-
-  private setupAutoRefresh(): void {
-    if (this.widgetsConfig.autoRefresh) {
-      setInterval(() => {
-        this.refreshMLData();
-      }, this.widgetsConfig.refreshInterval);
-    }
-  }
-
-  // ================================
-  // 🤖 ACTIONS ML
-  // ================================
-
-  onModelSelect(modelKey: string): void {
-    this.selectedModel = modelKey;
-    console.log(`🤖 Sélection du modèle: ${this.modelesML[modelKey as keyof typeof this.modelesML].nom}`);
-  }
-
-  startPrediction(type: string): void {
-    console.log(`🔮 Démarrage prédiction: ${type}`);
-    
-    // Simulation du démarrage d'une prédiction
-    const nouvelleAnalyse = {
-      id: this.analysesPredictives.length + 1,
-      type: type,
-      portefeuille: 'Nouveau Portefeuille',
-      horizon: '6 mois',
-      statut: 'EN_COURS',
-      progression: 0,
-      resultatsAttendus: new Date(Date.now() + 3 * 60 * 60 * 1000),
-      metriques: {
-        probabiliteProfit: 0,
-        margeEstimee: 0,
-        risqueEstime: 'INCONNU'
-      }
-    };
-    
-    this.analysesPredictives.unshift(nouvelleAnalyse);
-  }
-
-  retrainModel(modelKey: string): void {
-    console.log(`🔄 Réentraînement du modèle: ${modelKey}`);
-    
-    // Simulation du réentraînement
-    const model = this.modelesML[modelKey as keyof typeof this.modelesML];
-    model.dernierEntrainement = new Date();
-    
-    // Amélioration légère de la précision
-    const improvement = Math.random() * 2 - 1; // ±1%
-    model.precision = Math.min(99, Math.max(70, model.precision + improvement));
-  }
-
-  exportMLResults(): void {
-    console.log('📊 Export des résultats ML...');
-    
-    const exportData = {
-      modeles: this.modelesML,
-      analyses: this.analysesPredictives,
-      graphiques: this.chartData,
-      dateExport: new Date()
-    };
-    
-    // Simulation de l'export
-    setTimeout(() => {
-      console.log('✅ Export ML terminé');
-    }, 1000);
-  }
-
-  private refreshMLData(): void {
-    // Mise à jour des données ML en temps réel
-    this.generateChartData();
-    console.log('🔄 Données ML actualisées');
-  }
-
-  // ================================
-  // 🔧 MÉTHODES UTILITAIRES
-  // ================================
-
-  getModelStatusColor(statut: string): string {
-    const colorMap: { [key: string]: string } = {
-      'EXCELLENT': '#27ae60',
-      'BON': '#3498db',
-      'SATISFAISANT': '#f39c12',
-      'INSUFFISANT': '#e74c3c'
-    };
-    return colorMap[statut] || '#6c757d';
-  }
-
-  getAnalysisStatusColor(statut: string): string {
-    const colorMap: { [key: string]: string } = {
-      'EN_COURS': '#3498db',
-      'TERMINE': '#27ae60',
-      'ERREUR': '#e74c3c',
-      'EN_ATTENTE': '#f39c12'
-    };
-    return colorMap[statut] || '#6c757d';
-  }
-
-  getRiskLevelColor(risk: string): string {
-    const colorMap: { [key: string]: string } = {
-      'FAIBLE': '#27ae60',
-      'MOYEN': '#f39c12',
-      'ÉLEVÉ': '#e74c3c',
-      'CRITIQUE': '#8e44ad'
-    };
-    return colorMap[risk] || '#6c757d';
-  }
-
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  }
-
-  formatPercentage(value: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'percent',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    }).format(value / 100);
-  }
-
-  // ================================
-  // 🔧 MÉTHODES DE TYPE CHECKING ET ACCÈS SÉCURISÉ
-  // ================================
-
-  getSelectedModel(): ModelML | undefined {
-    return this.modelesML[this.selectedModel];
-  }
-
-  getSelectedModelProperty(property: keyof ModelML): any {
-    const model = this.getSelectedModel();
-    return model ? model[property] : undefined;
-  }
-
-  getPerformanceEntries(): Array<{key: string, value: number}> {
-    const model = this.getSelectedModel();
-    if (!model || !model.performance) return [];
-    
-    return Object.entries(model.performance).map(([key, value]) => ({
-      key,
-      value: value as number
-    }));
-  }
-
-  isNumber(value: any): boolean {
-    return typeof value === 'number';
-  }
-
-  isString(value: any): boolean {
-    return typeof value === 'string';
   }
 }
