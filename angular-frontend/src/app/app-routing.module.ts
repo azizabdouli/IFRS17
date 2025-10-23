@@ -34,42 +34,55 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { title: 'Tableau de Bord IFRS17' }
   },
+  // 📊 Analytics IFRS17
   { 
-    path: 'ppna-analytics', 
-    component: PPNAAnalyticsComponent,
+    path: 'analytics', 
     canActivate: [AuthGuard],
-    data: { title: 'Analytics PPNA IFRS17' }
+    children: [
+      { 
+        path: 'ppna', 
+        component: PPNAAnalyticsComponent,
+        data: { title: 'Analytics PPNA', icon: 'calculator' }
+      },
+      { 
+        path: 'paa', 
+        component: PaaDashboardComponent,
+        data: { title: 'Dashboard PAA', icon: 'chart-pie' }
+      },
+      { 
+        path: 'ml', 
+        component: MLAnalyticsNewComponent,
+        data: { title: 'Machine Learning', icon: 'brain' }
+      },
+      { 
+        path: '', 
+        redirectTo: 'ppna', 
+        pathMatch: 'full' 
+      }
+    ]
   },
-  { 
-    path: 'ml-analytics-complete', 
-    component: MLAnalyticsNewComponent,
-    canActivate: [AuthGuard],
-    data: { title: 'Analytics ML Complet' }
-  },
-  { 
-    path: 'ml-analytics-new', 
-    component: MLAnalyticsNewComponent,
-    canActivate: [AuthGuard],
-    data: { title: 'Analytics ML Nouveau' }
-  },
+  
+  // 🤖 Outils IA
   { 
     path: 'ai-assistant', 
     component: AIAssistantComponent,
     canActivate: [AuthGuard],
-    data: { title: 'Assistant IA' }
+    data: { title: 'Assistant IA', icon: 'robot' }
   },
+  
+  // 🔧 Utilitaires
   { 
     path: 'data-transformations', 
     component: DataTransformationsComponent,
     canActivate: [AuthGuard],
-    data: { title: 'Transformations de Données' }
+    data: { title: 'Transformations', icon: 'exchange-alt' }
   },
-  { 
-    path: 'paa-dashboard', 
-    component: PaaDashboardComponent,
-    canActivate: [AuthGuard],
-    data: { title: 'PAA IFRS17 Dashboard' }
-  },
+  
+  // Redirections pour compatibilité (anciennes URLs)
+  { path: 'ppna-analytics', redirectTo: '/analytics/ppna', pathMatch: 'full' },
+  { path: 'paa-dashboard', redirectTo: '/analytics/paa', pathMatch: 'full' },
+  { path: 'ml-analytics-new', redirectTo: '/analytics/ml', pathMatch: 'full' },
+  { path: 'ml-analytics-complete', redirectTo: '/analytics/ml', pathMatch: 'full' },
   {
     path: '**', 
     redirectTo: '/auth/signin'

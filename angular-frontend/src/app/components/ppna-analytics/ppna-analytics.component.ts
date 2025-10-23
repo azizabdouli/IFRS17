@@ -60,6 +60,9 @@ interface ParametresProduit {
 export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   
+  // Expose Math for template
+  Math = Math;
+  
   // État général
   isLoading = false;
   activeTab = 'donnees';

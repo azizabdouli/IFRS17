@@ -21,31 +21,62 @@ import { AuthService, User } from '../../services/auth.service';
             </div>
           </div>
 
-          <!-- 🧭 Navigation -->
+          <!-- 🧭 Navigation Optimisée -->
           <div class="col-md-6">
             <ul class="main-nav">
+              <!-- Dashboard Principal -->
               <li>
-                <a routerLink="/dashboard" routerLinkActive="active">
-                  <i class="fas fa-chart-line me-2"></i>
-                  Dashboard
+                <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                  <i class="fas fa-home me-2"></i>
+                  Accueil
                 </a>
               </li>
-              <li>
-                <a routerLink="/ppna-analytics" routerLinkActive="active">
-                  <i class="fas fa-calculator me-2"></i>
-                  PPNA
+              
+              <!-- Analytics (Menu Déroulant) -->
+              <li class="dropdown" (mouseenter)="showAnalyticsMenu = true" (mouseleave)="showAnalyticsMenu = false">
+                <a routerLink="/analytics" routerLinkActive="active" class="nav-with-dropdown">
+                  <i class="fas fa-chart-bar me-2"></i>
+                  Analytics
+                  <i class="fas fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
                 </a>
+                <div class="dropdown-menu-nav" [class.show]="showAnalyticsMenu">
+                  <a routerLink="/analytics/ppna" class="dropdown-item-nav">
+                    <i class="fas fa-calculator"></i>
+                    <div>
+                      <strong>PPNA</strong>
+                      <small>Provisions et analyses</small>
+                    </div>
+                  </a>
+                  <a routerLink="/analytics/paa" class="dropdown-item-nav">
+                    <i class="fas fa-chart-pie"></i>
+                    <div>
+                      <strong>PAA Dashboard</strong>
+                      <small>Premium Allocation Approach</small>
+                    </div>
+                  </a>
+                  <a routerLink="/analytics/ml" class="dropdown-item-nav">
+                    <i class="fas fa-brain"></i>
+                    <div>
+                      <strong>Machine Learning</strong>
+                      <small>Prédictions & modèles</small>
+                    </div>
+                  </a>
+                </div>
               </li>
-              <li>
-                <a routerLink="/ml-analytics-new" routerLinkActive="active">
-                  <i class="fas fa-brain me-2"></i>
-                  ML Analytics
-                </a>
-              </li>
+              
+              <!-- Assistant IA -->
               <li>
                 <a routerLink="/ai-assistant" routerLinkActive="active">
                   <i class="fas fa-robot me-2"></i>
                   Assistant IA
+                </a>
+              </li>
+              
+              <!-- Transformations -->
+              <li>
+                <a routerLink="/data-transformations" routerLinkActive="active">
+                  <i class="fas fa-exchange-alt me-2"></i>
+                  Outils
                 </a>
               </li>
             </ul>
@@ -133,26 +164,110 @@ import { AuthService, User } from '../../services/auth.service';
       list-style: none;
       margin: 0;
       padding: 0;
-      gap: 1rem;
+      gap: 0.5rem;
       justify-content: center;
 
-      li a {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
-        text-decoration: none;
-        color: var(--ifrs17-text-secondary);
-        font-weight: 500;
-        transition: all 0.3s ease;
+      li {
+        position: relative;
 
-        &:hover, &.active {
-          background: var(--ifrs17-primary);
-          color: white;
+        a {
+          display: flex;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          border-radius: 10px;
+          text-decoration: none;
+          color: var(--ifrs17-text-secondary);
+          font-weight: 500;
+          transition: all 0.3s ease;
+
+          &:hover, &.active {
+            background: var(--ifrs17-primary);
+            color: white;
+          }
+
+          i {
+            font-size: 0.9rem;
+          }
         }
 
-        i {
-          font-size: 0.9rem;
+        &.dropdown {
+          .nav-with-dropdown {
+            cursor: pointer;
+          }
+
+          .dropdown-menu-nav {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            min-width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+
+            &.show {
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0);
+            }
+
+            .dropdown-item-nav {
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              padding: 1rem;
+              text-decoration: none;
+              color: var(--ifrs17-text-primary);
+              transition: background 0.3s ease;
+              border-bottom: 1px solid var(--ifrs17-border);
+
+              &:first-child {
+                border-radius: 10px 10px 0 0;
+              }
+
+              &:last-child {
+                border-bottom: none;
+                border-radius: 0 0 10px 10px;
+              }
+
+              &:hover {
+                background: var(--ifrs17-bg-secondary);
+              }
+
+              i {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, var(--ifrs17-primary) 0%, var(--ifrs17-secondary) 100%);
+                color: white;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+              }
+
+              div {
+                display: flex;
+                flex-direction: column;
+
+                strong {
+                  font-weight: 600;
+                  color: var(--ifrs17-text-primary);
+                  margin-bottom: 0.25rem;
+                }
+
+                small {
+                  font-size: 0.8rem;
+                  color: var(--ifrs17-text-secondary);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -279,6 +394,7 @@ import { AuthService, User } from '../../services/auth.service';
 export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   showUserMenu = false;
+  showAnalyticsMenu = false;
 
   constructor(
     private authService: AuthService,

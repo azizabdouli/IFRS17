@@ -442,3 +442,102 @@
     color: #155724;
   }
 }
+
+/* ================================================= */
+/* 🏷️ VUE GROUPE IFRS-17 (ACTUARIELLE) */
+/* ================================================= */
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #2c5aa0 0%, #4a7dc4 100%);
+}
+
+.metric-box {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  small {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  strong {
+    color: #2c5aa0;
+  }
+}
+
+.lrc-breakdown {
+  font-size: 0.9rem;
+  
+  h6 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  
+  .fas {
+    width: 20px;
+    text-align: center;
+  }
+  
+  small {
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+// Animations pour les cartes de segments
+.card {
+  transition: all 0.3s ease;
+  
+  &.shadow-sm {
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+  
+  &.border-danger {
+    border-width: 2px !important;
+    animation: pulse-danger 2s infinite;
+  }
+  
+  &.border-success {
+    border-width: 2px !important;
+  }
+  
+  &.border-warning {
+    border-width: 2px !important;
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+}
+
+// Barre de progression stylisée
+.progress {
+  background-color: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .progress-bar {
+    transition: width 0.6s ease;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+  }
+}

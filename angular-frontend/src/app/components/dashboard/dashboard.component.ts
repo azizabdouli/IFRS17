@@ -34,6 +34,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   lastUploadedFileName: string | null = localStorage.getItem('ppnaLastFileName');
   actuarialNarrative: string[] = [];
+  isDragging = false;
   // Chart data for LRC composition
   lrcChartData: ChartData<'doughnut'> | null = null;
   lrcChartOptions: ChartConfiguration<'doughnut'>['options'] = {
@@ -74,6 +75,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getAuthService(): AuthService {
     return this.authService;
+  }
+
+  /**
+   * Obtenir un message de salutation personnalisé selon l'heure
+   */
+  getGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bonjour';
+    if (hour < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+  }
+
+  /**
+   * Obtenir la classe CSS pour les ratios
+   */
+  getRatioBadgeClass(ratio: number): string {
+    if (ratio < 0.5) return 'ratio-low';
+    if (ratio < 0.8) return 'ratio-medium';
+    return 'ratio-high';
   }
 
   private loadUserData() {
@@ -334,6 +354,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onDropFile(event: DragEvent): void {
     event.preventDefault();
+    this.isDragging = false;
     if (event.dataTransfer?.files?.length) {
       const file = event.dataTransfer.files[0];
       if (this.validateExcelFile(file)) {
@@ -342,7 +363,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  onDragOver(event: DragEvent): void { event.preventDefault(); }
+  onDragOver(event: DragEvent): void { 
+    event.preventDefault(); 
+    this.isDragging = true;
+  }
 
   validateExcelFile(file: File): boolean {
     const valid = /(.xls|.xlsx)$/i.test(file.name);

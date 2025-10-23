@@ -48,23 +48,23 @@
     </div>
   </section>
   
-  <!-- 📋 EN-TÊTE PROFESSIONNEL -->
+  <!-- 📋 EN-TÊTE PROFESSIONNEL OPTIMISÉ -->
   <header class="dashboard-header-pro">
     <div class="header-content-pro">
       <div class="user-info-pro">
         <div class="user-avatar-pro">
-          <i class="fas fa-user"></i>
+          <i class="fas fa-user-circle"></i>
         </div>
         <div class="user-details-pro">
           <h1 class="welcome-title-pro">
-            {{ getFullName() }}
+            Bonjour, {{ getFullName() }}
           </h1>
           <p class="user-role-pro">
-            <i class="fas fa-building"></i>
-            {{ currentUser?.role }} - {{ currentUser?.company }}
+            <i class="fas fa-id-badge"></i>
+            {{ currentUser?.role }} · {{ currentUser?.company }}
           </p>
           <p class="user-department-pro">
-            <i class="fas fa-briefcase"></i>
+            <i class="fas fa-sitemap"></i>
             {{ currentUser?.department }}
           </p>
         </div>
@@ -72,12 +72,16 @@
       
       <div class="header-meta-pro">
         <div class="meta-item">
-          <i class="far fa-calendar"></i>
+          <i class="far fa-calendar-alt"></i>
           <span>{{ getCurrentDate() }}</span>
         </div>
         <div class="meta-item">
           <i class="far fa-clock"></i>
           <span>{{ getCurrentTime() }}</span>
+        </div>
+        <div class="meta-item status-badge">
+          <i class="fas fa-circle text-success"></i>
+          <span>Système Opérationnel</span>
         </div>
       </div>
     </div>
@@ -112,124 +116,200 @@
     </div>
   </section>
 
-  <!-- 📊 KPIs UNIFIÉS -->
+  <!-- 📊 KPIs UNIFIÉS - OPTIMISÉS -->
   <section class="kpis-section">
     <div class="row g-4" *ngIf="dashboardData">
       <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card">
+        <div class="kpi-card glassmorphism-card hover-lift">
           <div class="kpi-icon gradient-primary">
-            <i class="fas fa-file-alt"></i>
+            <i class="fas fa-layer-group"></i>
           </div>
           <div class="kpi-content">
-            <h3 class="kpi-value">{{ dashboardData.kpis.ppna_count }}</h3>
+            <h3 class="kpi-value animate-count">{{ dashboardData.kpis.ppna_count }}</h3>
             <p class="kpi-label">Contrats PPNA</p>
-            <div class="kpi-trend" [ngClass]="getIndicatorClass(dashboardData.kpis.ppna_count, 100)">
-              <i class="fas fa-arrow-up"></i>
-              <span>{{ dashboardData.kpis.monthly_trend }}%</span>
+            <div class="kpi-trend trend-positive">
+              <i class="fas fa-chart-line"></i>
+              <span>+{{ dashboardData.kpis.monthly_trend }}% ce mois</span>
             </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-badge badge-primary">Actifs</span>
           </div>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card">
+        <div class="kpi-card glassmorphism-card hover-lift">
           <div class="kpi-icon gradient-warning">
-            <i class="fas fa-exclamation-triangle"></i>
+            <i class="fas fa-exclamation-circle"></i>
           </div>
           <div class="kpi-content">
-            <h3 class="kpi-value">{{ dashboardData.kpis.onerous_contracts }}</h3>
+            <h3 class="kpi-value animate-count">{{ dashboardData.kpis.onerous_contracts }}</h3>
             <p class="kpi-label">Contrats Onéreux</p>
-            <div class="kpi-trend" [ngClass]="getIndicatorClass(100 - dashboardData.kpis.onerous_contracts, 95)">
+            <div class="kpi-trend trend-warning">
               <i class="fas fa-shield-alt"></i>
-              <span>Contrôlés</span>
+              <span>Surveillance active</span>
             </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-badge badge-warning">À surveiller</span>
           </div>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card">
+        <div class="kpi-card glassmorphism-card hover-lift">
           <div class="kpi-icon gradient-success">
-            <i class="fas fa-check-double"></i>
+            <i class="fas fa-check-circle"></i>
           </div>
           <div class="kpi-content">
-            <h3 class="kpi-value">{{ formatPercentage(dashboardData.kpis.compliance_score) }}</h3>
-            <p class="kpi-label">Conformité</p>
-            <div class="kpi-trend" [ngClass]="getIndicatorClass(dashboardData.kpis.compliance_score)">
-              <i class="fas fa-award"></i>
-              <span>Excellent</span>
+            <h3 class="kpi-value animate-count">{{ formatPercentage(dashboardData.kpis.compliance_score) }}</h3>
+            <p class="kpi-label">Conformité IFRS17</p>
+            <div class="kpi-trend trend-positive">
+              <i class="fas fa-certificate"></i>
+              <span>Certifié</span>
             </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-badge badge-success">Conforme</span>
           </div>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card">
+        <div class="kpi-card glassmorphism-card hover-lift">
           <div class="kpi-icon gradient-info">
-            <i class="fas fa-tachometer-alt"></i>
+            <i class="fas fa-brain"></i>
           </div>
           <div class="kpi-content">
-            <h3 class="kpi-value">{{ formatPercentage(dashboardData.kpis.accuracy_rate) }}</h3>
-            <p class="kpi-label">Précision</p>
-            <div class="kpi-trend" [ngClass]="getIndicatorClass(dashboardData.kpis.accuracy_rate)">
-              <i class="fas fa-bullseye"></i>
+            <h3 class="kpi-value animate-count">{{ formatPercentage(dashboardData.kpis.accuracy_rate) }}</h3>
+            <p class="kpi-label">Précision ML</p>
+            <div class="kpi-trend trend-positive">
+              <i class="fas fa-clock"></i>
               <span>{{ dashboardData.kpis.processing_time }}min</span>
             </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-badge badge-info">IA Prête</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 📊 ACCÈS RAPIDES PROFESSIONNELS -->
+  <!-- 📊 MODULES IFRS17 - OPTIMISÉS -->
   <section class="quick-access-section-pro">
     <h2 class="section-title-pro">
-      <i class="fas fa-th-large"></i>
-      Modules IFRS17
+      <i class="fas fa-cubes"></i>
+      Modules & Analytics
     </h2>
     <div class="quick-access-grid-pro">
-      <a routerLink="/ppna" class="access-card-pro">
+      <a routerLink="/analytics/ppna" class="access-card-pro card-ppna">
+        <div class="card-glow"></div>
         <div class="card-icon-pro ppna">
-          <i class="fas fa-file-invoice"></i>
+          <i class="fas fa-file-contract"></i>
         </div>
         <div class="card-content-pro">
           <h3>Analyse PPNA</h3>
-          <p>Gestion des provisions non acquises</p>
+          <p>Provisions non acquises · Calculs actuariels</p>
+          <div class="card-features">
+            <span class="feature-tag">CSM</span>
+            <span class="feature-tag">LC</span>
+            <span class="feature-tag">RA</span>
+          </div>
         </div>
-        <i class="fas fa-arrow-right card-arrow-pro"></i>
+        <div class="card-footer-pro">
+          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
+        </div>
       </a>
 
-      <a routerLink="/ml-analytics" class="access-card-pro">
+      <a routerLink="/analytics/paa" class="access-card-pro card-paa">
+        <div class="card-glow"></div>
+        <div class="card-icon-pro paa">
+          <i class="fas fa-calculator"></i>
+        </div>
+        <div class="card-content-pro">
+          <h3>PAA Module</h3>
+          <p>Premium Allocation Approach · Contrats courts</p>
+          <div class="card-features">
+            <span class="feature-tag">Eligibilité</span>
+            <span class="feature-tag">LRC</span>
+          </div>
+        </div>
+        <div class="card-footer-pro">
+          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </a>
+
+      <a routerLink="/analytics/ml" class="access-card-pro card-ml">
+        <div class="card-glow"></div>
         <div class="card-icon-pro ml">
           <i class="fas fa-brain"></i>
         </div>
         <div class="card-content-pro">
-          <h3>ML Analytics</h3>
-          <p>Analyses prédictives avancées</p>
+          <h3>Machine Learning</h3>
+          <p>Prédictions IA · Clustering · Analyse avancée</p>
+          <div class="card-features">
+            <span class="feature-tag">XGBoost</span>
+            <span class="feature-tag">K-Means</span>
+          </div>
         </div>
-        <i class="fas fa-arrow-right card-arrow-pro"></i>
+        <div class="card-footer-pro">
+          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
+        </div>
       </a>
 
-      <a routerLink="/transform" class="access-card-pro">
-        <div class="card-icon-pro transform">
-          <i class="fas fa-exchange-alt"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Transformations</h3>
-          <p>Conversion des données</p>
-        </div>
-        <i class="fas fa-arrow-right card-arrow-pro"></i>
-      </a>
-
-      <a routerLink="/ai-assistant" class="access-card-pro">
+      <a routerLink="/ai-assistant" class="access-card-pro card-ai">
+        <div class="card-glow"></div>
         <div class="card-icon-pro ai">
           <i class="fas fa-robot"></i>
         </div>
         <div class="card-content-pro">
           <h3>Assistant IA</h3>
-          <p>Support intelligent IFRS17</p>
+          <p>Support intelligent · Documentation IFRS17</p>
+          <div class="card-features">
+            <span class="feature-tag">GPT-4</span>
+            <span class="feature-tag">RAG</span>
+          </div>
         </div>
-        <i class="fas fa-arrow-right card-arrow-pro"></i>
+        <div class="card-footer-pro">
+          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </a>
+
+      <a routerLink="/transform" class="access-card-pro card-transform">
+        <div class="card-glow"></div>
+        <div class="card-icon-pro transform">
+          <i class="fas fa-random"></i>
+        </div>
+        <div class="card-content-pro">
+          <h3>Transformations</h3>
+          <p>Conversion données · Pipeline ETL</p>
+          <div class="card-features">
+            <span class="feature-tag">Excel</span>
+            <span class="feature-tag">JSON</span>
+          </div>
+        </div>
+        <div class="card-footer-pro">
+          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </a>
+
+      <a routerLink="/projections" class="access-card-pro card-projection coming-soon">
+        <div class="card-glow"></div>
+        <div class="card-icon-pro projection">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-content-pro">
+          <h3>Projections</h3>
+          <p>Prévisions actuarielles · Scénarios</p>
+          <div class="card-features">
+            <span class="feature-tag">Bientôt</span>
+          </div>
+        </div>
+        <div class="card-footer-pro">
+          <span class="card-action">Bientôt disponible</span>
+        </div>
       </a>
     </div>
   </section>

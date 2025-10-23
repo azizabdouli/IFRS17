@@ -1,0 +1,670 @@
+<!-- ================================================= -->
+<!-- 🎨 DASHBOARD MODERNE ULTRA-AGRÉABLE - IFRS17 HUB -->
+<!-- ================================================= -->
+<div class="modern-dashboard" *ngIf="!isLoading">
+  
+  <!-- 🌊 Fond Animé avec Particules -->
+  <div class="animated-background">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
+  <!-- 👋 En-tête Bienvenue Personnalisé -->
+  <header class="welcome-hero">
+    <div class="hero-content">
+      <div class="welcome-message">
+        <h1 class="welcome-title animate-fade-in">
+          <span class="greeting">{{ getGreeting() }}</span>
+          <span class="user-name">{{ getFullName() }}</span> 👋
+        </h1>
+        <p class="welcome-subtitle animate-slide-up">
+          <i class="fas fa-briefcase"></i> {{ currentUser?.role }} · {{ currentUser?.department }}
+        </p>
+        <div class="welcome-meta animate-slide-up">
+          <div class="meta-badge">
+            <i class="far fa-calendar-alt"></i>
+            <span>{{ getCurrentDate() }}</span>
+          </div>
+          <div class="meta-badge">
+            <i class="far fa-clock"></i>
+            <span>{{ getCurrentTime() }}</span>
+          </div>
+          <div class="meta-badge status-badge">
+            <span class="status-dot"></span>
+            <span>Système Opérationnel</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-illustration">
+        <div class="floating-card">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="floating-card delay-1">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="floating-card delay-2">
+          <i class="fas fa-brain"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🎯 Upload PPNA - Design Moderne -->
+  <section class="ppna-upload-modern animate-fade-in">
+    <div class="glass-card upload-card">
+      <div class="card-header-modern">
+        <div class="header-icon-modern">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="card-title-modern">Dataset PPNA</h2>
+          <p class="card-subtitle">Base Technique Centrale - IFRS 17</p>
+        </div>
+        <button class="btn-modern btn-export-modern" 
+                (click)="exportSegmentsCSV()" 
+                [disabled]="!ppnaSegments.length">
+          <i class="fas fa-download"></i>
+          <span>Exporter</span>
+        </button>
+      </div>
+
+      <div class="upload-area-modern" 
+           [class.drag-over]="isDragging"
+           (drop)="onDropFile($event)"
+           (dragover)="onDragOver($event)"
+           (dragleave)="isDragging = false">
+        
+        <div class="upload-zone" *ngIf="!selectedFile">
+          <div class="upload-icon-wrapper">
+            <i class="fas fa-file-excel upload-icon-large"></i>
+            <div class="upload-pulse"></div>
+          </div>
+          <h3 class="upload-title">Glissez-déposez votre fichier Excel</h3>
+          <p class="upload-description">ou cliquez pour parcourir</p>
+          <label class="btn-modern btn-primary-modern">
+            <input type="file" (change)="onFileInputChange($event)" accept=".xlsx,.xls" hidden />
+            <i class="fas fa-folder-open"></i>
+            <span>Parcourir les fichiers</span>
+          </label>
+          <div class="upload-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Formats acceptés : .xlsx, .xls · Taille max : 50 MB</span>
+          </div>
+        </div>
+
+        <div class="file-selected" *ngIf="selectedFile">
+          <div class="file-preview">
+            <div class="file-icon-wrapper">
+              <i class="fas fa-file-excel file-icon"></i>
+              <div class="file-badge">Excel</div>
+            </div>
+            <div class="file-details">
+              <h4 class="file-name">{{ selectedFile.name }}</h4>
+              <p class="file-size">{{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+              <div class="file-status">
+                <i class="fas fa-check-circle"></i>
+                <span>Prêt à téléverser</span>
+              </div>
+            </div>
+            <button class="btn-remove-file" (click)="clearSelectedFile()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="upload-actions">
+            <button class="btn-modern btn-primary-modern btn-upload-action" 
+                    (click)="uploadPPNA()" 
+                    [disabled]="uploadingPPNA">
+              <i class="fas" [ngClass]="uploadingPPNA ? 'fa-spinner fa-pulse' : 'fa-upload'"></i>
+              <span>{{ uploadingPPNA ? 'Téléversement...' : 'Téléverser & Analyser' }}</span>
+            </button>
+          </div>
+
+          <div class="upload-progress" *ngIf="uploadingPPNA">
+            <div class="progress-bar-modern">
+              <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+            </div>
+            <span class="progress-text">{{ uploadProgress }}% complété</span>
+          </div>
+        </div>
+
+        <div class="upload-notification" *ngIf="lastUploadedFileName">
+          <i class="fas fa-history"></i>
+          <span>Dernier fichier : <strong>{{ lastUploadedFileName }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Narratif Actuariel -->
+      <div class="actuarial-insights" *ngIf="actuarialNarrative.length">
+        <div class="insights-header">
+          <i class="fas fa-lightbulb"></i>
+          <h3>Insights Actuariels</h3>
+        </div>
+        <div class="insights-grid">
+          <div class="insight-item" *ngFor="let line of actuarialNarrative; let i = index">
+            <div class="insight-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <p>{{ line }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📊 KPIs Modernes avec Animations -->
+  <section class="kpis-modern animate-slide-up">
+    <h2 class="section-title-modern">
+      <span class="title-icon"><i class="fas fa-tachometer-alt"></i></span>
+      <span>Indicateurs Clés de Performance</span>
+    </h2>
+    
+    <div class="kpis-grid" *ngIf="dashboardData">
+      <!-- KPI 1: Contrats PPNA -->
+      <div class="kpi-card-modern glass-card hover-lift">
+        <div class="kpi-bg-pattern pattern-1"></div>
+        <div class="kpi-header-modern">
+          <div class="kpi-icon-modern gradient-blue">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <div class="kpi-badge badge-blue">PPNA</div>
+        </div>
+        <div class="kpi-body-modern">
+          <h3 class="kpi-value-modern count-up">{{ dashboardData.kpis.ppna_count }}</h3>
+          <p class="kpi-label-modern">Contrats Actifs</p>
+          <div class="kpi-trend-modern trend-up">
+            <i class="fas fa-arrow-up"></i>
+            <span>+{{ dashboardData.kpis.monthly_trend }}% ce mois</span>
+          </div>
+        </div>
+        <div class="kpi-footer-modern">
+          <div class="kpi-progress-modern">
+            <div class="progress-track">
+              <div class="progress-bar" style="width: 75%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 2: Contrats Onéreux -->
+      <div class="kpi-card-modern glass-card hover-lift">
+        <div class="kpi-bg-pattern pattern-2"></div>
+        <div class="kpi-header-modern">
+          <div class="kpi-icon-modern gradient-orange">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="kpi-badge badge-orange">Alerte</div>
+        </div>
+        <div class="kpi-body-modern">
+          <h3 class="kpi-value-modern count-up">{{ dashboardData.kpis.onerous_contracts }}</h3>
+          <p class="kpi-label-modern">Contrats Onéreux</p>
+          <div class="kpi-trend-modern trend-neutral">
+            <i class="fas fa-shield-alt"></i>
+            <span>Sous surveillance</span>
+          </div>
+        </div>
+        <div class="kpi-footer-modern">
+          <div class="kpi-stats-modern">
+            <div class="stat-item">
+              <span class="stat-label">Ratio:</span>
+              <span class="stat-value">{{ formatPercentage((dashboardData.kpis.onerous_contracts / dashboardData.kpis.ppna_count) * 100) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 3: Conformité IFRS 17 -->
+      <div class="kpi-card-modern glass-card hover-lift">
+        <div class="kpi-bg-pattern pattern-3"></div>
+        <div class="kpi-header-modern">
+          <div class="kpi-icon-modern gradient-green">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="kpi-badge badge-green">Conformité</div>
+        </div>
+        <div class="kpi-body-modern">
+          <h3 class="kpi-value-modern count-up">{{ formatPercentage(dashboardData.kpis.compliance_score) }}</h3>
+          <p class="kpi-label-modern">Score IFRS 17</p>
+          <div class="kpi-trend-modern trend-up">
+            <i class="fas fa-award"></i>
+            <span>Excellent</span>
+          </div>
+        </div>
+        <div class="kpi-footer-modern">
+          <div class="compliance-indicators">
+            <div class="indicator active"><i class="fas fa-check"></i></div>
+            <div class="indicator active"><i class="fas fa-check"></i></div>
+            <div class="indicator active"><i class="fas fa-check"></i></div>
+            <div class="indicator"><i class="fas fa-check"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 4: Précision Actuarielle -->
+      <div class="kpi-card-modern glass-card hover-lift">
+        <div class="kpi-bg-pattern pattern-4"></div>
+        <div class="kpi-header-modern">
+          <div class="kpi-icon-modern gradient-purple">
+            <i class="fas fa-bullseye"></i>
+          </div>
+          <div class="kpi-badge badge-purple">Performance</div>
+        </div>
+        <div class="kpi-body-modern">
+          <h3 class="kpi-value-modern count-up">{{ formatPercentage(dashboardData.kpis.accuracy_rate) }}</h3>
+          <p class="kpi-label-modern">Précision Modèles</p>
+          <div class="kpi-trend-modern trend-up">
+            <i class="fas fa-rocket"></i>
+            <span>{{ dashboardData.kpis.processing_time }}min traitement</span>
+          </div>
+        </div>
+        <div class="kpi-footer-modern">
+          <div class="kpi-chart-mini">
+            <div class="chart-bar" style="height: 60%"></div>
+            <div class="chart-bar" style="height: 80%"></div>
+            <div class="chart-bar" style="height: 100%"></div>
+            <div class="chart-bar" style="height: 90%"></div>
+            <div class="chart-bar" style="height: 95%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🚀 Modules IFRS17 - Cartes Interactives -->
+  <section class="modules-section animate-fade-in">
+    <h2 class="section-title-modern">
+      <span class="title-icon"><i class="fas fa-th-large"></i></span>
+      <span>Modules IFRS 17</span>
+    </h2>
+
+    <div class="modules-grid">
+      <!-- Module PPNA -->
+      <a routerLink="/analytics/ppna" class="module-card glass-card hover-scale">
+        <div class="module-glow glow-blue"></div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-blue">
+            <i class="fas fa-calculator"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Analyse PPNA</h3>
+          <p class="module-description">Provisions pour Primes Non Acquises et analyses segment aires</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-check"></i> Calculs actuariels</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Vue Groupe IFRS-17</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Export Excel</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action">
+            Accéder <i class="fas fa-arrow-right"></i>
+          </span>
+          <div class="module-stats">
+            <i class="fas fa-chart-line"></i>
+            <span>Dernière analyse: Aujourd'hui</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Module PAA -->
+      <a routerLink="/analytics/paa" class="module-card glass-card hover-scale">
+        <div class="module-glow glow-green"></div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-green">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Dashboard PAA</h3>
+          <p class="module-description">Premium Allocation Approach - Gestion des groupes de contrats</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-check"></i> Groupes de contrats</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Mouvements LRC</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Snapshots</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action">
+            Accéder <i class="fas fa-arrow-right"></i>
+          </span>
+          <div class="module-stats">
+            <i class="fas fa-layer-group"></i>
+            <span>{{ dashboardData?.kpis?.ppna_count || 0 }} contrats</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Module ML -->
+      <a routerLink="/analytics/ml" class="module-card glass-card hover-scale">
+        <div class="module-glow glow-purple"></div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-purple">
+            <i class="fas fa-brain"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Machine Learning</h3>
+          <p class="module-description">Prédictions avancées et modélisation actuarielle</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-check"></i> Entraînement modèles</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Prédictions</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Métriques ML</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action">
+            Accéder <i class="fas fa-arrow-right"></i>
+          </span>
+          <div class="module-stats">
+            <i class="fas fa-robot"></i>
+            <span>{{ formatPercentage(dashboardData?.kpis?.accuracy_rate || 0) }} précision</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Module Assistant IA -->
+      <a routerLink="/ai-assistant" class="module-card glass-card hover-scale">
+        <div class="module-glow glow-orange"></div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-orange">
+            <i class="fas fa-robot"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Assistant IA</h3>
+          <p class="module-description">Support intelligent pour vos questions IFRS 17</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-check"></i> Réponses expertes</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Chat en temps réel</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Références normatives</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action">
+            Accéder <i class="fas fa-arrow-right"></i>
+          </span>
+          <div class="module-stats">
+            <i class="fas fa-comments"></i>
+            <span>Disponible 24/7</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Module Outils -->
+      <a routerLink="/data-transformations" class="module-card glass-card hover-scale">
+        <div class="module-glow glow-cyan"></div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-cyan">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Transformations</h3>
+          <p class="module-description">Conversion et préparation des données</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-check"></i> Import/Export</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Nettoyage</span>
+            <span class="feature-tag"><i class="fas fa-check"></i> Validation</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action">
+            Accéder <i class="fas fa-arrow-right"></i>
+          </span>
+          <div class="module-stats">
+            <i class="fas fa-database"></i>
+            <span>Outils disponibles</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Module Projections (Nouveau) -->
+      <div class="module-card glass-card hover-scale coming-soon">
+        <div class="module-glow glow-pink"></div>
+        <div class="coming-soon-badge">
+          <i class="fas fa-rocket"></i>
+          <span>Bientôt</span>
+        </div>
+        <div class="module-icon-wrapper">
+          <div class="module-icon gradient-pink">
+            <i class="fas fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="module-content">
+          <h3 class="module-title">Projections</h3>
+          <p class="module-description">Projections de cash-flows et analyses prospectives</p>
+          <div class="module-features">
+            <span class="feature-tag"><i class="fas fa-clock"></i> En développement</span>
+            <span class="feature-tag"><i class="fas fa-clock"></i> Cash-flows</span>
+            <span class="feature-tag"><i class="fas fa-clock"></i> Scénarios</span>
+          </div>
+        </div>
+        <div class="module-footer">
+          <span class="module-action disabled">
+            Bientôt disponible
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📊 Section IFRS17 Metrics -->
+  <section class="ifrs17-metrics animate-slide-up" *ngIf="ppnaMetrics">
+    <h2 class="section-title-modern">
+      <span class="title-icon"><i class="fas fa-balance-scale"></i></span>
+      <span>Analyse IFRS 17 (PAA) - PPNA & LRC</span>
+      <button class="btn-modern btn-sm btn-refresh" (click)="refreshPPNA()" [disabled]="loadingPPNA">
+        <i class="fas" [ngClass]="loadingPPNA ? 'fa-spinner fa-pulse' : 'fa-sync-alt'"></i>
+        <span>Rafraîchir</span>
+      </button>
+    </h2>
+
+    <div class="metrics-grid">
+      <!-- LRC Totale -->
+      <div class="metric-card-ifrs glass-card hover-lift">
+        <div class="metric-header-ifrs">
+          <span class="metric-badge badge-primary">LRC</span>
+          <i class="fas fa-info-circle metric-info" title="Liability for Remaining Coverage"></i>
+        </div>
+        <h3 class="metric-title-ifrs">LRC Totale</h3>
+        <div class="metric-value-ifrs">{{ formatCurrency(ppnaMetrics.lrc_total) }}</div>
+        <div class="metric-footer-ifrs">
+          <div class="metric-sparkline">
+            <div class="spark-bar" style="height: 70%"></div>
+            <div class="spark-bar" style="height: 85%"></div>
+            <div class="spark-bar" style="height: 100%"></div>
+            <div class="spark-bar" style="height: 90%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PPNA -->
+      <div class="metric-card-ifrs glass-card hover-lift">
+        <div class="metric-header-ifrs">
+          <span class="metric-badge badge-info">PPNA</span>
+          <i class="fas fa-info-circle metric-info" title="Provision pour Primes Non Acquises"></i>
+        </div>
+        <h3 class="metric-title-ifrs">PPNA</h3>
+        <div class="metric-value-ifrs">{{ formatCurrency(ppnaMetrics.ppna_total) }}</div>
+        <div class="metric-footer-ifrs">
+          <span class="metric-percent">{{ getRiskAdjustmentPercent() }}% base LRC</span>
+        </div>
+      </div>
+
+      <!-- Risk Adjustment -->
+      <div class="metric-card-ifrs glass-card hover-lift">
+        <div class="metric-header-ifrs">
+          <span class="metric-badge badge-warning">RA</span>
+          <i class="fas fa-info-circle metric-info" title="Risk Adjustment for Non-Financial Risk"></i>
+        </div>
+        <h3 class="metric-title-ifrs">Risk Adjustment</h3>
+        <div class="metric-value-ifrs">{{ formatCurrency(ppnaMetrics.risk_adjustment) }}</div>
+        <div class="metric-footer-ifrs">
+          <span class="metric-percent">{{ getRiskAdjustmentPercent() }}% LRC</span>
+        </div>
+      </div>
+
+      <!-- Loss Component -->
+      <div class="metric-card-ifrs glass-card hover-lift" *ngIf="ppnaMetrics.loss_component && ppnaMetrics.loss_component > 0">
+        <div class="metric-header-ifrs">
+          <span class="metric-badge badge-danger">LC</span>
+          <i class="fas fa-info-circle metric-info" title="Loss Component for Onerous Contracts"></i>
+        </div>
+        <h3 class="metric-title-ifrs">Loss Component</h3>
+        <div class="metric-value-ifrs">{{ formatCurrency(ppnaMetrics.loss_component) }}</div>
+        <div class="metric-footer-ifrs">
+          <span class="metric-alert"><i class="fas fa-exclamation-triangle"></i> Contrats onéreux détectés</span>
+        </div>
+      </div>
+
+      <!-- Contrats Onéreux -->
+      <div class="metric-card-ifrs glass-card hover-lift">
+        <div class="metric-header-ifrs">
+          <span class="metric-badge badge-accent">Contrats</span>
+          <i class="fas fa-info-circle metric-info" title="Nombre de contrats onéreux identifiés"></i>
+        </div>
+        <h3 class="metric-title-ifrs">Contrats Onéreux</h3>
+        <div class="metric-value-ifrs">{{ ppnaMetrics.contrats_onereux }}</div>
+        <div class="metric-footer-ifrs">
+          <span class="metric-status status-monitored">
+            <i class="fas fa-shield-alt"></i> Sous surveillance
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LRC Composition Donut Chart -->
+    <div class="lrc-composition glass-card" *ngIf="lrcChartData">
+      <div class="composition-header">
+        <h3 class="composition-title">
+          <i class="fas fa-chart-pie"></i>
+          Composition de la LRC
+        </h3>
+        <div class="composition-legend">
+          <div class="legend-item">
+            <span class="legend-color color-blue"></span>
+            <span>PPNA</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color color-orange"></span>
+            <span>Risk Adj.</span>
+          </div>
+          <div class="legend-item" *ngIf="ppnaMetrics?.loss_component && ppnaMetrics.loss_component > 0">
+            <span class="legend-color color-red"></span>
+            <span>Loss Comp.</span>
+          </div>
+        </div>
+      </div>
+      <div class="composition-chart">
+        <canvas baseChart
+                [data]="lrcChartData"
+                [type]="'doughnut'"
+                [options]="lrcChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Segments Analysis Table -->
+    <div class="segments-analysis glass-card" *ngIf="ppnaSegments.length > 0">
+      <div class="segments-header">
+        <h3 class="segments-title">
+          <i class="fas fa-layer-group"></i>
+          Analyse par Segment
+        </h3>
+        <div class="segments-actions">
+          <button class="btn-modern btn-sm" (click)="exportSegmentsCSV()">
+            <i class="fas fa-file-csv"></i>
+            <span>Exporter CSV</span>
+          </button>
+        </div>
+      </div>
+      <div class="table-responsive-modern">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th><i class="fas fa-tag"></i> Segment</th>
+              <th><i class="fas fa-coins"></i> Primes</th>
+              <th><i class="fas fa-shield-alt"></i> Provisions</th>
+              <th><i class="fas fa-percentage"></i> Ratio Prov./Primes</th>
+              <th><i class="fas fa-chart-pie"></i> Part des Primes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let seg of ppnaSegments; trackBy: trackBySegment" class="table-row-hover">
+              <td><strong>{{ seg.segment || seg.code }}</strong></td>
+              <td>{{ formatCurrency(seg.primes) }}</td>
+              <td>{{ formatCurrency(seg.provisions) }}</td>
+              <td>
+                <div class="ratio-badge" [ngClass]="getRatioBadgeClass(seg.ratio_provisions_primes)">
+                  {{ formatPercentage(seg.ratio_provisions_primes) }}
+                </div>
+              </td>
+              <td>
+                <div class="progress-inline">
+                  <div class="progress-fill-inline" [style.width.%]="seg.part_primes"></div>
+                  <span class="progress-value">{{ formatPercentage(seg.part_primes) }}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🚨 Alertes et Notifications -->
+  <section class="alerts-modern animate-fade-in" *ngIf="alerts.length > 0">
+    <h2 class="section-title-modern">
+      <span class="title-icon"><i class="fas fa-bell"></i></span>
+      <span>Alertes & Notifications</span>
+      <span class="alerts-count">{{ alerts.length }}</span>
+    </h2>
+
+    <div class="alerts-grid">
+      <div class="alert-card-modern glass-card" 
+           *ngFor="let alert of alerts" 
+           [ngClass]="'alert-' + alert.type">
+        <div class="alert-icon-modern" [ngClass]="'icon-' + alert.type">
+          <i class="fas" 
+             [ngClass]="{
+               'fa-info-circle': alert.type === 'info',
+               'fa-exclamation-triangle': alert.type === 'warning',
+               'fa-exclamation-circle': alert.type === 'error',
+               'fa-check-circle': alert.type === 'success'
+             }"></i>
+        </div>
+        <div class="alert-content-modern">
+          <h4 class="alert-title-modern">{{ alert.title }}</h4>
+          <p class="alert-message-modern">{{ alert.message }}</p>
+          <button class="alert-action-btn" 
+                  *ngIf="alert.action_url && alert.action_text"
+                  (click)="navigateTo(alert.action_url)">
+            {{ alert.action_text }}
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <button class="alert-dismiss-btn" (click)="dismissAlert(alert)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- 🔄 État de Chargement Moderne -->
+<div class="loading-modern" *ngIf="isLoading">
+  <div class="loading-content">
+    <div class="loader-modern">
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <div class="loader-logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+    </div>
+    <h3 class="loading-title">Chargement du Dashboard</h3>
+    <p class="loading-subtitle">Préparation de vos données IFRS 17...</p>
+  </div>
+</div>

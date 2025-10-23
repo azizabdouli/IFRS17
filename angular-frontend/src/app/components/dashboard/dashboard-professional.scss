@@ -852,3 +852,281 @@
     }
   }
 }
+
+/* ================================================= */
+/* 🎨 OPTIMISATIONS DASHBOARD */
+/* ================================================= */
+
+/* Status Badge dans Header */
+.status-badge {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  
+  i {
+    font-size: 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  span {
+    font-weight: 600;
+    color: #059669;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Hover Lift Effect sur KPIs */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Animation Count-Up */
+.animate-count {
+  animation: countUp 0.8s ease-out;
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Optimisation KPI Cards */
+.kpi-card {
+  .kpi-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  
+  .kpi-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    
+    &.badge-primary {
+      background: linear-gradient(135deg, #3B82F6, #2563EB);
+      color: white;
+    }
+    
+    &.badge-warning {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+    }
+    
+    &.badge-success {
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: white;
+    }
+    
+    &.badge-info {
+      background: linear-gradient(135deg, #06B6D4, #0891B2);
+      color: white;
+    }
+  }
+  
+  .trend-positive {
+    color: #059669;
+  }
+  
+  .trend-warning {
+    color: #D97706;
+  }
+}
+
+/* Optimisation Module Cards */
+.access-card-pro {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    
+    .card-glow {
+      opacity: 0.6;
+    }
+    
+    .card-icon-pro {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .card-action {
+      gap: 0.6rem;
+    }
+  }
+  
+  .card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  
+  .card-features {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+  }
+  
+  .feature-tag {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563EB;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  
+  .card-footer-pro {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  
+  .card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2563EB;
+    transition: gap 0.3s ease;
+    
+    i {
+      font-size: 0.7rem;
+      transition: transform 0.3s ease;
+    }
+  }
+  
+  /* Couleurs spécifiques par carte */
+  &.card-ppna {
+    .card-glow {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(59, 130, 246, 0.1);
+      color: #2563EB;
+    }
+  }
+  
+  &.card-paa {
+    .card-glow {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+    
+    .card-action {
+      color: #059669;
+    }
+  }
+  
+  &.card-ml {
+    .card-glow {
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(168, 85, 247, 0.1);
+      color: #7C3AED;
+    }
+    
+    .card-action {
+      color: #7C3AED;
+    }
+  }
+  
+  &.card-ai {
+    .card-glow {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(245, 158, 11, 0.1);
+      color: #D97706;
+    }
+    
+    .card-action {
+      color: #D97706;
+    }
+  }
+  
+  &.card-transform {
+    .card-glow {
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(6, 182, 212, 0.1);
+      color: #0891B2;
+    }
+    
+    .card-action {
+      color: #0891B2;
+    }
+  }
+  
+  &.card-projection {
+    .card-glow {
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%);
+    }
+    
+    .feature-tag {
+      background: rgba(236, 72, 153, 0.1);
+      color: #DB2777;
+    }
+    
+    .card-action {
+      color: #9CA3AF;
+    }
+  }
+  
+  &.coming-soon {
+    opacity: 0.7;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      
+      .card-glow {
+        opacity: 0;
+      }
+      
+      .card-icon-pro {
+        transform: none;
+      }
+    }
+  }
+}
