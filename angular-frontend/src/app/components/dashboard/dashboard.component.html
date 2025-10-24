@@ -1,54 +1,9 @@
 <!-- ================================================= -->
 <!-- 📊 DASHBOARD PROFESSIONNEL IFRS17 BNA -->
 <!-- ================================================= -->
-<div class="professional-dashboard" *ngIf="!isLoading">
-  <!-- 🗂 UPLOAD PPNA (Front Page Priority) -->
-  <section class="ppna-upload-section">
-    <div class="upload-header">
-      <h2>
-        <i class="fas fa-file-upload"></i> Dataset PPNA (Base Technique Centrale)
-      </h2>
-      <div class="upload-meta">
-        <span *ngIf="lastUploadedFileName" class="last-file">Dernier: {{ lastUploadedFileName }}</span>
-        <button class="btn-export" (click)="exportSegmentsCSV()" [disabled]="!ppnaSegments.length">
-          <i class="fas fa-download"></i> Export Segments
-        </button>
-      </div>
-    </div>
-    <div class="upload-grid">
-      <div class="upload-panel"
-           (drop)="onDropFile($event)"
-           (dragover)="onDragOver($event)">
-        <div class="upload-instructions" *ngIf="!selectedFile">
-          <i class="fas fa-cloud-upload-alt big-icon"></i>
-          <p>Glissez-déposez votre fichier Excel (.xlsx) ou</p>
-          <label class="btn-browse">
-            <input type="file" (change)="onFileInputChange($event)" accept=".xlsx,.xls" hidden />
-            Parcourir
-          </label>
-        </div>
-        <div class="selected-file" *ngIf="selectedFile">
-          <i class="fas fa-file-excel"></i>
-            {{ selectedFile.name }} ({{ (selectedFile.size/1024).toFixed(1) }} KB)
-          <button class="btn-clear" (click)="clearSelectedFile()"><i class="fas fa-times"></i></button>
-        </div>
-        <button class="btn-upload" (click)="uploadPPNA()" [disabled]="!selectedFile || uploadingPPNA">
-          <i class="fas" [ngClass]="{'fa-upload': !uploadingPPNA, 'fa-spinner fa-spin': uploadingPPNA}"></i>
-          {{ uploadingPPNA ? 'Téléversement...' : 'Téléverser & Actualiser' }}
-        </button>
-        <div class="hint">Le fichier sera stocké et utilisé par toutes les fonctionnalités (ML, projections, IFRS17)</div>
-        <div class="error-msg" *ngIf="ppnaError">{{ ppnaError }}</div>
-      </div>
-      <div class="narrative-panel" *ngIf="actuarialNarrative.length">
-        <h3><i class="fas fa-comment-dots"></i> Narratif Actuariel</h3>
-        <ul>
-          <li *ngFor="let line of actuarialNarrative">{{ line }}</li>
-        </ul>
-      </div>
-    </div>
-  </section>
+<div class="professional-dashboard" *ngIf="!isLoading; else loadingTemplate">
   
-  <!-- 📋 EN-TÊTE PROFESSIONNEL OPTIMISÉ -->
+  <!-- 📋 EN-TÊTE PROFESSIONNEL OPTIMISÉ (PRIORITÉ 1 - Affichage Immédiat) -->
   <header class="dashboard-header-pro">
     <div class="header-content-pro">
       <div class="user-info-pro">
@@ -87,234 +42,47 @@
     </div>
   </header>
 
-  <!-- 🚨 ALERTES CONTEXTUELLES -->
-  <section class="alerts-section" *ngIf="alerts.length > 0">
-    <div class="alert-item glassmorphism-card" 
-         *ngFor="let alert of alerts" 
-         [ngClass]="'alert-' + alert.type + ' alert-priority-' + alert.priority">
-      <div class="alert-icon">
-        <i class="fas" 
-           [ngClass]="{
-             'fa-info-circle': alert.type === 'info',
-             'fa-exclamation-triangle': alert.type === 'warning',
-             'fa-exclamation-circle': alert.type === 'error',
-             'fa-check-circle': alert.type === 'success'
-           }"></i>
-      </div>
-      <div class="alert-content">
-        <h4 class="alert-title">{{ alert.title }}</h4>
-        <p class="alert-message">{{ alert.message }}</p>
-        <button class="alert-action" 
-                *ngIf="alert.action_url && alert.action_text"
-                (click)="navigateTo(alert.action_url)">
-          {{ alert.action_text }}
+  <!-- 🗂 UPLOAD PPNA (PRIORITÉ 5 - Lazy Loaded) -->
+  <section class="ppna-upload-section">
+    <div class="upload-header">
+      <h2>
+        <i class="fas fa-file-upload"></i> Dataset PPNA (Base Technique Centrale)
+      </h2>
+      <div class="upload-meta">
+        <span *ngIf="lastUploadedFileName" class="last-file">Dernier: {{ lastUploadedFileName }}</span>
+        <button class="btn-export" (click)="exportSegmentsCSV()" [disabled]="!ppnaSegments.length">
+          <i class="fas fa-download"></i> Export Segments
         </button>
       </div>
-      <button class="alert-dismiss" (click)="dismissAlert(alert)">
-        <i class="fas fa-times"></i>
-      </button>
     </div>
-  </section>
-
-  <!-- 📊 KPIs UNIFIÉS - OPTIMISÉS -->
-  <section class="kpis-section">
-    <div class="row g-4" *ngIf="dashboardData">
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card hover-lift">
-          <div class="kpi-icon gradient-primary">
-            <i class="fas fa-layer-group"></i>
-          </div>
-          <div class="kpi-content">
-            <h3 class="kpi-value animate-count">{{ dashboardData.kpis.ppna_count }}</h3>
-            <p class="kpi-label">Contrats PPNA</p>
-            <div class="kpi-trend trend-positive">
-              <i class="fas fa-chart-line"></i>
-              <span>+{{ dashboardData.kpis.monthly_trend }}% ce mois</span>
-            </div>
-          </div>
-          <div class="kpi-footer">
-            <span class="kpi-badge badge-primary">Actifs</span>
-          </div>
+    <div class="upload-grid-centered">
+      <div class="upload-panel-centered"
+           (drop)="onDropFile($event)"
+           (dragover)="onDragOver($event)">
+        <div class="upload-instructions" *ngIf="!selectedFile">
+          <i class="fas fa-cloud-upload-alt big-icon"></i>
+          <p>Glissez-déposez votre fichier Excel (.xlsx) ou</p>
+          <label class="btn-browse">
+            <input type="file" (change)="onFileInputChange($event)" accept=".xlsx,.xls" hidden />
+            Parcourir
+          </label>
         </div>
-      </div>
-
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card hover-lift">
-          <div class="kpi-icon gradient-warning">
-            <i class="fas fa-exclamation-circle"></i>
-          </div>
-          <div class="kpi-content">
-            <h3 class="kpi-value animate-count">{{ dashboardData.kpis.onerous_contracts }}</h3>
-            <p class="kpi-label">Contrats Onéreux</p>
-            <div class="kpi-trend trend-warning">
-              <i class="fas fa-shield-alt"></i>
-              <span>Surveillance active</span>
-            </div>
-          </div>
-          <div class="kpi-footer">
-            <span class="kpi-badge badge-warning">À surveiller</span>
-          </div>
+        <div class="selected-file" *ngIf="selectedFile">
+          <i class="fas fa-file-excel"></i>
+            {{ selectedFile.name }} ({{ (selectedFile.size/1024).toFixed(1) }} KB)
+          <button class="btn-clear" (click)="clearSelectedFile()"><i class="fas fa-times"></i></button>
         </div>
-      </div>
-
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card hover-lift">
-          <div class="kpi-icon gradient-success">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <div class="kpi-content">
-            <h3 class="kpi-value animate-count">{{ formatPercentage(dashboardData.kpis.compliance_score) }}</h3>
-            <p class="kpi-label">Conformité IFRS17</p>
-            <div class="kpi-trend trend-positive">
-              <i class="fas fa-certificate"></i>
-              <span>Certifié</span>
-            </div>
-          </div>
-          <div class="kpi-footer">
-            <span class="kpi-badge badge-success">Conforme</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card glassmorphism-card hover-lift">
-          <div class="kpi-icon gradient-info">
-            <i class="fas fa-brain"></i>
-          </div>
-          <div class="kpi-content">
-            <h3 class="kpi-value animate-count">{{ formatPercentage(dashboardData.kpis.accuracy_rate) }}</h3>
-            <p class="kpi-label">Précision ML</p>
-            <div class="kpi-trend trend-positive">
-              <i class="fas fa-clock"></i>
-              <span>{{ dashboardData.kpis.processing_time }}min</span>
-            </div>
-          </div>
-          <div class="kpi-footer">
-            <span class="kpi-badge badge-info">IA Prête</span>
-          </div>
-        </div>
+        <button class="btn-upload" (click)="uploadPPNA()" [disabled]="!selectedFile || uploadingPPNA">
+          <i class="fas" [ngClass]="{'fa-upload': !uploadingPPNA, 'fa-spinner fa-spin': uploadingPPNA}"></i>
+          {{ uploadingPPNA ? 'Téléversement...' : 'Téléverser & Actualiser' }}
+        </button>
+        <div class="hint">Le fichier sera stocké et utilisé par toutes les fonctionnalités (ML, projections, IFRS17)</div>
+        <div class="error-msg" *ngIf="ppnaError">{{ ppnaError }}</div>
       </div>
     </div>
   </section>
 
-  <!-- 📊 MODULES IFRS17 - OPTIMISÉS -->
-  <section class="quick-access-section-pro">
-    <h2 class="section-title-pro">
-      <i class="fas fa-cubes"></i>
-      Modules & Analytics
-    </h2>
-    <div class="quick-access-grid-pro">
-      <a routerLink="/analytics/ppna" class="access-card-pro card-ppna">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro ppna">
-          <i class="fas fa-file-contract"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Analyse PPNA</h3>
-          <p>Provisions non acquises · Calculs actuariels</p>
-          <div class="card-features">
-            <span class="feature-tag">CSM</span>
-            <span class="feature-tag">LC</span>
-            <span class="feature-tag">RA</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
-        </div>
-      </a>
-
-      <a routerLink="/analytics/paa" class="access-card-pro card-paa">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro paa">
-          <i class="fas fa-calculator"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>PAA Module</h3>
-          <p>Premium Allocation Approach · Contrats courts</p>
-          <div class="card-features">
-            <span class="feature-tag">Eligibilité</span>
-            <span class="feature-tag">LRC</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
-        </div>
-      </a>
-
-      <a routerLink="/analytics/ml" class="access-card-pro card-ml">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro ml">
-          <i class="fas fa-brain"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Machine Learning</h3>
-          <p>Prédictions IA · Clustering · Analyse avancée</p>
-          <div class="card-features">
-            <span class="feature-tag">XGBoost</span>
-            <span class="feature-tag">K-Means</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
-        </div>
-      </a>
-
-      <a routerLink="/ai-assistant" class="access-card-pro card-ai">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro ai">
-          <i class="fas fa-robot"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Assistant IA</h3>
-          <p>Support intelligent · Documentation IFRS17</p>
-          <div class="card-features">
-            <span class="feature-tag">GPT-4</span>
-            <span class="feature-tag">RAG</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
-        </div>
-      </a>
-
-      <a routerLink="/transform" class="access-card-pro card-transform">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro transform">
-          <i class="fas fa-random"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Transformations</h3>
-          <p>Conversion données · Pipeline ETL</p>
-          <div class="card-features">
-            <span class="feature-tag">Excel</span>
-            <span class="feature-tag">JSON</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Accéder <i class="fas fa-arrow-right"></i></span>
-        </div>
-      </a>
-
-      <a routerLink="/projections" class="access-card-pro card-projection coming-soon">
-        <div class="card-glow"></div>
-        <div class="card-icon-pro projection">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="card-content-pro">
-          <h3>Projections</h3>
-          <p>Prévisions actuarielles · Scénarios</p>
-          <div class="card-features">
-            <span class="feature-tag">Bientôt</span>
-          </div>
-        </div>
-        <div class="card-footer-pro">
-          <span class="card-action">Bientôt disponible</span>
-        </div>
-      </a>
-    </div>
-  </section>
-
-  <!-- 📘 SECTION IFRS17 PPNA / LRC (PAA) -->
+  <!-- 📘 SECTION IFRS17 PPNA / LRC (PAA) (PRIORITÉ 6 - Lazy Loaded) -->
   <section class="ifrs17-section" *ngIf="ppnaMetrics">
     <div class="ifrs17-header-row">
       <h2 class="section-title-pro">
@@ -424,10 +192,13 @@
 
 </div>
 
-<!-- 🔄 LOADING STATE -->
-<div class="loading-container" *ngIf="isLoading">
-  <div class="loading-spinner-pro">
-    <div class="spinner-ring-pro"></div>
-    <p class="loading-text-pro">Chargement du tableau de bord...</p>
+<!-- 🔄 LOADING STATE OPTIMISÉ -->
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <div class="loading-spinner-pro">
+      <div class="spinner-ring-pro"></div>
+      <p class="loading-text-pro">Chargement du tableau de bord...</p>
+      <p class="loading-subtext-pro">Préparation de vos données IFRS17</p>
+    </div>
   </div>
-</div>
+</ng-template>

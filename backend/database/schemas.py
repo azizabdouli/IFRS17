@@ -103,6 +103,9 @@ class KPIMetrics(BaseModel):
     loss_component: float = Field(default=0.0, description="Composant de perte en TND")
     revenue_growth: float = Field(default=0.0, description="Croissance du chiffre d'affaires en %")
     risk_score: float = Field(default=0.0, description="Score de risque sur 5")
+    # 🔥 NOUVEAUX CHAMPS
+    compliance_score: float = Field(default=0.0, description="Score de conformité IFRS17 en %")
+    accuracy_rate: float = Field(default=0.0, description="Taux de précision ML en %")
 
 class Alert(BaseModel):
     id: str

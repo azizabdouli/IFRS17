@@ -58,10 +58,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadUserData();
+    // 🚀 OPTIMISATION : Charger les données essentielles en priorité
+    this.loadUserData(); // Synchrone - instantané
+    
+    // Charger le dashboard principal (critique)
     this.loadDashboardData();
+    
+    // Setup des subscriptions (critique)
     this.setupSubscriptions();
-    this.initializePPNAMetrics();
+    
+    // 🔥 LAZY LOADING : Charger PPNA après un court délai (non-critique au démarrage)
+    setTimeout(() => {
+      this.initializePPNAMetrics();
+    }, 500); // Donne le temps au dashboard principal de s'afficher
   }
 
   ngOnDestroy() {
@@ -201,9 +210,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Formater les nombres en devise
+   * Formater les nombres en devise (avec gestion NaN)
    */
-  formatCurrency(value: number): string {
+  formatCurrency(value: number | undefined | null): string {
+    // 🔥 FIX: Gestion des valeurs nulles/undefined/NaN
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0 DT';
+    }
+    
     return new Intl.NumberFormat('fr-TN', {
       style: 'currency',
       currency: 'TND',
@@ -213,9 +227,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Formater les pourcentages
+   * Formater les pourcentages (avec gestion NaN)
    */
-  formatPercentage(value: number): string {
+  formatPercentage(value: number | undefined | null): string {
+    // 🔥 FIX: Gestion des valeurs nulles/undefined/NaN
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0.0%';
+    }
+    
     return new Intl.NumberFormat('fr-TN', {
       style: 'percent',
       minimumFractionDigits: 1,
@@ -283,16 +302,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private initializePPNAMetrics(): void {
     this.loadingPPNA = true;
-    // Déclenche un rafraîchissement (loadInitialData est appelé dans le service constructeur)
+    
+    // 🚀 OPTIMISATION : Charger en parallèle au lieu de séquentiel
+    // Refresh métriques
     this.ppnaService.refreshMetrics();
-    // Charger l'analyse des segments
+    
+    // Charger segments (non bloquant)
     const segSub = this.ppnaService.analyzeBySegments().subscribe({
       next: (res: any) => {
         this.ppnaSegments = res?.segments || [];
+        this.loadingPPNA = false; // ✅ Marquer comme chargé dès que les segments arrivent
       },
       error: (err) => {
         console.error('Erreur analyse segments PPNA:', err);
         this.ppnaError = err.message || 'Erreur récupération segments';
+        this.loadingPPNA = false; // ✅ Ne pas bloquer l'interface même en cas d'erreur
       }
     });
     this.subscriptions.push(segSub);

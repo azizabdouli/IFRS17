@@ -220,47 +220,56 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   uploadToAPI(): void {
-    if (!this.selectedFile) return;
+    console.log('🚀 uploadToAPI() appelée !');
+    console.log('📁 Fichier sélectionné:', this.selectedFile);
+    
+    if (!this.selectedFile) {
+      console.error('❌ Aucun fichier sélectionné !');
+      alert('Veuillez d\'abord sélectionner un fichier !');
+      return;
+    }
     
     this.isLoading = true;
     
-    // Simulation de l'upload
-    setTimeout(() => {
-      this.uploadResult = {
-        dataInfo: {
-          n_rows: 203786,
-          n_columns: 27,
-          columns: ['NUMQUITT', 'NUMAVT', 'MNTPRNET', 'MNTPPNA', 'CODPROD', 'DUREE', 'DATECREA'],
-          sample_data: []
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+    
+    console.log('📤 Envoi vers /ml/upload-data...');
+    
+    this.ifrs17Service.uploadMLData(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('✅ Upload réussi:', response);
+          this.uploadResult = response;
+          this.isLoading = false;
+          alert('✅ Données uploadées avec succès ! Vous pouvez maintenant entraîner les modèles.');
+        },
+        error: (error) => {
+          console.error('❌ Erreur upload:', error);
+          this.isLoading = false;
+          alert('❌ Erreur lors de l\'upload : ' + (error.error?.detail || error.message));
         }
-      };
-      this.isLoading = false;
-    }, 2000);
+      });
   }
 
   generateInsights(): void {
     this.isLoading = true;
     
-    // Simulation des insights
-    setTimeout(() => {
-      this.mlInsights = {
-        dataOverview: {
-          n_contracts: 203786,
-          n_features: 27,
-          dateRange: { min: '2020-01-01', max: '2025-12-31' }
+    this.ifrs17Service.getMLInsights()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('✅ Insights générés:', response);
+          this.mlInsights = response;
+          this.isLoading = false;
         },
-        businessMetrics: {
-          total_premium: 218153347.43,
-          avg_premium: 1070.25,
-          total_ppna: 326750542.34
-        },
-        modelRecommendations: {
-          preferred_algorithm: 'XGBoost',
-          reason: 'Optimal pour les données structurées avec excellent rapport performance/vitesse'
+        error: (error) => {
+          console.error('❌ Erreur insights:', error);
+          this.isLoading = false;
+          alert('Erreur lors de la génération des insights : ' + (error.error?.detail || error.message));
         }
-      };
-      this.isLoading = false;
-    }, 1500);
+      });
   }
 
   // ===============================================
@@ -280,7 +289,30 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
   trainModel(): void {
     this.isTraining = true;
     
-    // Simulation de l'entraînement
+    this.ifrs17Service.trainMLModel(this.selectedModelType, this.selectedAlgorithm)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('✅ Entraînement terminé:', response);
+          this.trainingResult = response;
+          this.isTraining = false;
+          this.loadModelsSummary(); // Rafraîchir la liste des modèles
+        },
+        error: (error) => {
+          console.error('❌ Erreur entraînement:', error);
+          this.isTraining = false;
+          this.trainingResult = {
+            status: 'error',
+            message: error.error?.detail || error.message
+          };
+        }
+      });
+  }
+  
+  trainModel_OLD_SIMULATION(): void {
+    this.isTraining = true;
+    
+    // ANCIENNE SIMULATION - NE PLUS UTILISER
     setTimeout(() => {
       this.trainingResult = {
         status: 'success',
@@ -381,43 +413,45 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
   // ===============================================
   
   loadModelsSummary(): void {
-    // Simulation du chargement des modèles
-    setTimeout(() => {
-      this.modelsSummary = {
-        trained_models: [
-          'Prédiction Sinistres XGBoost',
-          'Classification Risques Random Forest', 
-          'Rentabilité LightGBM',
-          'LRC Prédiction XGBoost'
-        ],
-        model_performance: {
-          'Prédiction Sinistres XGBoost': {
-            r2: 0.732,
-            rmse: 156.24,
-            mae: 89.45,
-            mse: 24410.93
-          },
-          'Classification Risques Random Forest': {
-            accuracy: 0.865,
-            precision: 0.823,
-            recall: 0.891,
-            f1: 0.856
-          },
-          'Rentabilité LightGBM': {
-            r2: 0.964,
-            rmse: 89.12,
-            mae: 45.78,
-            mse: 7942.47
-          },
-          'LRC Prédiction XGBoost': {
-            r2: 0.937,
-            rmse: 234.56,
-            mae: 123.89,
-            mse: 55018.41
+    this.ifrs17Service.getModelsSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('✅ Modèles chargés:', response);
+          this.modelsSummary = response;
+          
+          // Charger les prédictions LRC si disponibles
+          if (response.trained_models?.includes('lrc_prediction_xgboost')) {
+            this.loadLRCPredictions();
           }
+        },
+        error: (error) => {
+          console.error('❌ Erreur chargement modèles:', error);
+          // Garder un état vide si pas de modèles
+          this.modelsSummary = {
+            trained_models: [],
+            model_performance: {}
+          };
         }
-      };
-    }, 1000);
+      });
+  }
+  
+  loadLRCPredictions(): void {
+    this.isLoadingLRC = true;
+    
+    this.ifrs17Service.predictLRC('xgboost')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          console.log('✅ Prédictions LRC chargées:', response);
+          this.lrcPredictions = response;
+          this.isLoadingLRC = false;
+        },
+        error: (error) => {
+          console.error('❌ Erreur prédictions LRC:', error);
+          this.isLoadingLRC = false;
+        }
+      });
   }
 
   saveAllModels(): void {
@@ -437,28 +471,43 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
   
   loadLRCPredictions(): void {
     this.isLoadingLRC = true;
+    console.log('🔄 Chargement des prédictions LRC...');
     
-    // Simulation du chargement des prédictions LRC
-    setTimeout(() => {
-      this.lrcPredictions = {
-        statistiques: {
-          lrc_total: 326750542.34,
-          lrc_moyenne: 1603.45,
-          nombre_contrats: 203786,
-          lrc_std: 456.78,
-          lrc_min: 234.56,
-          lrc_mediane: 1450.23,
-          lrc_max: 8945.67
+    // Appel réel à l'API
+    this.ifrs17Service.predictLRC('xgboost')
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Prédictions LRC reçues:', response);
+          
+          // Mapper la réponse API vers le format attendu par le template
+          this.lrcPredictions = {
+            statistiques: {
+              lrc_total: response.statistics?.total || 0,
+              lrc_moyenne: response.statistics?.mean || 0,
+              nombre_contrats: response.n_predictions || 0,
+              lrc_std: response.statistics?.std || 0,
+              lrc_min: response.statistics?.min || 0,
+              lrc_mediane: response.statistics?.median || 0,
+              lrc_max: response.statistics?.max || 0
+            },
+            echantillon_predictions: (response.predictions_sample || []).map((pred: any) => ({
+              numquitt: `${pred.segment || 'N/A'}-${pred.index}`,
+              lrc_predicted: pred.lrc_predicted,
+              lrc_actual: pred.lrc_actual,
+              mntprnet: pred.prime,
+              segment: pred.segment
+            })),
+            message: response.message || 'Prédictions LRC calculées avec succès'
+          };
+          
+          this.isLoadingLRC = false;
         },
-        echantillon_predictions: [
-          { numquitt: 'Q001', lrc_predicted: 1234.56, mntprnet: 1000, mntppna: 500 },
-          { numquitt: 'Q002', lrc_predicted: 2345.67, mntprnet: 2000, mntppna: 1000 },
-          { numquitt: 'Q003', lrc_predicted: 3456.78, mntprnet: 3000, mntppna: 1500 }
-        ],
-        message: 'Prédictions LRC calculées avec succès'
-      };
-      this.isLoadingLRC = false;
-    }, 2000);
+        error: (error) => {
+          console.error('❌ Erreur chargement prédictions LRC:', error);
+          this.isLoadingLRC = false;
+          alert('❌ Erreur: ' + (error.error?.detail || 'Impossible de charger les prédictions'));
+        }
+      });
   }
   
   formatCurrency(amount: number): string {

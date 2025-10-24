@@ -186,6 +186,23 @@ class EnhancedMLService(BaseMLService):
         self.model_cache[cache_key] = result
         return result
     
+    def train_lrc_prediction_model(self, df: pd.DataFrame, model_type: str = 'xgboost') -> Dict[str, Any]:
+        """
+        Version optimisée avec cache pour prédiction LRC
+        """
+        data_hash = self._get_data_hash(df)
+        cache_key = f"lrc_{model_type}_{data_hash}"
+        
+        if cache_key in self.model_cache:
+            logger.info("📈 Modèle LRC récupéré du cache")
+            return self.model_cache[cache_key]
+        
+        logger.info("💼 Entraînement optimisé du modèle LRC (IFRS 17)")
+        result = super().train_lrc_prediction_model(df, model_type)
+        
+        self.model_cache[cache_key] = result
+        return result
+    
     def get_cache_stats(self) -> Dict[str, Any]:
         """
         Statistiques du cache pour monitoring

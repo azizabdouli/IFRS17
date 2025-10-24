@@ -284,14 +284,24 @@ class PPNAService:
                 "nombre_contrats": int(nombre_contrats),
                 "primes": float(round(primes_segment, 2)),
                 "ppna": float(round(provisions_segment, 2)),
+                "provisions": float(round(provisions_segment, 2)),  # 🔥 Alias pour frontend
                 "risk_adjustment": float(round(risk_adjustment, 2)),
                 "loss_component": float(round(loss_component, 2)),
                 "lrc_total": float(round(lrc_total, 2)),
                 "combined_ratio": float(round(combined_ratio, 2)),
                 "ratio_ppna": float(round((provisions_segment / primes_segment * 100) if primes_segment > 0 else 0, 2)),
+                "ratio": float(round((provisions_segment / primes_segment * 100) if primes_segment > 0 else 0, 2)),
+                "ratio_provisions_primes": float(round((provisions_segment / primes_segment * 100) if primes_segment > 0 else 0, 2)),  # 🔥 FIX: Nom exact pour template
                 "ra_percent": float(round((risk_adjustment / lrc_total * 100) if lrc_total > 0 else 0, 2)),
                 "lc_percent": float(round((loss_component / lrc_total * 100) if lrc_total > 0 else 0, 2))
             })
+        
+        # 🔥 AJOUT: Calculer PART DES PRIMES (% du total)
+        total_primes_all = sum(s['primes'] for s in segments)
+        for segment in segments:
+            part_value = float(round((segment['primes'] / total_primes_all * 100) if total_primes_all > 0 else 0, 2))
+            segment['part'] = part_value
+            segment['part_primes'] = part_value  # 🔥 FIX: Nom exact pour template
         
         return sorted(segments, key=lambda x: x['lrc_total'], reverse=True)
     
@@ -329,13 +339,35 @@ class PPNAService:
             # Calculer les métriques principales
             lrc_data = self.calculate_lrc_paa()
             
+            # Métriques de base
+            lrc_total = lrc_data.get("metriques", {}).get("lrc_total", 0)
+            ppna_total = lrc_data.get("metriques", {}).get("ppna_total", 0)
+            primes_totales = lrc_data.get("metriques", {}).get("primes_totales", 0)
+            risk_adjustment = lrc_data.get("metriques", {}).get("risk_adjustment", 0)
+            
+            # Calculs dérivés
+            csm_total = max(0, primes_totales - lrc_total)
+            contrats_onereux = lrc_data.get("contrats_onereux", {}).get("nombre_contrats_onereux", 0)
+            
+            # 🔥 AJOUT: Métriques pour compliance_score
+            total_contracts = len(lrc_data.get("analyse_segments", []))
+            profitability_ratio = lrc_data.get("metriques", {}).get("taux_acquisition", 85.0)
+            
             metrics = {
-                "lrc_total": lrc_data.get("metriques", {}).get("lrc_total", 0),
-                "ppna_total": lrc_data.get("metriques", {}).get("ppna_total", 0),
-                "risk_adjustment": lrc_data.get("metriques", {}).get("risk_adjustment", 0),
-                "lic_total": lrc_data.get("metriques", {}).get("ppna_total", 0) * 0.3,  # Estimation LIC
-                "csm_total": max(0, lrc_data.get("metriques", {}).get("primes_totales", 0) - lrc_data.get("metriques", {}).get("lrc_total", 0)),
-                "contrats_onereux": lrc_data.get("contrats_onereux", {}).get("nombre_contrats_onereux", 0),
+                "lrc_total": lrc_total,
+                "ppna_total": ppna_total,
+                "total_ppna": ppna_total,  # Alias
+                "risk_adjustment": risk_adjustment,
+                "lic_total": ppna_total * 0.3,  # Estimation LIC
+                "csm_total": csm_total,
+                "contrats_onereux": contrats_onereux,
+                "onerous_contracts_count": contrats_onereux,  # Alias
+                # 🔥 NOUVEAUX CHAMPS pour compliance
+                "total_contracts": total_contracts,
+                "profitability_ratio": profitability_ratio,
+                "loss_component": lrc_data.get("metriques", {}).get("loss_component_total", 0),
+                "revenue_growth": 12.3,  # À calculer avec historique
+                "risk_score": 3.2,  # À calculer selon volatilité
                 "approche": "PAA",
                 "derniere_maj": datetime.now().isoformat()
             }
@@ -347,11 +379,18 @@ class PPNAService:
             logger.error(f"Erreur métriques dashboard: {str(e)}")
             return self._clean_data_for_json({
                 "lrc_total": 0,
-                "ppna_total": 0, 
+                "ppna_total": 0,
+                "total_ppna": 0,
                 "lic_total": 0,
                 "csm_total": 0,
                 "risk_adjustment": 0,
                 "contrats_onereux": 0,
+                "onerous_contracts_count": 0,
+                "total_contracts": 0,
+                "profitability_ratio": 0,
+                "loss_component": 0,
+                "revenue_growth": 0,
+                "risk_score": 0,
                 "approche": "PAA",
                 "derniere_maj": datetime.now().isoformat(),
                 "error": str(e)

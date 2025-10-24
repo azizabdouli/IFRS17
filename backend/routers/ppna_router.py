@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 from backend.services.ppna_service import PPNAService
+from backend.ml.ml_instance import ml_service
 
 router = APIRouter(prefix="/ppna", tags=["PPNA IFRS17"])
 
@@ -72,6 +73,15 @@ async def upload_ppna_file(file: UploadFile = File(...)):
         
         # Traiter le fichier
         result = ppna_service.upload_and_process_file(tmp_file_path)
+        
+        # Partager les données avec le service ML
+        try:
+            # Charger le fichier pour le ML
+            df = pd.read_excel(tmp_file_path) if tmp_file_path.endswith('.xlsx') else pd.read_csv(tmp_file_path)
+            ml_service.current_dataset = df
+            print(f"💾 Données partagées avec ML service: {len(df):,} lignes, {len(df.columns)} colonnes")
+        except Exception as e:
+            print(f"⚠️ Erreur lors du partage avec ML service: {str(e)}")
         
         return {
             "status": "success",

@@ -353,30 +353,6 @@ export class IFRS17ApiService {
   // =================================
   // 🤖 MACHINE LEARNING
   // =================================
-
-  /**
-   * Récupère le résumé de tous les modèles ML entraînés avec leurs métriques
-   */
-  getModelsSummary(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/ml/models-summary`, this.httpOptions)
-      .pipe(
-        catchError(this.handleError),
-        retry(1)
-      );
-  }
-
-  /**
-   * Prédiction LRC - Retourne les valeurs prédites de LRC pour tous les contrats
-   */
-  predictLRC(modelType: string = 'xgboost'): Observable<any> {
-    return this.http.post(`${this.baseUrl}/ml/predict/lrc?model_type=${modelType}`, {}, this.httpOptions)
-      .pipe(
-        catchError(this.handleError),
-        retry(1)
-      );
-  }
-
-  // =================================
   // 🛠️ MÉTHODES UTILITAIRES
   // =================================
 
@@ -502,6 +478,93 @@ export class IFRS17ApiService {
   getPAAPortfolioSummary(): Observable<any> {
     return this.http.get(`${this.baseUrl}/paa/analytics/portfolio-summary`)
       .pipe(catchError(this.handleError));
+  }
+
+  // =================================
+  // 🤖 MACHINE LEARNING
+  // =================================
+
+  /**
+   * Upload des données ML pour entraînement
+   */
+  uploadMLData(formData: FormData): Observable<any> {
+    const headers = new HttpHeaders();
+    // Ne pas définir Content-Type, laissez le navigateur le faire automatiquement pour FormData
+    
+    return this.http.post(`${this.baseUrl}/ml/upload-data`, formData, { headers })
+      .pipe(
+        catchError(this.handleError),
+        retry(1)
+      );
+  }
+
+  /**
+   * Génère les insights ML sur les données
+   */
+  getMLInsights(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/ml/insights`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Entraîne un modèle ML
+   */
+  trainMLModel(modelType: string, algorithm: string): Observable<any> {
+    const endpoint = this.getMLTrainEndpoint(modelType);
+    const params = new HttpParams().set('model_type', algorithm);
+    
+    return this.http.post(`${this.baseUrl}${endpoint}`, {}, { params })
+      .pipe(
+        catchError(this.handleError),
+        retry(1)
+      );
+  }
+
+  /**
+   * Récupère le résumé des modèles entraînés
+   */
+  getModelsSummary(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/ml/models-summary`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Fait des prédictions avec un modèle LRC
+   */
+  predictLRC(algorithm: string = 'xgboost'): Observable<any> {
+    const params = new HttpParams().set('model_type', algorithm);
+    
+    return this.http.get(`${this.baseUrl}/ml/predict/lrc`, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Clustering des contrats
+   */
+  performClustering(config: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/ml/clustering`, config)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Détection d'anomalies
+   */
+  detectAnomalies(config: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/ml/anomaly-detection`, config)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Helper: Obtenir l'endpoint d'entraînement selon le type de modèle
+   */
+  private getMLTrainEndpoint(modelType: string): string {
+    const endpoints: { [key: string]: string } = {
+      'claims-prediction': '/ml/train/claims-prediction',
+      'profitability': '/ml/train/profitability',
+      'risk-classification': '/ml/train/risk-classification',
+      'lrc-prediction': '/ml/train/lrc-prediction'
+    };
+    return endpoints[modelType] || '/ml/train/lrc-prediction';
   }
 
   /**
