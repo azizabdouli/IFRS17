@@ -477,18 +477,29 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
     this.ifrs17Service.predictLRC('xgboost')
       .subscribe({
         next: (response) => {
-          console.log('✅ Prédictions LRC reçues:', response);
+          console.log('✅ Prédictions LRC reçues - RAW:', JSON.stringify(response, null, 2));
+          console.log('📊 Statistics:', response.statistics);
+          console.log('📋 Predictions sample:', response.predictions_sample);
+          console.log('🔢 Nombre de prédictions:', response.n_predictions);
+          
+          // Vérification de la structure
+          if (!response || !response.statistics) {
+            console.error('❌ Réponse invalide! Structure:', response);
+            alert('❌ Erreur: La réponse du serveur ne contient pas de statistiques');
+            this.isLoadingLRC = false;
+            return;
+          }
           
           // Mapper la réponse API vers le format attendu par le template
           this.lrcPredictions = {
             statistiques: {
-              lrc_total: response.statistics?.total || 0,
-              lrc_moyenne: response.statistics?.mean || 0,
+              lrc_total: response.statistics.total || 0,
+              lrc_moyenne: response.statistics.mean || 0,
               nombre_contrats: response.n_predictions || 0,
-              lrc_std: response.statistics?.std || 0,
-              lrc_min: response.statistics?.min || 0,
-              lrc_mediane: response.statistics?.median || 0,
-              lrc_max: response.statistics?.max || 0
+              lrc_std: response.statistics.std || 0,
+              lrc_min: response.statistics.min || 0,
+              lrc_mediane: response.statistics.median || 0,
+              lrc_max: response.statistics.max || 0
             },
             echantillon_predictions: (response.predictions_sample || []).map((pred: any) => ({
               numquitt: `${pred.segment || 'N/A'}-${pred.index}`,
@@ -499,6 +510,18 @@ export class MLAnalyticsComponent implements OnInit, OnDestroy {
             })),
             message: response.message || 'Prédictions LRC calculées avec succès'
           };
+          
+          console.log('✅ Données mappées:', this.lrcPredictions);
+          console.log('📊 Stats mappées:', this.lrcPredictions.statistiques);
+          
+          // Debug: Afficher un résumé
+          const total = this.lrcPredictions.statistiques.lrc_total;
+          const count = this.lrcPredictions.statistiques.nombre_contrats;
+          console.log(`💰 Total LRC: ${total} TND pour ${count} contrats`);
+          
+          if (total === 0) {
+            console.warn('⚠️ ATTENTION: Le total LRC est 0! Vérifier les prédictions backend.');
+          }
           
           this.isLoadingLRC = false;
         },

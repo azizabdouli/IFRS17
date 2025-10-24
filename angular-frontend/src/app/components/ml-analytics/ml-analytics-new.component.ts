@@ -493,9 +493,34 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.lrcPredictions = response;
-          this.isLoadingLRC = false;
           console.log('✅ Prédictions LRC chargées:', response);
+          console.log('📊 Statistics brutes:', response.statistics);
+          
+          // Mapper la réponse API vers le format attendu par le template
+          this.lrcPredictions = {
+            statistiques: {
+              lrc_total: response.statistics?.total || 0,
+              lrc_moyenne: response.statistics?.mean || 0,
+              nombre_contrats: response.n_predictions || 0,
+              lrc_std: response.statistics?.std || 0,
+              lrc_min: response.statistics?.min || 0,
+              lrc_mediane: response.statistics?.median || 0,
+              lrc_max: response.statistics?.max || 0
+            },
+            echantillon_predictions: (response.predictions_sample || []).map((pred: any) => ({
+              numquitt: `${pred.segment || 'N/A'}-${pred.index}`,
+              lrc_predicted: pred.lrc_predicted,
+              lrc_actual: pred.lrc_actual,
+              mntprnet: pred.prime,
+              segment: pred.segment
+            })),
+            message: 'Prédictions LRC calculées avec succès'
+          };
+          
+          console.log('✅ Données mappées:', this.lrcPredictions);
+          console.log('💰 LRC Total:', this.lrcPredictions.statistiques.lrc_total, 'TND');
+          
+          this.isLoadingLRC = false;
         },
         error: (error) => {
           console.error('❌ Erreur lors du chargement des prédictions LRC:', error);

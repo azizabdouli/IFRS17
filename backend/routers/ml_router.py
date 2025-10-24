@@ -336,15 +336,28 @@ async def predict_lrc(
     Génère des prédictions LRC sur le dataset actuel
     """
     try:
+        # Diagnostic complet
+        logger.info("=" * 80)
+        logger.info("🔍 DIAGNOSTIC PRÉDICTIONS LRC")
+        logger.info(f"📋 Model type demandé: {model_type}")
+        
+        # Vérifier les données
         if not hasattr(ml_service, 'current_dataset') or ml_service.current_dataset is None:
-            raise HTTPException(status_code=400, detail="Aucune données uploadées.")
+            logger.error("❌ Aucune données dans ml_service.current_dataset")
+            raise HTTPException(status_code=400, detail="Aucune données uploadées. Uploadez d'abord les données.")
         
         df = ml_service.current_dataset
+        logger.info(f"✅ Dataset trouvé: {len(df)} lignes, {len(df.columns)} colonnes")
+        
         model_key = f'lrc_prediction_{model_type}'
         
         # Vérifier si le modèle est entraîné
+        logger.info(f"🔍 Recherche du modèle: {model_key}")
+        logger.info(f"📦 Modèles disponibles: {list(ml_service.models.keys())}")
+        
         if model_key not in ml_service.models:
-            raise HTTPException(status_code=400, detail="Modèle non entraîné. Entraînez d'abord le modèle LRC.")
+            logger.error(f"❌ Modèle '{model_key}' non trouvé!")
+            raise HTTPException(status_code=400, detail=f"Modèle non entraîné. Entraînez d'abord le modèle LRC. Modèles disponibles: {list(ml_service.models.keys())}")
         
         logger.info(f"🎯 Génération des prédictions LRC avec {model_type}")
         
@@ -352,11 +365,21 @@ async def predict_lrc(
         model = ml_service.models[model_key]
         
         # Préparer les données (même preprocessing que l'entraînement)
-        lrc_target = model.create_lrc_target(df)
+        try:
+            # Essayer de créer le target LRC pour comparaison
+            lrc_target = model.create_lrc_target(df) if hasattr(model, 'create_lrc_target') else None
+        except Exception as e:
+            logger.warning(f"⚠️ Impossible de créer lrc_target: {e}")
+            lrc_target = None
+        
+        # Préparer les features
         X, _ = ml_service.preprocessor.prepare_data_for_training(df.copy(), target_column=None)
         
         # Faire les prédictions
         predictions = model.predict(X)
+        logger.info(f"✅ Prédictions générées: {len(predictions)} valeurs")
+        logger.info(f"📊 Premières prédictions: {predictions[:5]}")
+        logger.info(f"📊 Type de predictions: {type(predictions)}, dtype: {predictions.dtype if hasattr(predictions, 'dtype') else 'N/A'}")
         
         # Statistiques sur les prédictions
         pred_stats = {
@@ -368,6 +391,13 @@ async def predict_lrc(
             "total": float(np.sum(predictions))
         }
         
+        logger.info(f"💰 STATISTIQUES CALCULÉES:")
+        logger.info(f"   Total: {pred_stats['total']:,.2f} TND")
+        logger.info(f"   Mean: {pred_stats['mean']:,.2f} TND")
+        logger.info(f"   Median: {pred_stats['median']:,.2f} TND")
+        logger.info(f"   Min: {pred_stats['min']:,.2f} / Max: {pred_stats['max']:,.2f}")
+        logger.info(f"   Std: {pred_stats['std']:,.2f}")
+        
         # Sélectionner un échantillon de prédictions pour l'affichage
         sample_size = min(100, len(predictions))
         sample_indices = np.linspace(0, len(predictions)-1, sample_size, dtype=int)
@@ -376,7 +406,7 @@ async def predict_lrc(
             {
                 "index": int(idx),
                 "lrc_predicted": float(predictions[idx]),
-                "lrc_actual": float(lrc_target.iloc[idx]) if idx < len(lrc_target) else None,
+                "lrc_actual": float(lrc_target.iloc[idx]) if lrc_target is not None and idx < len(lrc_target) else None,
                 "segment": str(df.iloc[idx]['CODPROD']) if 'CODPROD' in df.columns else "N/A",
                 "prime": float(df.iloc[idx]['MNTPRNET']) if 'MNTPRNET' in df.columns else 0
             }
@@ -393,6 +423,17 @@ async def predict_lrc(
         }
         
         logger.info(f"✅ Prédictions LRC générées: Total={pred_stats['total']:,.2f} TND")
+        logger.info(f"📊 Statistiques: Mean={pred_stats['mean']:.2f}, Median={pred_stats['median']:.2f}, Std={pred_stats['std']:.2f}")
+        logger.info(f"📋 Échantillon: {len(predictions_sample)} prédictions")
+        logger.info(f"📦 Structure de la réponse:")
+        logger.info(f"   - status: {result['status']}")
+        logger.info(f"   - model_type: {result['model_type']}")
+        logger.info(f"   - n_predictions: {result['n_predictions']}")
+        logger.info(f"   - statistics keys: {list(result['statistics'].keys())}")
+        logger.info(f"   - predictions_sample length: {len(result['predictions_sample'])}")
+        logger.info(f"   - Premier échantillon: {result['predictions_sample'][0] if result['predictions_sample'] else 'vide'}")
+        logger.info("=" * 80)
+        
         return clean_for_json(result)
     
     except Exception as e:
