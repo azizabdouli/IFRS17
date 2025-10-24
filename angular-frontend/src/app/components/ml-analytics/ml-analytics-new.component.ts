@@ -508,11 +508,11 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
               lrc_max: response.statistics?.max || 0
             },
             echantillon_predictions: (response.predictions_sample || []).map((pred: any) => ({
-              numquitt: `${pred.segment || 'N/A'}-${pred.index}`,
-              lrc_predicted: pred.lrc_predicted,
-              lrc_actual: pred.lrc_actual,
-              mntprnet: pred.prime,
-              segment: pred.segment
+              numero_contrat: `${pred.segment || 'N/A'}-${pred.index}`,
+              produit: pred.segment || 'N/A',
+              prime: pred.prime || 0,
+              lrc_predite: pred.lrc_predicted || 0,
+              lrc_actual: pred.lrc_actual
             })),
             message: 'Prédictions LRC calculées avec succès'
           };
