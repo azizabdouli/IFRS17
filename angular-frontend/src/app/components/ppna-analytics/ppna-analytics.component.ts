@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PPNAService } from '../../services/ppna.service';
+import { IFRS17ApiService } from '../../services/ifrs17-api.service';
 import { KeyValuePipe } from '../../pipes/keyvalue.pipe';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -110,7 +111,8 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit 
   ];
 
   constructor(
-    private ppnaService: PPNAService
+    private ppnaService: PPNAService,
+    private ifrs17Service: IFRS17ApiService
   ) {}
 
   ngOnInit(): void {
@@ -472,11 +474,31 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit 
   calculateProjection(): void {
     this.isLoading = true;
     
-    // Simulation de la projection exacte
-    setTimeout(() => {
-      this.projectionData = this.generateProjectionData();
-      this.isLoading = false;
-    }, 1500);
+    // Appel API réel pour la projection
+    this.ifrs17Service.calculatePPNAProjection(
+      this.anneesProjection[0],
+      this.anneesProjection[1]
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: any) => {
+        // Mapper les données reçues
+        this.projectionData = response.projections.map((proj: any) => ({
+          mois: proj.mois,
+          revenue_mois: proj.revenue_mois,
+          dac_amort_mois: proj.dac_amort_mois,
+          CODPROD: 'MULTI',  // TODO: Améliorer le backend pour retourner les détails par produit
+          Cohorte: parseInt(proj.mois.substring(0, 4)),
+          Onereux: false
+        }));
+        this.isLoading = false;
+        console.log('✅ Projection calculée:', response);
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur calcul projection:', error);
+        this.isLoading = false;
+      }
+    });
   }
 
   generateProjectionData(): ProjectionData[] {
@@ -513,21 +535,63 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit 
   // ===============================================
   
   exporterExcel(): void {
-    // Simulation export Excel
-    alert('Export Excel en cours de développement...');
+    this.isLoading = true;
+    
+    this.ifrs17Service.exportPPNAToExcel()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          // Télécharger le fichier
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `PPNA_Export_${new Date().toISOString().substring(0, 10)}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          
+          this.isLoading = false;
+          console.log('✅ Export Excel terminé');
+        },
+        error: (error: any) => {
+          console.error('❌ Erreur export Excel:', error);
+          this.isLoading = false;
+          alert('Erreur lors de l\'export Excel. Vérifiez que des données PPNA sont chargées.');
+        }
+      });
   }
 
   exporterPDF(): void {
-    // Simulation export PDF
-    const reportData = {
-      date: new Date().toLocaleDateString('fr-TN'),
-      totalContracts: this.metriques.totalContracts,
-      totalPrime: this.metriques.totalPrime,
-      pctOnereux: this.metriques.pctOnereux
-    };
+    this.isLoading = true;
     
-    console.log('Génération PDF:', reportData);
-    alert('Export PDF en cours de développement...');
+    this.ifrs17Service.exportPPNAToPDF()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          // Télécharger le fichier
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `PPNA_Rapport_${new Date().toISOString().substring(0, 10)}.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          
+          this.isLoading = false;
+          console.log('✅ Export PDF terminé');
+        },
+        error: (error: any) => {
+          console.error('❌ Erreur export PDF:', error);
+          this.isLoading = false;
+          
+          const reportData = {
+            date: new Date().toLocaleDateString('fr-TN'),
+            totalContracts: this.metriques.totalContracts,
+            totalPrime: this.metriques.totalPrime,
+            pctOnereux: this.metriques.pctOnereux
+          };
+          console.log('Données rapport (fallback):', reportData);
+          alert('Erreur lors de l\'export PDF. Vérifiez que des données PPNA sont chargées.');
+        }
+      });
   }
 
   formatPercentage(value: number): string {

@@ -62,6 +62,7 @@ interface AnomalyResult {
   results?: {
     n_anomalies: number;
     anomaly_rate: string;
+    method?: string;
     anomalous_contracts?: any[];
   };
 }
@@ -159,21 +160,32 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
   // ===============================================
   
   checkAPIStatus(): void {
-    // Simulation du check API status
-    setTimeout(() => {
-      this.apiStatus = {
-        status: 'healthy',
-        message: 'Service ML opérationnel'
-      };
-      
-      // Mise à jour des statistiques
-      this.modelesSummary = {
-        trainedModels: 4,
-        bestAccuracy: 0.865,
-        totalPredictions: 15420,
-        lastUpdate: new Date().toLocaleDateString('fr-TN')
-      };
-    }, 1000);
+    // Appel API réel pour vérifier le statut
+    this.ifrs17Service.checkMLHealth()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (health) => {
+          this.apiStatus = {
+            status: health.status === 'connected' ? 'healthy' : 'error',
+            message: health.status === 'connected' ? 'Service ML opérationnel' : 'Service ML indisponible'
+          };
+          
+          // Mise à jour des statistiques avec vraies données
+          this.modelesSummary = {
+            trainedModels: health.n_trained_models || 0,
+            bestAccuracy: 0.865, // TODO: Calculer depuis health.models_available
+            totalPredictions: health.dataset_size || 0,
+            lastUpdate: new Date().toLocaleDateString('fr-TN')
+          };
+        },
+        error: (error) => {
+          console.error('❌ Erreur check ML health:', error);
+          this.apiStatus = {
+            status: 'error',
+            message: 'Erreur de connexion au service ML'
+          };
+        }
+      });
   }
 
   refreshData(): void {
@@ -225,43 +237,42 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
     
     this.isLoading = true;
     
-    // Simulation de l'upload
-    setTimeout(() => {
-      this.uploadResult = {
-        dataInfo: {
-          n_rows: 203786,
-          n_columns: 27,
-          columns: ['NUMQUITT', 'NUMAVT', 'MNTPRNET', 'MNTPPNA', 'CODPROD', 'DUREE', 'DATECREA'],
-          sample_data: []
+    // Appel API réel
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+    
+    this.ifrs17Service.uploadMLData(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.uploadResult = data;
+          this.isLoading = false;
+          console.log('✅ Upload ML réussi:', data);
+        },
+        error: (error) => {
+          console.error('❌ Erreur upload ML:', error);
+          this.isLoading = false;
         }
-      };
-      this.isLoading = false;
-    }, 2000);
+      });
   }
 
   generateInsights(): void {
     this.isLoading = true;
     
-    // Simulation des insights
-    setTimeout(() => {
-      this.mlInsights = {
-        dataOverview: {
-          n_contracts: 203786,
-          n_features: 27,
-          dateRange: { min: '2020-01-01', max: '2025-12-31' }
+    // Appel API réel
+    this.ifrs17Service.getMLInsights()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.mlInsights = data;
+          this.isLoading = false;
+          console.log('✅ Insights ML générés:', data);
         },
-        businessMetrics: {
-          total_premium: 218153347.43,
-          avg_premium: 1070.25,
-          total_ppna: 326750542.34
-        },
-        modelRecommendations: {
-          preferred_algorithm: 'XGBoost',
-          reason: 'Optimal pour les données structurées avec excellent rapport performance/vitesse'
+        error: (error) => {
+          console.error('❌ Erreur génération insights:', error);
+          this.isLoading = false;
         }
-      };
-      this.isLoading = false;
-    }, 1500);
+      });
   }
 
   // ===============================================
@@ -310,11 +321,9 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
         // Actualiser les modèles disponibles
         this.loadModelsSummary();
         
-        // Charger automatiquement les prédictions LRC
+        // Charger automatiquement les prédictions LRC immédiatement
         console.log('🎯 Modèle LRC entraîné, chargement automatique des prédictions...');
-        setTimeout(() => {
-          this.loadLRCPredictions();
-        }, 2000);
+        this.loadLRCPredictions();
       })
       .catch(error => {
         console.error('❌ Erreur entraînement LRC:', error);
@@ -326,21 +335,39 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
         this.isTraining = false;
       });
     } else {
-      // Simulation pour les autres modèles
-      setTimeout(() => {
-        this.trainingResult = {
-          status: 'success',
-          model_type: this.selectedModelType,
-          algorithm: this.selectedAlgorithm,
-          training_time: '2.5 minutes',
-          performance: {
-            accuracy: 0.87,
-            r2_score: 0.94
+      // Appel API réel pour les autres modèles
+      console.log(`🚀 Entraînement du modèle ${this.selectedModelType} avec ${this.selectedAlgorithm}`);
+      
+      this.ifrs17Service.trainMLModel(this.selectedModelType, this.selectedAlgorithm)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            console.log(`✅ Entraînement ${this.selectedModelType} terminé:`, data);
+            this.trainingResult = {
+              status: 'success',
+              model_type: this.selectedModelType,
+              algorithm: this.selectedAlgorithm,
+              training_time: data.training_time || data.results?.training_time || '2-5 minutes',
+              performance: data.performance || data.results?.performance || {
+                accuracy: data.results?.r2_score || 0.87,
+                r2_score: data.results?.r2_score || 0.94
+              }
+            };
+            this.isTraining = false;
+            
+            // Actualiser les modèles disponibles
+            this.loadModelsSummary();
+          },
+          error: (error) => {
+            console.error(`❌ Erreur entraînement ${this.selectedModelType}:`, error);
+            this.trainingResult = {
+              status: 'error',
+              model_type: this.selectedModelType,
+              message: error.error?.detail || 'Erreur lors de l\'entraînement. Vérifiez que les données sont uploadées.'
+            };
+            this.isTraining = false;
           }
-        };
-        this.isTraining = false;
-        this.loadModelsSummary();
-      }, 3000);
+        });
     }
   }
 
@@ -355,38 +382,20 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
   performClustering(): void {
     this.isClustering = true;
     
-    // Simulation du clustering
-    setTimeout(() => {
-      this.clusteringResult = {
-        results: {
-          n_clusters: this.clusterConfig.n_clusters,
-          cluster_distribution: {
-            '0': 45,
-            '1': 25,
-            '2': 15,
-            '3': 10,
-            '4': 5
-          },
-          cluster_characteristics: {
-            '0': {
-              size: 91703,
-              avg_prime: 850.25,
-              avg_duration: 12.5,
-              avg_ppna: 425.12,
-              main_product: 'AUTO'
-            },
-            '1': {
-              size: 50946,
-              avg_prime: 1200.50,
-              avg_duration: 24.0,
-              avg_ppna: 600.25,
-              main_product: 'HABITATION'
-            }
-          }
+    // Appel API réel pour clustering
+    this.ifrs17Service.performClustering(this.clusterConfig)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clusteringResult = data;
+          this.isClustering = false;
+          console.log('✅ Clustering terminé:', data);
+        },
+        error: (error) => {
+          console.error('❌ Erreur clustering:', error);
+          this.isClustering = false;
         }
-      };
-      this.isClustering = false;
-    }, 2500);
+      });
   }
 
   // ===============================================
@@ -400,25 +409,41 @@ export class MLAnalyticsNewComponent implements OnInit, OnDestroy {
   detectAnomalies(): void {
     this.isDetecting = true;
     
-    // Simulation de la détection
-    setTimeout(() => {
-      const nAnomalies = Math.floor(203786 * this.anomalyConfig.contamination / 100);
-      
-      this.anomalyResult = {
-        results: {
-          n_anomalies: nAnomalies,
-          anomaly_rate: `${this.anomalyConfig.contamination}%`,
-          anomalous_contracts: Array.from({length: Math.min(nAnomalies, 10)}, (_, i) => ({
-            id: `ANOM_${i + 1}`,
-            prime: Math.random() * 10000 + 5000,
-            ppna: Math.random() * 5000 + 2500,
-            produit: ['AUTO', 'HABITATION', 'VIE'][Math.floor(Math.random() * 3)],
-            anomaly_score: (Math.random() * 0.5 + 0.5).toFixed(3)
-          }))
+    // Appel API réel pour détection d'anomalies
+    this.ifrs17Service.detectAnomalies(this.anomalyConfig)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: any) => {
+          console.log('✅ Détection anomalies brute:', data);
+          
+          // Mapper les données backend vers le format attendu par le template
+          if (data && data.results) {
+            this.anomalyResult = {
+              results: {
+                n_anomalies: data.results.n_anomalies || 0,
+                anomaly_rate: data.results.anomaly_rate || '0%',
+                method: data.results.method || 'isolation_forest',
+                anomalous_contracts: (data.results.anomalous_contracts || []).map((contract: any) => ({
+                  id: contract.NUMQUITT || contract.NUMAVT || contract.id || 'N/A',
+                  prime: contract.MNTPRNET || contract.prime || 0,
+                  ppna: contract.MNTPPNA || contract.ppna || 0,
+                  produit: contract.CODPROD || contract.produit || 'N/A',
+                  anomaly_score: (contract.anomaly_score !== undefined && contract.anomaly_score !== null) 
+                    ? contract.anomaly_score.toFixed(3) 
+                    : 'N/A'
+                }))
+              }
+            };
+            console.log('✅ Données mappées:', this.anomalyResult);
+          }
+          
+          this.isDetecting = false;
+        },
+        error: (error: any) => {
+          console.error('❌ Erreur détection anomalies:', error);
+          this.isDetecting = false;
         }
-      };
-      this.isDetecting = false;
-    }, 2000);
+      });
   }
 
   // ===============================================

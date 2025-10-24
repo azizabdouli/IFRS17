@@ -201,4 +201,150 @@ def _get_onerous_recommendations(self, onerous_data: Dict) -> List[str]:
     return recommendations
 
 # Ajouter la méthode au service
+# Ajouter la méthode au service
 PPNAService._get_onerous_recommendations = _get_onerous_recommendations
+
+@router.post("/projection/calculate")
+async def calculate_monthly_projection(
+    start_year: int,
+    end_year: int,
+    products: Optional[List[str]] = None
+):
+    """
+    Calcule la projection mensuelle IFRS 17 (revenue & DAC amortissement)
+    """
+    try:
+        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        
+        df = ppna_service.df_ppna.copy()
+        
+        # Filtrer par produits si spécifié
+        if products and len(products) > 0:
+            df = df[df['CODPROD'].isin(products)]
+        
+        # Générer les dates mensuelles
+        import pandas as pd
+        from datetime import datetime
+        
+        dates = pd.date_range(
+            start=f'{start_year}-01-01',
+            end=f'{end_year}-12-31',
+            freq='MS'
+        )
+        
+        projections = []
+        for date in dates:
+            month_str = date.strftime('%Y-%m')
+            
+            # Calculs réels basés sur les données
+            monthly_revenue = df['MNTPRNET'].sum() / 12  # Simplification - peut être amélioré
+            monthly_dac_amort = df.get('DAC_AMORT', df['MNTPRNET'] * 0.05).sum() / 12
+            
+            projections.append({
+                'mois': month_str,
+                'revenue_mois': round(monthly_revenue, 2),
+                'dac_amort_mois': round(monthly_dac_amort, 2),
+                'n_contracts': len(df)
+            })
+        
+        return {
+            "status": "success",
+            "projections": projections,
+            "period": f"{start_year}-{end_year}",
+            "n_months": len(projections)
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur projection: {str(e)}")
+
+@router.get("/export/excel")
+async def export_ppna_excel():
+    """
+    Exporte les données PPNA en Excel
+    """
+    try:
+        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        
+        import io
+        from fastapi.responses import StreamingResponse
+        
+        # Créer le fichier Excel en mémoire
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            ppna_service.df_ppna.to_excel(writer, sheet_name='PPNA_Data', index=False)
+        
+        output.seek(0)
+        
+        return StreamingResponse(
+            output,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={'Content-Disposition': 'attachment; filename=PPNA_Export.xlsx'}
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur export Excel: {str(e)}")
+
+@router.get("/export/pdf")
+async def export_ppna_pdf():
+    """
+    Exporte un rapport PPNA en PDF
+    """
+    try:
+        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        import io
+        from datetime import datetime
+        
+        # Créer le PDF en mémoire
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Titre
+        title = Paragraph(f"<b>Rapport PPNA IFRS 17</b><br/>{datetime.now().strftime('%d/%m/%Y')}", styles['Title'])
+        elements.append(title)
+        elements.append(Spacer(1, 20))
+        
+        # Statistiques clés
+        df = ppna_service.df_ppna
+        stats_data = [
+            ['Métrique', 'Valeur'],
+            ['Nombre de contrats', f"{len(df):,}"],
+            ['Prime totale (TND)', f"{df['MNTPRNET'].sum():,.2f}"],
+            ['PPNA totale (TND)', f"{df['MNTPPNA'].sum():,.2f}"],
+        ]
+        
+        stats_table = Table(stats_data)
+        stats_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(stats_table)
+        doc.build(elements)
+        
+        buffer.seek(0)
+        
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(
+            buffer,
+            media_type='application/pdf',
+            headers={'Content-Disposition': 'attachment; filename=PPNA_Rapport.pdf'}
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur export PDF: {str(e)}")

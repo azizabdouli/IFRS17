@@ -348,9 +348,21 @@ class OptimizedMLService:
         n_anomalies = np.sum(anomaly_labels == 0)
         anomaly_rate = n_anomalies / len(anomaly_labels)
         
-        # Identifier les contrats anormaux
+        # Identifier les contrats anormaux avec leurs scores
         anomaly_indices = np.where(anomaly_labels == 0)[0]
-        anomalous_contracts = df.iloc[anomaly_indices]
+        anomalous_contracts = df.iloc[anomaly_indices].copy()
+        
+        # Ajouter les scores d'anomalie aux contrats
+        if anomaly_scores is not None and len(anomaly_scores) > 0:
+            anomalous_scores = anomaly_scores[anomaly_indices]
+            # Normaliser les scores (valeurs plus élevées = plus anormal)
+            # Pour Isolation Forest: scores négatifs = anormaux, on prend abs et normalise
+            normalized_scores = np.abs(anomalous_scores)
+            if len(normalized_scores) > 0 and normalized_scores.max() > 0:
+                normalized_scores = normalized_scores / normalized_scores.max()
+            anomalous_contracts['anomaly_score'] = normalized_scores
+        else:
+            anomalous_contracts['anomaly_score'] = 0.5  # Score par défaut
         
         # Sauvegarde
         model_key = f'anomaly_detection_{method}'

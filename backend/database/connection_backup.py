@@ -85,3 +85,11 @@ def get_database_url():
         return f"mysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
     else:
         return DATABASE_URL
+
+# Dependency pour obtenir la session DB
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

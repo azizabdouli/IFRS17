@@ -480,9 +480,51 @@ export class IFRS17ApiService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Calcule la projection mensuelle PPNA
+   */
+  calculatePPNAProjection(startYear: number, endYear: number, products?: string[]): Observable<any> {
+    let params = new HttpParams()
+      .set('start_year', startYear.toString())
+      .set('end_year', endYear.toString());
+    
+    if (products && products.length > 0) {
+      params = params.set('products', products.join(','));
+    }
+    
+    return this.http.post(`${this.baseUrl}/ppna/projection/calculate`, {}, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Exporte les données PPNA en Excel
+   */
+  exportPPNAToExcel(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/ppna/export/excel`, {
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Exporte le rapport PPNA en PDF
+   */
+  exportPPNAToPDF(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/ppna/export/pdf`, {
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
+  }
+
   // =================================
   // 🤖 MACHINE LEARNING
   // =================================
+
+  /**
+   * Vérifie l'état de l'API ML et les modèles disponibles
+   */
+  checkMLHealth(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/ml/health`)
+      .pipe(catchError(this.handleError));
+  }
 
   /**
    * Upload des données ML pour entraînement

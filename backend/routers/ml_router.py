@@ -22,6 +22,36 @@ logger = logging.getLogger(__name__)
 query_cache = TTLCache(maxsize=100, ttl=600)  # 10 minutes
 executor = ThreadPoolExecutor(max_workers=4)
 
+@router.get("/health")
+async def ml_health_check():
+    """
+    Vérifie l'état de l'API ML et les modèles disponibles
+    """
+    try:
+        dataset_loaded = hasattr(ml_service, 'current_dataset') and ml_service.current_dataset is not None
+        dataset_size = len(ml_service.current_dataset) if dataset_loaded else 0
+        models_available = list(ml_service.models.keys()) if hasattr(ml_service, 'models') else []
+        
+        return {
+            "status": "connected",
+            "models_available": models_available,
+            "dataset_loaded": dataset_loaded,
+            "dataset_size": dataset_size,
+            "n_trained_models": len(models_available),
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        logger.error(f"❌ Erreur health check: {str(e)}")
+        return {
+            "status": "error",
+            "models_available": [],
+            "dataset_loaded": False,
+            "dataset_size": 0,
+            "n_trained_models": 0,
+            "version": "1.0.0",
+            "error": str(e)
+        }
+
 def clean_for_json(obj):
     """
     Nettoie les données pour la sérialisation JSON
@@ -134,7 +164,6 @@ async def train_claims_prediction(
 
 @router.post("/train/profitability")
 async def train_profitability_model(
-    background_tasks: BackgroundTasks,
     model_type: str = "xgboost",
     target_column: Optional[str] = None
 ):
@@ -142,25 +171,29 @@ async def train_profitability_model(
     Entraînement du modèle de prédiction de rentabilité
     """
     try:
-        if not hasattr(ml_service, 'current_dataset'):
+        logger.info(f"🚀 Entraînement synchrone du modèle Profitability avec {model_type}")
+        
+        if not hasattr(ml_service, 'current_dataset') or ml_service.current_dataset is None:
             raise HTTPException(status_code=400, detail="Aucune données uploadées.")
         
         df = ml_service.current_dataset
+        logger.info(f"📊 Dataset: {len(df)} lignes")
         
-        def train_model():
-            results = ml_service.train_profitability_model(df, target_column, model_type)
-            logger.info(f"Modèle de rentabilité entraîné: {results}")
-        
-        background_tasks.add_task(train_model)
+        # Entraînement synchrone
+        results = ml_service.train_profitability_model(df, target_column, model_type)
+        logger.info(f"✅ Modèle Profitability entraîné: {results}")
         
         return {
-            "message": "Entraînement du modèle de rentabilité démarré",
+            "message": "Modèle de rentabilité entraîné avec succès",
             "model_type": model_type,
-            "status": "training_started"
+            "status": "success",
+            "results": results
         }
     
     except Exception as e:
-        logger.error(f"Erreur: {str(e)}")
+        logger.error(f"❌ Erreur entraînement Profitability: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @router.post("/train/risk-classification")
