@@ -344,14 +344,20 @@ class PPNAService:
             ppna_total = lrc_data.get("metriques", {}).get("ppna_total", 0)
             primes_totales = lrc_data.get("metriques", {}).get("primes_totales", 0)
             risk_adjustment = lrc_data.get("metriques", {}).get("risk_adjustment", 0)
+            nombre_lignes = lrc_data.get("metriques", {}).get("lignes_traitees", 0)
             
             # Calculs dérivés
             csm_total = max(0, primes_totales - lrc_total)
-            contrats_onereux = lrc_data.get("contrats_onereux", {}).get("nombre_contrats_onereux", 0)
+            contrats_onereux_data = lrc_data.get("contrats_onereux", {})
+            contrats_onereux = contrats_onereux_data.get("nombre_contrats_onereux", 0)
             
             # 🔥 AJOUT: Métriques pour compliance_score
-            total_contracts = len(lrc_data.get("analyse_segments", []))
+            analyse_segments = lrc_data.get("analyse_segments", [])
+            total_contracts = len(analyse_segments)
             profitability_ratio = lrc_data.get("metriques", {}).get("taux_acquisition", 85.0)
+            
+            # 🔥 FIX: Calcul des primes des contrats onéreux
+            primes_onereuses = sum(s['primes'] for s in analyse_segments if s.get('is_onerous', False))
             
             metrics = {
                 "lrc_total": lrc_total,
@@ -360,12 +366,20 @@ class PPNAService:
                 "risk_adjustment": risk_adjustment,
                 "lic_total": ppna_total * 0.3,  # Estimation LIC
                 "csm_total": csm_total,
-                "contrats_onereux": contrats_onereux,
+                "nombre_lignes": nombre_lignes,  # 🔥 FIX: Nombre de lignes
+                "primes_totales": primes_totales,  # 🔥 FIX: Primes totales
+                "contrats_onereux": {  # 🔥 FIX: Structure complète
+                    "nombre_contrats_onereux": contrats_onereux,
+                    "ratio_moyen_onereux": contrats_onereux_data.get("ratio_moyen_onereux", 0),
+                    "total_provisions_onereuses": contrats_onereux_data.get("total_provisions_onereuses", 0),
+                    "primes_onereuses": primes_onereuses  # 🔥 AJOUT: Primes des contrats onéreux
+                },
                 "onerous_contracts_count": contrats_onereux,  # Alias
+                "analyse_segments": analyse_segments,  # 🔥 FIX: Inclure les segments
                 # 🔥 NOUVEAUX CHAMPS pour compliance
                 "total_contracts": total_contracts,
                 "profitability_ratio": profitability_ratio,
-                "loss_component": lrc_data.get("metriques", {}).get("loss_component_total", 0),
+                "loss_component": lrc_data.get("metriques", {}).get("loss_component", 0),
                 "revenue_growth": 12.3,  # À calculer avec historique
                 "risk_score": 3.2,  # À calculer selon volatilité
                 "approche": "PAA",
@@ -384,8 +398,16 @@ class PPNAService:
                 "lic_total": 0,
                 "csm_total": 0,
                 "risk_adjustment": 0,
-                "contrats_onereux": 0,
+                "nombre_lignes": 0,  # 🔥 FIX: Ajout
+                "primes_totales": 0,  # 🔥 FIX: Ajout
+                "contrats_onereux": {  # 🔥 FIX: Structure complète
+                    "nombre_contrats_onereux": 0,
+                    "ratio_moyen_onereux": 0,
+                    "total_provisions_onereuses": 0,
+                    "primes_onereuses": 0
+                },
                 "onerous_contracts_count": 0,
+                "analyse_segments": [],  # 🔥 FIX: Liste vide
                 "total_contracts": 0,
                 "profitability_ratio": 0,
                 "loss_component": 0,

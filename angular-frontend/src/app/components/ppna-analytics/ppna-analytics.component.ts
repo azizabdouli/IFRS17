@@ -178,14 +178,51 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit 
     this.ppnaService.getDashboardMetrics()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          this.ppnaData = data;
+        next: (response: any) => {
+          console.log('📊 Réponse backend PPNA:', response);
+          // Le backend retourne { status, metrics, approche, source }
+          // On utilise metrics qui contient toutes les données
+          this.ppnaData = response.metrics || response;
+          console.log('📊 Données PPNA assignées:', this.ppnaData);
           this.extractProduitsDisponibles();
           this.calculateMetriques();
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Erreur chargement PPNA:', error);
+          this.isLoading = false;
+        }
+      });
+  }
+
+  // ===============================================
+  // UPLOAD DE FICHIER
+  // ===============================================
+  
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Vérifier le type de fichier
+    if (!file.name.match(/\.(xlsx|xls)$/)) {
+      alert('⚠️ Veuillez sélectionner un fichier Excel (.xlsx ou .xls)');
+      return;
+    }
+    
+    this.isLoading = true;
+    console.log('📤 Upload du fichier PPNA:', file.name);
+    
+    this.ppnaService.uploadFile(file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Fichier uploadé avec succès:', response);
+          // Recharger les données après l'upload
+          this.loadPPNAData();
+        },
+        error: (error) => {
+          console.error('❌ Erreur upload fichier:', error);
+          alert('❌ Erreur lors de l\'upload du fichier. Vérifiez le format Excel.');
           this.isLoading = false;
         }
       });
@@ -198,14 +235,21 @@ export class PPNAAnalyticsComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   calculateMetriques(): void {
-    if (!this.ppnaData) return;
+    if (!this.ppnaData) {
+      console.warn('⚠️ Aucune donnée PPNA disponible');
+      return;
+    }
+    
+    console.log('🔢 Calcul des métriques depuis:', this.ppnaData);
     
     this.metriques = {
       totalContracts: this.ppnaData['nombre_lignes'] || 0,
       totalPrime: this.ppnaData['primes_totales'] || 0,
-      totalPPNA: this.ppnaData['ppna_total'] || 0,
+      totalPPNA: this.ppnaData['ppna_total'] || this.ppnaData['total_ppna'] || 0,
       pctOnereux: this.ppnaData['contrats_onereux']?.['ratio_moyen_onereux'] || 0
     };
+    
+    console.log('✅ Métriques calculées:', this.metriques);
   }
 
   // ===============================================

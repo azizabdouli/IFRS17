@@ -1,6 +1,6 @@
 # backend/routers/ppna_router.py
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 from typing import Dict, Any, Optional, List
 import pandas as pd
@@ -206,9 +206,9 @@ PPNAService._get_onerous_recommendations = _get_onerous_recommendations
 
 @router.post("/projection/calculate")
 async def calculate_monthly_projection(
-    start_year: int,
-    end_year: int,
-    products: Optional[List[str]] = None
+    start_year: int = Query(..., description="Année de début"),
+    end_year: int = Query(..., description="Année de fin"),
+    products: Optional[List[str]] = Query(None, description="Liste des produits (optionnel)")
 ):
     """
     Calcule la projection mensuelle IFRS 17 (revenue & DAC amortissement)

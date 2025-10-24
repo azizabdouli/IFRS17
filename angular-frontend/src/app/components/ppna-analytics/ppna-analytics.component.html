@@ -17,10 +17,30 @@
       </div>
       <div class="col-md-4 text-end">
         <div class="status-badge">
-          <span class="badge bg-success fs-6">
+          <span class="badge bg-success fs-6" *ngIf="ppnaData && !isLoading">
             <i class="fas fa-check-circle me-1"></i>
             Données PPNA Chargées
           </span>
+          <span class="badge bg-warning fs-6" *ngIf="isLoading">
+            <i class="fas fa-spinner fa-spin me-1"></i>
+            Chargement en cours...
+          </span>
+          <span class="badge bg-secondary fs-6" *ngIf="!ppnaData && !isLoading">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            Aucune donnée
+          </span>
+        </div>
+        
+        <!-- Bouton pour charger un nouveau fichier -->
+        <div class="mt-2" *ngIf="ppnaData && !isLoading">
+          <label class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-upload me-1"></i>
+            Charger nouveau fichier
+            <input type="file" 
+                   (change)="onFileSelected($event)" 
+                   accept=".xlsx,.xls" 
+                   style="display: none;" />
+          </label>
         </div>
       </div>
     </div>
@@ -240,10 +260,10 @@
                       <div class="card border-warning">
                         <div class="card-body">
                           <h6 class="card-title text-warning">⚠️ Contrats Onéreux</h6>
-                          <ul class="list-unstyled mb-0" *ngIf="ppnaData['contrats_onereux']">
-                            <li><strong>Nombre:</strong> {{ ppnaData['contrats_onereux']['nombre_onereux'] | number }}</li>
-                            <li><strong>Primes:</strong> {{ formatCurrency(ppnaData['contrats_onereux']['primes_onereux']) }}</li>
-                            <li><strong>Ratio moyen:</strong> {{ formatPercentage(ppnaData['contrats_onereux']['ratio_moyen_onereux'] * 100) }}</li>
+                          <ul class="list-unstyled mb-0" *ngIf="ppnaData && ppnaData['contrats_onereux']">
+                            <li><strong>Nombre:</strong> {{ ppnaData['contrats_onereux']['nombre_contrats_onereux'] || 0 | number }}</li>
+                            <li><strong>Primes:</strong> {{ formatCurrency(ppnaData['contrats_onereux']['primes_onereuses'] || 0) }}</li>
+                            <li><strong>Ratio moyen:</strong> {{ formatPercentage(ppnaData['contrats_onereux']['ratio_moyen_onereux'] || 0) }}</li>
                           </ul>
                         </div>
                       </div>
@@ -409,9 +429,29 @@
                     <small class="text-white-50">Grouping Requirements IFRS 17 §14-24</small>
                   </div>
                   <div class="card-body">
-                    <!-- Message si pas de données -->
-                    <div *ngIf="!ppnaData?.['analyse_segments'] || ppnaData?.['analyse_segments'].length === 0" class="alert alert-info">
-                      <i class="fas fa-info-circle"></i> Aucune donnée de segmentation disponible. Chargez un fichier PPNA.
+                    <!-- Message si pas de données + Zone d'upload -->
+                    <div *ngIf="!ppnaData?.['analyse_segments'] || ppnaData?.['analyse_segments'].length === 0" class="text-center py-5">
+                      <div class="upload-zone mb-4">
+                        <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune donnée PPNA chargée</h5>
+                        <p class="text-muted mb-4">Chargez un fichier Excel PPNA pour commencer l'analyse</p>
+                        
+                        <label class="btn btn-primary btn-lg">
+                          <i class="fas fa-file-upload me-2"></i>
+                          Charger un fichier Excel PPNA
+                          <input type="file" 
+                                 (change)="onFileSelected($event)" 
+                                 accept=".xlsx,.xls" 
+                                 style="display: none;" />
+                        </label>
+                        
+                        <div class="mt-3">
+                          <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Formats acceptés: .xlsx, .xls
+                          </small>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Grille de segments -->

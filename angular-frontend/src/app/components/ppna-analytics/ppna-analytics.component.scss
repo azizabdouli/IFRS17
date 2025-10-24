@@ -263,6 +263,27 @@
 /* ⬇️ EXPORTS CARDS */
 /* ================================================= */
 
+.upload-zone {
+  padding: 3rem 2rem;
+  border: 3px dashed #dee2e6;
+  border-radius: 12px;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: var(--ifrs17-primary, #2c5aa0);
+    background: rgba(44, 90, 160, 0.05);
+  }
+  
+  i.fa-cloud-upload-alt {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover i.fa-cloud-upload-alt {
+    transform: translateY(-10px);
+  }
+}
+
 .export-card {
   text-align: center;
   padding: 2rem 1rem;
