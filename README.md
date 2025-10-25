@@ -747,3 +747,12 @@ Pour toute question ou support, contactez l'équipe de développement.
 ---
 
 **Développé avec ❤️ pour l'analyse prédictive IFRS17**
+
+## 🔗 Liens documentation
+
+- Scénario complet (start → fin): `README_SCENARIO_IFRS17.md`
+- Machine Learning (modèles, calculs, interprétations): `README_ML.md`
+- Parcours projet et validations: `README_TRAVAIL_REALISE.md`
+- Théorie IFRS 17 (PAA) — synthèse: `README_IFRS17_THEORIE.md`
+- Aspect théorique complet (norme, maths, exemples, ML): `docs/ASPECT_THEORIQUE_PROJET.md`
+- Module PAA (guide utilisateur et API): `docs/PAA_MODULE_README.md`

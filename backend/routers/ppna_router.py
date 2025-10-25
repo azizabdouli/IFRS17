@@ -214,10 +214,13 @@ async def calculate_monthly_projection(
     Calcule la projection mensuelle IFRS 17 (revenue & DAC amortissement)
     """
     try:
-        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
-            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        # Vérifier que les données PPNA sont chargées
+        if not ppna_service.ppna_data:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée. Veuillez uploader un fichier Excel.")
         
-        df = ppna_service.df_ppna.copy()
+        # Extraire le DataFrame de la première feuille
+        sheet_name = list(ppna_service.ppna_data.keys())[0]
+        df = ppna_service.ppna_data[sheet_name].copy()
         
         # Filtrer par produits si spécifié
         if products and len(products) > 0:
@@ -264,16 +267,19 @@ async def export_ppna_excel():
     Exporte les données PPNA en Excel
     """
     try:
-        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
-            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        # Vérifier que les données PPNA sont chargées
+        if not ppna_service.ppna_data:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée. Veuillez uploader un fichier Excel.")
         
         import io
         from fastapi.responses import StreamingResponse
         
-        # Créer le fichier Excel en mémoire
+        # Créer le fichier Excel en mémoire avec toutes les feuilles
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            ppna_service.df_ppna.to_excel(writer, sheet_name='PPNA_Data', index=False)
+            # Exporter toutes les feuilles
+            for sheet_name, df in ppna_service.ppna_data.items():
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
         
         output.seek(0)
         
@@ -292,8 +298,9 @@ async def export_ppna_pdf():
     Exporte un rapport PPNA en PDF
     """
     try:
-        if not hasattr(ppna_service, 'df_ppna') or ppna_service.df_ppna is None:
-            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée")
+        # Vérifier que les données PPNA sont chargées
+        if not ppna_service.ppna_data:
+            raise HTTPException(status_code=400, detail="Aucune donnée PPNA chargée. Veuillez uploader un fichier Excel.")
         
         from reportlab.lib.pagesizes import letter, A4
         from reportlab.lib import colors
@@ -313,8 +320,9 @@ async def export_ppna_pdf():
         elements.append(title)
         elements.append(Spacer(1, 20))
         
-        # Statistiques clés
-        df = ppna_service.df_ppna
+        # Extraire le DataFrame de la première feuille
+        sheet_name = list(ppna_service.ppna_data.keys())[0]
+        df = ppna_service.ppna_data[sheet_name]
         stats_data = [
             ['Métrique', 'Valeur'],
             ['Nombre de contrats', f"{len(df):,}"],
