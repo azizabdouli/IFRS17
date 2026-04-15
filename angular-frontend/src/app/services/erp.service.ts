@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface ERPSummary {
   portfolios: number;
@@ -111,7 +112,7 @@ export interface LedgerEntry {
   providedIn: 'root'
 })
 export class ERPService {
-  private readonly baseUrl = 'http://localhost:8001/erp';
+  private readonly baseUrl = `${environment.apiUrl}/erp`;
 
   constructor(private http: HttpClient) {}
 

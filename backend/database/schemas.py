@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator, Field
+from pydantic import BaseModel, EmailStr, validator, Field, model_validator
 from typing import Optional, List
 from datetime import datetime, date
 from enum import Enum
@@ -349,12 +349,11 @@ class ClaimCreate(BaseModel):
     currency: str = "TND"
     description: Optional[str] = None
 
-    @validator('paid_amount')
-    def validate_paid_amount(cls, v, values):
-        amount = values.get('amount', 0.0)
-        if v is not None and amount is not None and v > amount:
+    @model_validator(mode="after")
+    def validate_paid_amount(self):
+        if self.paid_amount > self.amount:
             raise ValueError('Le montant payé ne peut pas dépasser le montant déclaré')
-        return v
+        return self
 
 class ClaimUpdate(BaseModel):
     claim_number: Optional[str] = None
@@ -392,12 +391,11 @@ class InvoiceCreate(BaseModel):
     status: InvoiceStatus = InvoiceStatus.PENDING
     currency: str = "TND"
 
-    @validator('paid_amount')
-    def validate_invoice_paid_amount(cls, v, values):
-        amount = values.get('amount', 0.0)
-        if v is not None and amount is not None and v > amount:
+    @model_validator(mode="after")
+    def validate_invoice_paid_amount(self):
+        if self.paid_amount > self.amount:
             raise ValueError('Le montant payé ne peut pas dépasser le montant facturé')
-        return v
+        return self
 
 class InvoiceUpdate(BaseModel):
     invoice_number: Optional[str] = None

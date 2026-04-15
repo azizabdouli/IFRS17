@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   ERPService,
   Portfolio,
@@ -26,10 +26,10 @@ interface FieldConfig {
 
 interface EntityConfig {
   label: string;
-  list: () => void;
-  create: (payload: Record<string, unknown>) => void;
-  update: (id: number, payload: Record<string, unknown>) => void;
-  remove: (id: number) => void;
+  list: () => Observable<ERPItem[]>;
+  create: (payload: Record<string, unknown>) => Observable<ERPItem>;
+  update: (id: number, payload: Record<string, unknown>) => Observable<ERPItem>;
+  remove: (id: number) => Observable<void>;
   fields: FieldConfig[];
   columns: string[];
 }
@@ -76,10 +76,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
     const configs: Record<string, EntityConfig> = {
       portfolios: {
         label: 'Portefeuilles',
-        list: () => this.loadFrom(this.erpService.listPortfolios()),
-        create: (payload) => this.mutate(this.erpService.createPortfolio(payload as Partial<Portfolio>)),
-        update: (id, payload) => this.mutate(this.erpService.updatePortfolio(id, payload as Partial<Portfolio>)),
-        remove: (id) => this.mutate(this.erpService.deletePortfolio(id)),
+        list: () => this.erpService.listPortfolios(),
+        create: (payload) => this.erpService.createPortfolio(payload as Partial<Portfolio>),
+        update: (id, payload) => this.erpService.updatePortfolio(id, payload as Partial<Portfolio>),
+        remove: (id) => this.erpService.deletePortfolio(id),
         fields: [
           { name: 'name', label: 'Nom', type: 'text', required: true },
           { name: 'description', label: 'Description', type: 'text' },
@@ -90,10 +90,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       clients: {
         label: 'Clients',
-        list: () => this.loadFrom(this.erpService.listClients()),
-        create: (payload) => this.mutate(this.erpService.createClient(payload as Partial<Client>)),
-        update: (id, payload) => this.mutate(this.erpService.updateClient(id, payload as Partial<Client>)),
-        remove: (id) => this.mutate(this.erpService.deleteClient(id)),
+        list: () => this.erpService.listClients(),
+        create: (payload) => this.erpService.createClient(payload as Partial<Client>),
+        update: (id, payload) => this.erpService.updateClient(id, payload as Partial<Client>),
+        remove: (id) => this.erpService.deleteClient(id),
         fields: [
           { name: 'name', label: 'Nom', type: 'text', required: true },
           { name: 'client_type', label: 'Type', type: 'select', options: [
@@ -112,10 +112,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       policies: {
         label: 'Polices',
-        list: () => this.loadFrom(this.erpService.listPolicies()),
-        create: (payload) => this.mutate(this.erpService.createPolicy(payload as Partial<Policy>)),
-        update: (id, payload) => this.mutate(this.erpService.updatePolicy(id, payload as Partial<Policy>)),
-        remove: (id) => this.mutate(this.erpService.deletePolicy(id)),
+        list: () => this.erpService.listPolicies(),
+        create: (payload) => this.erpService.createPolicy(payload as Partial<Policy>),
+        update: (id, payload) => this.erpService.updatePolicy(id, payload as Partial<Policy>),
+        remove: (id) => this.erpService.deletePolicy(id),
         fields: [
           { name: 'policy_number', label: 'Numéro', type: 'text', required: true },
           { name: 'client_id', label: 'Client ID', type: 'number', required: true },
@@ -138,10 +138,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       coverages: {
         label: 'Garanties',
-        list: () => this.loadFrom(this.erpService.listCoverages()),
-        create: (payload) => this.mutate(this.erpService.createCoverage(payload as Partial<Coverage>)),
-        update: (id, payload) => this.mutate(this.erpService.updateCoverage(id, payload as Partial<Coverage>)),
-        remove: (id) => this.mutate(this.erpService.deleteCoverage(id)),
+        list: () => this.erpService.listCoverages(),
+        create: (payload) => this.erpService.createCoverage(payload as Partial<Coverage>),
+        update: (id, payload) => this.erpService.updateCoverage(id, payload as Partial<Coverage>),
+        remove: (id) => this.erpService.deleteCoverage(id),
         fields: [
           { name: 'policy_id', label: 'Police ID', type: 'number', required: true },
           { name: 'name', label: 'Nom', type: 'text', required: true },
@@ -153,10 +153,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       claims: {
         label: 'Sinistres',
-        list: () => this.loadFrom(this.erpService.listClaims()),
-        create: (payload) => this.mutate(this.erpService.createClaim(payload as Partial<Claim>)),
-        update: (id, payload) => this.mutate(this.erpService.updateClaim(id, payload as Partial<Claim>)),
-        remove: (id) => this.mutate(this.erpService.deleteClaim(id)),
+        list: () => this.erpService.listClaims(),
+        create: (payload) => this.erpService.createClaim(payload as Partial<Claim>),
+        update: (id, payload) => this.erpService.updateClaim(id, payload as Partial<Claim>),
+        remove: (id) => this.erpService.deleteClaim(id),
         fields: [
           { name: 'claim_number', label: 'Numéro', type: 'text', required: true },
           { name: 'policy_id', label: 'Police ID', type: 'number', required: true },
@@ -173,10 +173,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       invoices: {
         label: 'Quittances',
-        list: () => this.loadFrom(this.erpService.listInvoices()),
-        create: (payload) => this.mutate(this.erpService.createInvoice(payload as Partial<Invoice>)),
-        update: (id, payload) => this.mutate(this.erpService.updateInvoice(id, payload as Partial<Invoice>)),
-        remove: (id) => this.mutate(this.erpService.deleteInvoice(id)),
+        list: () => this.erpService.listInvoices(),
+        create: (payload) => this.erpService.createInvoice(payload as Partial<Invoice>),
+        update: (id, payload) => this.erpService.updateInvoice(id, payload as Partial<Invoice>),
+        remove: (id) => this.erpService.deleteInvoice(id),
         fields: [
           { name: 'invoice_number', label: 'Numéro', type: 'text', required: true },
           { name: 'policy_id', label: 'Police ID', type: 'number', required: true },
@@ -194,10 +194,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       },
       'ledger-entries': {
         label: 'Écritures',
-        list: () => this.loadFrom(this.erpService.listLedgerEntries()),
-        create: (payload) => this.mutate(this.erpService.createLedgerEntry(payload as Partial<LedgerEntry>)),
-        update: (id, payload) => this.mutate(this.erpService.updateLedgerEntry(id, payload as Partial<LedgerEntry>)),
-        remove: (id) => this.mutate(this.erpService.deleteLedgerEntry(id)),
+        list: () => this.erpService.listLedgerEntries(),
+        create: (payload) => this.erpService.createLedgerEntry(payload as Partial<LedgerEntry>),
+        update: (id, payload) => this.erpService.updateLedgerEntry(id, payload as Partial<LedgerEntry>),
+        remove: (id) => this.erpService.deleteLedgerEntry(id),
         fields: [
           { name: 'policy_id', label: 'Police ID', type: 'number', required: true },
           { name: 'entry_type', label: 'Type', type: 'select', options: [
@@ -234,10 +234,10 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
     }
     this.error = null;
     this.loading = true;
-    this.entityConfig.list();
+    this.loadFrom(this.entityConfig.list());
   }
 
-  loadFrom(stream: any): void {
+  loadFrom(stream: Observable<ERPItem[]>): void {
     const sub = stream.subscribe({
       next: (items: ERPItem[]) => {
         this.items = items;
@@ -251,7 +251,7 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  mutate(stream: any): void {
+  mutate(stream: Observable<ERPItem | void>): void {
     const sub = stream.subscribe({
       next: () => {
         this.loadItems();
@@ -274,9 +274,9 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
     }
     const payload = this.normalizePayload(this.form.value);
     if (this.editingId) {
-      this.entityConfig.update(this.editingId, payload);
+      this.mutate(this.entityConfig.update(this.editingId, payload));
     } else {
-      this.entityConfig.create(payload);
+      this.mutate(this.entityConfig.create(payload));
     }
   }
 
@@ -290,7 +290,7 @@ export class ErpManagementComponent implements OnInit, OnDestroy {
       return;
     }
     if (confirm('Confirmer la suppression ?')) {
-      this.entityConfig.remove(item.id);
+      this.mutate(this.entityConfig.remove(item.id));
     }
   }
 

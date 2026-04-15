@@ -89,7 +89,7 @@ def get_data_quality(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user)
 ):
-    missing_policy_links = db.query(Policy).filter(Policy.client_id.is_(None)).count()
+    missing_policy_links = db.query(Policy).filter(Policy.portfolio_id.is_(None)).count()
     claims_paid_over = db.query(Claim).filter(Claim.paid_amount > Claim.amount).count()
     invoices_paid_over = db.query(Invoice).filter(Invoice.paid_amount > Invoice.amount).count()
     inactive_clients = db.query(Client).filter(Client.status == "inactif").count()
