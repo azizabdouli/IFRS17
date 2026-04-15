@@ -1,0 +1,77 @@
+.erp-dashboard {
+  padding: 2rem;
+
+  .header {
+    margin-bottom: 2rem;
+    h2 {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      color: var(--ifrs17-text-secondary);
+    }
+  }
+
+  .loading,
+  .error {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .error {
+    background: #ffe6e6;
+    color: #b30000;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .card {
+      padding: 1.25rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+      h3 {
+        font-size: 0.95rem;
+        color: var(--ifrs17-text-secondary);
+        margin-bottom: 0.5rem;
+      }
+      .value {
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .quality {
+    background: #f8f9fb;
+    padding: 1.5rem;
+    border-radius: 12px;
+
+    h3 {
+      margin-bottom: 1rem;
+    }
+
+    .quality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+
+      div {
+        background: white;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        strong {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+}

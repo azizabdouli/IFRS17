@@ -64,6 +64,66 @@ import { AuthService, User } from '../../services/auth.service';
                 </div>
               </li>
               
+              <!-- ERP Assurance -->
+              <li class="dropdown" (mouseenter)="showErpMenu = true" (mouseleave)="showErpMenu = false">
+                <a routerLink="/erp/dashboard" routerLinkActive="active" class="nav-with-dropdown">
+                  <i class="fas fa-building me-2"></i>
+                  ERP Assurance
+                  <i class="fas fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+                </a>
+                <div class="dropdown-menu-nav" [class.show]="showErpMenu">
+                  <a routerLink="/erp/dashboard" class="dropdown-item-nav">
+                    <i class="fas fa-layer-group"></i>
+                    <div>
+                      <strong>Vue d'ensemble</strong>
+                      <small>Indicateurs & qualité</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/clients" class="dropdown-item-nav">
+                    <i class="fas fa-user-friends"></i>
+                    <div>
+                      <strong>Clients</strong>
+                      <small>Fiches client</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/policies" class="dropdown-item-nav">
+                    <i class="fas fa-file-contract"></i>
+                    <div>
+                      <strong>Polices</strong>
+                      <small>Contrats & IFRS17</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/coverages" class="dropdown-item-nav">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                      <strong>Garanties</strong>
+                      <small>Couvertures & franchises</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/claims" class="dropdown-item-nav">
+                    <i class="fas fa-ambulance"></i>
+                    <div>
+                      <strong>Sinistres</strong>
+                      <small>Suivi & règlements</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/invoices" class="dropdown-item-nav">
+                    <i class="fas fa-receipt"></i>
+                    <div>
+                      <strong>Quittances</strong>
+                      <small>Facturation & encaissements</small>
+                    </div>
+                  </a>
+                  <a routerLink="/erp/ledger-entries" class="dropdown-item-nav">
+                    <i class="fas fa-book"></i>
+                    <div>
+                      <strong>Écritures</strong>
+                      <small>Comptabilité IFRS17</small>
+                    </div>
+                  </a>
+                </div>
+              </li>
+
               <!-- Assistant IA -->
               <li>
                 <a routerLink="/ai-assistant" routerLinkActive="active">
@@ -395,6 +455,7 @@ export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   showUserMenu = false;
   showAnalyticsMenu = false;
+  showErpMenu = false;
 
   constructor(
     private authService: AuthService,

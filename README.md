@@ -478,6 +478,23 @@ Tous droits réservés.- Injection de dépendances
 ---
 
 ## 🏆 Statut du Projet
+ 
+## 🏢 ERP Assurance (Nouveau)
+
+Le module ERP assurance ajoute un noyau opérationnel pour gérer:
+- Clients, portefeuilles et polices
+- Garanties, sinistres, quittances
+- Écritures comptables IFRS17
+- Qualité des données (indicateurs de cohérence)
+
+### Points d'accès API
+- `GET /erp/summary` : indicateurs de volume
+- `GET /erp/data-quality` : contrôles de cohérence
+- `GET/POST/PUT/DELETE /erp/{entity}` : CRUD (clients, portfolios, policies, coverages, claims, invoices, ledger-entries)
+- `POST /erp/clients/import` et `POST /erp/policies/import` : import CSV
+- `GET /erp/clients/export` et `GET /erp/policies/export` : export CSV
+
+> Les opérations d'écriture ERP sont limitées aux rôles `actuaire` et `comptable`.
 
 ✅ **Application complète et fonctionnelle**  
 ✅ **Authentification sécurisée implémentée**  

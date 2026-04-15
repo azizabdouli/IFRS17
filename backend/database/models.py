@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float, Date, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from backend.database.connection import Base
 from datetime import datetime
 
@@ -86,3 +87,140 @@ class AuditLog(Base):
     user_agent = Column(Text, nullable=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
     success = Column(Boolean, default=True)
+
+# =========================
+# 🏢 ERP Assurance - Modèles
+# =========================
+
+class Portfolio(Base):
+    __tablename__ = "erp_portfolios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), unique=True, nullable=False)
+    description = Column(Text, nullable=True)
+    currency = Column(String(10), default="TND", nullable=False)
+    manager = Column(String(100), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    policies = relationship("Policy", back_populates="portfolio", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Portfolio(name='{self.name}', currency='{self.currency}')>"
+
+
+class Client(Base):
+    __tablename__ = "erp_clients"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)
+    client_type = Column(String(50), default="particulier", nullable=False)
+    email = Column(String(255), nullable=True)
+    phone = Column(String(30), nullable=True)
+    address = Column(Text, nullable=True)
+    status = Column(String(30), default="actif", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    policies = relationship("Policy", back_populates="client", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Client(name='{self.name}', type='{self.client_type}')>"
+
+
+class Policy(Base):
+    __tablename__ = "erp_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_number = Column(String(100), unique=True, nullable=False)
+    client_id = Column(Integer, ForeignKey("erp_clients.id"), nullable=False)
+    portfolio_id = Column(Integer, ForeignKey("erp_portfolios.id"), nullable=True)
+    effective_date = Column(Date, nullable=False)
+    expiry_date = Column(Date, nullable=True)
+    premium_amount = Column(Float, default=0.0, nullable=False)
+    currency = Column(String(10), default="TND", nullable=False)
+    status = Column(String(30), default="active", nullable=False)
+    ifrs17_group = Column(String(100), nullable=True)
+    cohort_year = Column(Integer, nullable=True)
+    measurement_model = Column(String(20), default="PAA", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    client = relationship("Client", back_populates="policies")
+    portfolio = relationship("Portfolio", back_populates="policies")
+    coverages = relationship("Coverage", back_populates="policy", cascade="all, delete-orphan")
+    claims = relationship("Claim", back_populates="policy", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", back_populates="policy", cascade="all, delete-orphan")
+    ledger_entries = relationship("LedgerEntry", back_populates="policy", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Policy(number='{self.policy_number}', status='{self.status}')>"
+
+
+class Coverage(Base):
+    __tablename__ = "erp_coverages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(Integer, ForeignKey("erp_policies.id"), nullable=False)
+    name = Column(String(150), nullable=False)
+    limit_amount = Column(Float, default=0.0, nullable=False)
+    deductible = Column(Float, default=0.0, nullable=False)
+    premium_amount = Column(Float, default=0.0, nullable=False)
+    status = Column(String(30), default="active", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    policy = relationship("Policy", back_populates="coverages")
+
+
+class Claim(Base):
+    __tablename__ = "erp_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(Integer, ForeignKey("erp_policies.id"), nullable=False)
+    claim_number = Column(String(100), unique=True, nullable=False)
+    reported_date = Column(Date, nullable=False)
+    occurrence_date = Column(Date, nullable=True)
+    status = Column(String(30), default="open", nullable=False)
+    amount = Column(Float, default=0.0, nullable=False)
+    paid_amount = Column(Float, default=0.0, nullable=False)
+    currency = Column(String(10), default="TND", nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    policy = relationship("Policy", back_populates="claims")
+
+
+class Invoice(Base):
+    __tablename__ = "erp_invoices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(Integer, ForeignKey("erp_policies.id"), nullable=False)
+    invoice_number = Column(String(100), unique=True, nullable=False)
+    issued_date = Column(Date, nullable=False)
+    due_date = Column(Date, nullable=True)
+    amount = Column(Float, default=0.0, nullable=False)
+    paid_amount = Column(Float, default=0.0, nullable=False)
+    status = Column(String(30), default="pending", nullable=False)
+    currency = Column(String(10), default="TND", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    policy = relationship("Policy", back_populates="invoices")
+
+
+class LedgerEntry(Base):
+    __tablename__ = "erp_ledger_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(Integer, ForeignKey("erp_policies.id"), nullable=False)
+    entry_type = Column(String(50), nullable=False)
+    account_code = Column(String(50), nullable=False)
+    description = Column(Text, nullable=True)
+    amount = Column(Float, default=0.0, nullable=False)
+    currency = Column(String(10), default="TND", nullable=False)
+    entry_date = Column(Date, nullable=False)
+    reference = Column(String(100), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    policy = relationship("Policy", back_populates="ledger_entries")

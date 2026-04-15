@@ -1,0 +1,58 @@
+<section class="erp-dashboard">
+  <div class="header">
+    <h2>ERP Assurance</h2>
+    <p>Vue d'ensemble du noyau opérationnel (polices, sinistres, quittances).</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement des indicateurs...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div class="grid" *ngIf="summary && !loading">
+    <div class="card">
+      <h3>Clients</h3>
+      <span class="value">{{ summary.clients }}</span>
+    </div>
+    <div class="card">
+      <h3>Polices</h3>
+      <span class="value">{{ summary.policies }}</span>
+    </div>
+    <div class="card">
+      <h3>Sinistres</h3>
+      <span class="value">{{ summary.claims }}</span>
+    </div>
+    <div class="card">
+      <h3>Quittances</h3>
+      <span class="value">{{ summary.invoices }}</span>
+    </div>
+    <div class="card">
+      <h3>Garanties</h3>
+      <span class="value">{{ summary.coverages }}</span>
+    </div>
+    <div class="card">
+      <h3>Écritures</h3>
+      <span class="value">{{ summary.ledger_entries }}</span>
+    </div>
+  </div>
+
+  <div class="quality" *ngIf="dataQuality && !loading">
+    <h3>Qualité des données</h3>
+    <div class="quality-grid">
+      <div>
+        <strong>Clients inactifs</strong>
+        <span>{{ dataQuality.inactive_clients }}</span>
+      </div>
+      <div>
+        <strong>Sinistres payés > montant</strong>
+        <span>{{ dataQuality.claims_paid_over_amount }}</span>
+      </div>
+      <div>
+        <strong>Quittances payées > montant</strong>
+        <span>{{ dataQuality.invoices_paid_over_amount }}</span>
+      </div>
+      <div>
+        <strong>Polices sans lien client</strong>
+        <span>{{ dataQuality.missing_policy_links }}</span>
+      </div>
+    </div>
+  </div>
+</section>

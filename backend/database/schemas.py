@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, validator, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 class UserRole(str, Enum):
@@ -13,6 +13,47 @@ class UserLevel(str, Enum):
     INTERMEDIAIRE = "Intermédiaire" 
     EXPERT = "Expert"
     MAITRE = "Maître IFRS17"
+
+# === ERP Assurance - Enums ===
+
+class ClientType(str, Enum):
+    PARTICULIER = "particulier"
+    ENTREPRISE = "entreprise"
+    INTERMEDIAIRE = "intermediaire"
+
+class ClientStatus(str, Enum):
+    ACTIF = "actif"
+    INACTIF = "inactif"
+
+class PolicyStatus(str, Enum):
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    SUSPENDED = "suspended"
+
+class MeasurementModel(str, Enum):
+    PAA = "PAA"
+    GMM = "GMM"
+    VFA = "VFA"
+
+class CoverageStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+class ClaimStatus(str, Enum):
+    OPEN = "open"
+    CLOSED = "closed"
+    REJECTED = "rejected"
+
+class InvoiceStatus(str, Enum):
+    PENDING = "pending"
+    PAID = "paid"
+    OVERDUE = "overdue"
+
+class LedgerEntryType(str, Enum):
+    PREMIUM = "premium"
+    CLAIM = "claim"
+    COMMISSION = "commission"
+    ADJUSTMENT = "adjustment"
 
 # Schémas pour la création d'utilisateur
 class UserCreate(BaseModel):
@@ -170,3 +211,263 @@ class ErrorResponse(BaseModel):
     error: str
     detail: Optional[str] = None
     success: bool = False
+
+# === ERP Assurance - Schémas ===
+
+class PortfolioCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    currency: str = "TND"
+    manager: Optional[str] = None
+
+class PortfolioUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    currency: Optional[str] = None
+    manager: Optional[str] = None
+
+class PortfolioResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    currency: str
+    manager: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ClientCreate(BaseModel):
+    name: str
+    client_type: ClientType = ClientType.PARTICULIER
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    status: ClientStatus = ClientStatus.ACTIF
+
+class ClientUpdate(BaseModel):
+    name: Optional[str] = None
+    client_type: Optional[ClientType] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    status: Optional[ClientStatus] = None
+
+class ClientResponse(BaseModel):
+    id: int
+    name: str
+    client_type: ClientType
+    email: Optional[str]
+    phone: Optional[str]
+    address: Optional[str]
+    status: ClientStatus
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PolicyCreate(BaseModel):
+    policy_number: str
+    client_id: int
+    portfolio_id: Optional[int] = None
+    effective_date: date
+    expiry_date: Optional[date] = None
+    premium_amount: float = 0.0
+    currency: str = "TND"
+    status: PolicyStatus = PolicyStatus.ACTIVE
+    ifrs17_group: Optional[str] = None
+    cohort_year: Optional[int] = None
+    measurement_model: MeasurementModel = MeasurementModel.PAA
+
+class PolicyUpdate(BaseModel):
+    policy_number: Optional[str] = None
+    client_id: Optional[int] = None
+    portfolio_id: Optional[int] = None
+    effective_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    premium_amount: Optional[float] = None
+    currency: Optional[str] = None
+    status: Optional[PolicyStatus] = None
+    ifrs17_group: Optional[str] = None
+    cohort_year: Optional[int] = None
+    measurement_model: Optional[MeasurementModel] = None
+
+class PolicyResponse(BaseModel):
+    id: int
+    policy_number: str
+    client_id: int
+    portfolio_id: Optional[int]
+    effective_date: date
+    expiry_date: Optional[date]
+    premium_amount: float
+    currency: str
+    status: PolicyStatus
+    ifrs17_group: Optional[str]
+    cohort_year: Optional[int]
+    measurement_model: MeasurementModel
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class CoverageCreate(BaseModel):
+    policy_id: int
+    name: str
+    limit_amount: float = 0.0
+    deductible: float = 0.0
+    premium_amount: float = 0.0
+    status: CoverageStatus = CoverageStatus.ACTIVE
+
+class CoverageUpdate(BaseModel):
+    name: Optional[str] = None
+    limit_amount: Optional[float] = None
+    deductible: Optional[float] = None
+    premium_amount: Optional[float] = None
+    status: Optional[CoverageStatus] = None
+
+class CoverageResponse(BaseModel):
+    id: int
+    policy_id: int
+    name: str
+    limit_amount: float
+    deductible: float
+    premium_amount: float
+    status: CoverageStatus
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ClaimCreate(BaseModel):
+    policy_id: int
+    claim_number: str
+    reported_date: date
+    occurrence_date: Optional[date] = None
+    status: ClaimStatus = ClaimStatus.OPEN
+    amount: float = 0.0
+    paid_amount: float = 0.0
+    currency: str = "TND"
+    description: Optional[str] = None
+
+    @validator('paid_amount')
+    def validate_paid_amount(cls, v, values):
+        amount = values.get('amount', 0.0)
+        if v is not None and amount is not None and v > amount:
+            raise ValueError('Le montant payé ne peut pas dépasser le montant déclaré')
+        return v
+
+class ClaimUpdate(BaseModel):
+    claim_number: Optional[str] = None
+    reported_date: Optional[date] = None
+    occurrence_date: Optional[date] = None
+    status: Optional[ClaimStatus] = None
+    amount: Optional[float] = None
+    paid_amount: Optional[float] = None
+    currency: Optional[str] = None
+    description: Optional[str] = None
+
+class ClaimResponse(BaseModel):
+    id: int
+    policy_id: int
+    claim_number: str
+    reported_date: date
+    occurrence_date: Optional[date]
+    status: ClaimStatus
+    amount: float
+    paid_amount: float
+    currency: str
+    description: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class InvoiceCreate(BaseModel):
+    policy_id: int
+    invoice_number: str
+    issued_date: date
+    due_date: Optional[date] = None
+    amount: float = 0.0
+    paid_amount: float = 0.0
+    status: InvoiceStatus = InvoiceStatus.PENDING
+    currency: str = "TND"
+
+    @validator('paid_amount')
+    def validate_invoice_paid_amount(cls, v, values):
+        amount = values.get('amount', 0.0)
+        if v is not None and amount is not None and v > amount:
+            raise ValueError('Le montant payé ne peut pas dépasser le montant facturé')
+        return v
+
+class InvoiceUpdate(BaseModel):
+    invoice_number: Optional[str] = None
+    issued_date: Optional[date] = None
+    due_date: Optional[date] = None
+    amount: Optional[float] = None
+    paid_amount: Optional[float] = None
+    status: Optional[InvoiceStatus] = None
+    currency: Optional[str] = None
+
+class InvoiceResponse(BaseModel):
+    id: int
+    policy_id: int
+    invoice_number: str
+    issued_date: date
+    due_date: Optional[date]
+    amount: float
+    paid_amount: float
+    status: InvoiceStatus
+    currency: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class LedgerEntryCreate(BaseModel):
+    policy_id: int
+    entry_type: LedgerEntryType
+    account_code: str
+    description: Optional[str] = None
+    amount: float = 0.0
+    currency: str = "TND"
+    entry_date: date
+    reference: Optional[str] = None
+
+class LedgerEntryUpdate(BaseModel):
+    entry_type: Optional[LedgerEntryType] = None
+    account_code: Optional[str] = None
+    description: Optional[str] = None
+    amount: Optional[float] = None
+    currency: Optional[str] = None
+    entry_date: Optional[date] = None
+    reference: Optional[str] = None
+
+class LedgerEntryResponse(BaseModel):
+    id: int
+    policy_id: int
+    entry_type: LedgerEntryType
+    account_code: str
+    description: Optional[str]
+    amount: float
+    currency: str
+    entry_date: date
+    reference: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ERPDataQualityResponse(BaseModel):
+    missing_policy_links: int = 0
+    claims_paid_over_amount: int = 0
+    invoices_paid_over_amount: int = 0
+    inactive_clients: int = 0
+
+class ERPSummaryResponse(BaseModel):
+    portfolios: int = 0
+    clients: int = 0
+    policies: int = 0
+    coverages: int = 0
+    claims: int = 0
+    invoices: int = 0
+    ledger_entries: int = 0

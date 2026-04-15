@@ -1,0 +1,53 @@
+<section class="erp-management">
+  <div class="header">
+    <h2>{{ entityConfig?.label }}</h2>
+    <p>Gestion opérationnelle ERP assurance.</p>
+  </div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="loading" class="loading">Chargement...</div>
+
+  <div class="content">
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th *ngFor="let column of entityConfig?.columns">{{ column }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items">
+            <td *ngFor="let column of entityConfig?.columns">{{ (item as any)[column] }}</td>
+            <td class="actions">
+              <button class="btn secondary" (click)="edit(item)">Éditer</button>
+              <button class="btn danger" (click)="remove(item)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-section">
+      <h3>{{ editingId ? 'Modifier' : 'Créer' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field" *ngFor="let field of entityConfig?.fields">
+          <label>{{ field.label }}</label>
+          <input *ngIf="field.type === 'text'" type="text" [formControlName]="field.name" />
+          <input *ngIf="field.type === 'number'" type="number" [formControlName]="field.name" />
+          <input *ngIf="field.type === 'date'" type="date" [formControlName]="field.name" />
+          <select *ngIf="field.type === 'select'" [formControlName]="field.name">
+            <option value="">--</option>
+            <option *ngFor="let option of field.options" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">{{ editingId ? 'Mettre à jour' : 'Créer' }}</button>
+          <button class="btn" type="button" (click)="resetForm()">Réinitialiser</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

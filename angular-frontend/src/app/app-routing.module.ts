@@ -10,6 +10,8 @@ import { DataTransformationsComponent } from './components/data-transformations/
 import { PaaDashboardComponent } from './components/paa-dashboard/paa-dashboard.component';
 import { AuthComponent } from './components/auth/auth.component';
 import { AuthGuard } from './guards/auth.guard';
+import { ErpDashboardComponent } from './components/erp-dashboard/erp-dashboard.component';
+import { ErpManagementComponent } from './components/erp-management/erp-management.component';
 
 export const routes: Routes = [
   // Routes d'authentification (non protégées)
@@ -68,6 +70,29 @@ export const routes: Routes = [
     component: AIAssistantComponent,
     canActivate: [AuthGuard],
     data: { title: 'Assistant IA', icon: 'robot' }
+  },
+
+  // 🏢 ERP Assurance
+  {
+    path: 'erp',
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: 'dashboard',
+        component: ErpDashboardComponent,
+        data: { title: 'ERP Assurance', icon: 'building' }
+      },
+      {
+        path: ':entity',
+        component: ErpManagementComponent,
+        data: { title: 'Gestion ERP', icon: 'table' }
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
   },
   
   // 🔧 Utilitaires
